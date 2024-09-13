@@ -1,0 +1,55 @@
+Last login: Fri Sep 13 08:30:39 on console
+1016960@1016960-student-FVFMQ8MY1WFV ~ % sl 
+zsh: command not found: sl
+1016960@1016960-student-FVFMQ8MY1WFV ~ % ls
+Applications		Library			Public
+Desktop			Movies			VS
+Documents		Music			cmdtools
+Downloads		Pictures		terminal_practice
+1016960@1016960-student-FVFMQ8MY1WFV ~ % cd VS      
+1016960@1016960-student-FVFMQ8MY1WFV VS % ls
+Penrosian.github.io			pokemon-showdown-newformatv2
+pokemon-showdown-client-newformatv2
+1016960@1016960-student-FVFMQ8MY1WFV VS % cd Penrosian.github.io
+1016960@1016960-student-FVFMQ8MY1WFV Penrosian.github.io % ls
+README.md	TermQuiz2.txt	index.html
+1016960@1016960-student-FVFMQ8MY1WFV Penrosian.github.io % date
+Fri Sep 13 11:41:56 EDT 2024
+1016960@1016960-student-FVFMQ8MY1WFV Penrosian.github.io % vim index.html
+1016960@1016960-student-FVFMQ8MY1WFV Penrosian.github.io % git add index.html
+1016960@1016960-student-FVFMQ8MY1WFV Penrosian.github.io % git commit
+[main 5b3a082] vim quiz
+ 1 file changed, 1 insertion(+)
+1016960@1016960-student-FVFMQ8MY1WFV Penrosian.github.io % git status
+On branch main
+Your branch is ahead of 'origin/main' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+1016960@1016960-student-FVFMQ8MY1WFV Penrosian.github.io % git push
+Enumerating objects: 5, done.
+Counting objects: 100% (5/5), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (3/3), 283 bytes | 283.00 KiB/s, done.
+Total 3 (delta 1), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+To https://github.com/Penrosian/Penrosian.github.io.git
+   6677100..5b3a082  main -> main
+1016960@1016960-student-FVFMQ8MY1WFV Penrosian.github.io % curl penrosian.github.io
+<html>
+<head><title>301 Moved Permanently</title></head>
+<body>
+<center><h1>301 Moved Permanently</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+1016960@1016960-student-FVFMQ8MY1WFV Penrosian.github.io % curl Penrosian.github.io
+<html>
+<head><title>301 Moved Permanently</title></head>
+<body>
+<center><h1>301 Moved Permanently</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+1016960@1016960-student-FVFMQ8MY1WFV Penrosian.github.io % 
