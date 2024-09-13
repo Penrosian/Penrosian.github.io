@@ -1,4 +1,4 @@
-### JOURNAL
+## JOURNAL
 
 # Here I will write about everything I learn in class.
 
