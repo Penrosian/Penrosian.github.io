@@ -1,2 +1,2 @@
-# [https:/penrosian.github.io](Penrosian.github.io)
+# [penrosian.github.io](https://penrosian.github.io)
 website for my web design class
