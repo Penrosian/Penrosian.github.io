@@ -81,6 +81,24 @@ function renderValidationResults(data) {
             <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a>
         </p>
     `;
+    if(window.location.href.startsWith("file://") && !isHTMLValid) {
+        ValidatorHTML += `<p>There might be multiple errors. Here is the first one:</p>
+        <table>
+        <thead>
+        <tr>
+        <th>Code</th>
+        <th>Error Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td><code>${data['messages'][0]['extract'].replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;')}</code></td>
+        <td>` + data['messages'][0]['message'] + `</td> 
+        </tr>
+        </tbody>
+        </table>`
+        
+        }
 
     let footer = document.querySelector('footer');
     if (!footer) {
