@@ -44,7 +44,7 @@ function init() {
             renderErrorFooter();
         });
     }
-    var fragment = create('<link href="src/image/favicon.ico" rel="shortcut icon" type="image/x-icon"></link>');
+    var fragment = create('');
     // You can use native DOM methods to insert the fragment:
     document.body.insertBefore(fragment, document.head.childNodes[0]);
 }
