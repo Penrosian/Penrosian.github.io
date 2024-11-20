@@ -44,6 +44,9 @@ function init() {
             renderErrorFooter();
         });
     }
+    var fragment = create('');
+    // You can use native DOM methods to insert the fragment:
+    document.body.insertBefore(fragment, document.head.childNodes[0]);
 }
 
 // Function to check if the document has a valid <!DOCTYPE html>
@@ -121,6 +124,17 @@ function renderErrorFooter() {
         </div>
         `;
 }
+function create(htmlStr) {
+    var frag = document.createDocumentFragment(),
+        temp = document.createElement('div');
+    temp.innerHTML = htmlStr;
+    while (temp.firstChild) {
+        frag.appendChild(temp.firstChild);
+    }
+    return frag;
+}
+
+
 
 // Call the init function when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', init);
