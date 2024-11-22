@@ -44,9 +44,6 @@ function init() {
             renderErrorFooter();
         });
     }
-    var fragment = create('');
-    // You can use native DOM methods to insert the fragment:
-    document.body.insertBefore(fragment, document.head.childNodes[0]);
 }
 
 // Function to check if the document has a valid <!DOCTYPE html>
@@ -123,15 +120,6 @@ function renderErrorFooter() {
             <p><strong>HTML/CSS validation could not be performed due to an error.</strong></p>
         </div>
         `;
-}
-function create(htmlStr) {
-    var frag = document.createDocumentFragment(),
-        temp = document.createElement('div');
-    temp.innerHTML = htmlStr;
-    while (temp.firstChild) {
-        frag.appendChild(temp.firstChild);
-    }
-    return frag;
 }
 
 
