@@ -1,6 +1,8 @@
 //See Initial version here: http://berniepope.id.au/html/js-turtle/turtle.html
 //This is adapted version for TUMO
 
+let instructions = 0;
+
 (function() {
 
 var turtle = undefined;
@@ -9,7 +11,7 @@ var stepByStep = false;
 var steps = [];
 reset();
 
-/* ====================================  turtle API functions =====================================*/
+// ====================================  turtle API functions =====================================
 window.setSpeed = function(pause) {
     if(window.location.hash==="#force"){
         return false;
@@ -45,6 +47,7 @@ window.setSpeed = function(pause) {
 }
 
 window.forward = function(distance, step = false) {
+    instructions++
     if (stepByStep && !step) {
         steps.push(["forward", distance]);
     }
@@ -165,6 +168,7 @@ window.pendown = function(step = false) {
 }
 
 window.right = function(angle, step = false) {
+    instructions++
     if (stepByStep && !step) {
         steps.push(["right", angle]);
     } else {
@@ -175,6 +179,7 @@ window.right = function(angle, step = false) {
 }
 
 window.left = function(angle, step = false) {
+    instructions++
     if (stepByStep && !step) {
         steps.push(["left", angle]);
     } else {
@@ -186,6 +191,7 @@ window.left = function(angle, step = false) {
 }
 
 window.goto = function(x, y, step = false) {
+    instructions++
     if (stepByStep && !step) {
         steps.push(["goto", x + "," + y]);
     }
@@ -263,11 +269,11 @@ window.width = function(w, step = false) {
     }
 }
 
-/* ====================================  end of turtle API functions =====================================*/
+// ====================================  end of turtle API functions =====================================
 
 
 
-/* ====================================  STRANGE turtle API functions =====================================*/
+// ====================================  STRANGE turtle API functions =====================================
 
 window.strangeSquare = function(side, step = 5) {
     var x1 = turtle.pos.x;
@@ -336,10 +342,10 @@ window.strangeLine = function(length) {
     width(1);
 }
 
-/* ====================================  end of STRANGE turtle API functions =====================================*/
+// ====================================  end of STRANGE turtle API functions =====================================
 
 
-/* ===================================   Envirement: coords, copy etc... ======================*/
+// ===================================   Envirement: coords, copy etc... ======================
 var canv = document.getElementById("turtlecanvas");
 var co = document.getElementById("coords");
 var msg = document.getElementById("message");
