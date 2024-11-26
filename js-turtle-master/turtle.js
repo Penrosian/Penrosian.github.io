@@ -1,5 +1,6 @@
 /// <reference path="./lib/Intellisense/js-turtle_hy.ts" />
 //DOCUMENTATION: https://hanumanum.github.io/js-turtle/
+//EN-DOCUMENTATION (not reccomended, use google translate instead): https://hanumanum.github.io/js-turtle/index_en.html
 /*
 showGrid(20);      
 forward(distance)  
