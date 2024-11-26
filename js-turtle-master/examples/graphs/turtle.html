@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+   <head>
+      <title>Javascript Turtle</title>
+      <link type="text/css" rel="stylesheet" href="../../lib/turtle.css" />
+      <meta charset="utf-8">
+   </head>
+   <body>
+      <div id="wrap">
+         <h1>Javascript Turtle Graphics</h1>
+         <div id="midcolumn">
+            <h4>Canvas <span id="coords"></span></h4>
+            <canvas id="turtlecanvas" width="700" height="700"></canvas>
+            <canvas id="imagecanvas" width="700" height="700" style="display:none"></canvas>
+         </div> <!-- midcolumn -->
+         <div id="rightcolumn">
+            <h4>Language Reference</h4>
+            <code>
+              forward(distance) <br/>
+              right(angle) <br/>
+              left(angle) <br/>
+              goto(x,y) <br/>
+              clear() <br/>
+              penup() <br/>
+              pendown() <br/>
+              reset() <br/>
+              angle(angle) <br/>
+              width(width) <br/>
+              colour(r,g,b) <br/>
+              <!-- write(string) <br/> -->
+              <!-- n = random(low,high) <br/> -->
+              <!-- hideTurtle() <br/>
+              showTurtle() <br/> -->
+              <!--redrawOnMove(bool) <br/>
+              draw() <br/> 
+              repeat(n, action) <br/> 
+              wrap(bool) <br/> 
+              animate(action,ms) <br/>  -->
+            </code>
+            <h4>Choose Color</h4>
+            <div class="colours" style="background-color:rgb(231, 76, 60)">231, 76, 60</div>
+            <div class="colours" style="background-color:rgb(34, 153, 84)">34, 153, 84</div>
+            <div class="colours" style="background-color:rgb(243, 156, 18)">243, 156, 18</div>
+            <div class="colours" style="background-color:rgb(36, 113, 163)">36, 113, 163</div>
+            <div class="colours" style="background-color:rgb(142, 68, 173)">142, 68, 173</div>
+            <div class="colours" style="background-color:rgb(211, 84, 0)">211, 84, 0</div>
+            <div class="colours" style="background-color:rgb(39, 55, 70)">39, 55, 70</div>
+            <br>
+            <a href="http://htmlcolorcodes.com/color-chart/" target="_blank">more colors &rarr;</a>
+
+         </div> <!-- rightcolumn -->
+      </div> <!-- wrap-->
+      <script type="text/javascript" src="../../lib/library.js"></script>
+      <script type="text/javascript" src="turtle.js"></script>
+   </body>
+</html>

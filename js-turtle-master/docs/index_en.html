@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<!--[if IE 8]> <html lang="en" class="ie8"> <![endif]-->
+<!--[if IE 9]> <html lang="en" class="ie9"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="en">
+<!--<![endif]-->
+
+<head>
+    <title>js-turtle | Documentations</title>
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="js-turtle documentation">
+    <meta name="author" content="a.kolyan">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800'
+        rel='stylesheet' type='text/css'>
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="assets/plugins/bootstrap/css/bootstrap.min.css">
+    <!-- Plugins CSS -->
+    <link rel="stylesheet" href="assets/plugins/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="assets/plugins/prism/prism.css">
+    <link rel="stylesheet" href="assets/plugins/elegant_font/css/style.css">
+
+    <!-- Theme CSS -->
+    <link id="theme-style" rel="stylesheet" href="assets/css/styles.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body class="body-green">
+    <div class="page-wrapper">
+        <!-- ******Header****** -->
+        <header id="header" class="header">
+            <div class="container">
+                <div class="branding">
+                    <h1 class="logo">
+                        <a href="#">
+                            <img src="favicon.ico">
+                            <span class="text-highlight">js</span>
+                            <span class="text-bold">-turtle</span>
+                        </a>
+                    </h1>
+                </div>
+                <!--//branding-->
+                <ol class="breadcrumb">
+                    <li>
+                        <a href="index.html">ՀԱՅ</a>
+                    </li>
+                    <li class="active">
+                        <a href="index_en.html">ENG</a>
+                    </li>
+                    <li>
+                        <a href="#">FRA</a>
+                    </li>
+                    <li>
+                        <a href="#">RUS</a>
+                    </li>
+                </ol>
+            </div>
+            <!--//container-->
+        </header>
+        <!--//header-->
+        <div class="doc-wrapper">
+            <div class="container">
+                <div id="doc-header" class="doc-header text-center">
+                    <h1 class="doc-title">
+                        <i class="icon fa fa-paper-plane"></i> js-turtle Documentation</h1>
+                    <div class="meta">
+                        <i class="fa fa-clock-o"></i> Last updated: Jun 13th, 2018</div>
+                    <br>
+                    <a class="github-button" href="https://github.com/hanumanum/js-turtle" data-show-count="true" aria-label="Star hanumanum/js-turtle on GitHub">Star</a>
+                    <a class="github-button" href="https://github.com/hanumanum/js-turtle/fork" data-icon="octicon-repo-forked" aria-label="Fork hanumanum/js-turtle on GitHub">Fork</a>
+                </div>
+                <!--//doc-header-->
+                <div class="doc-body">
+                    <div class="doc-content">
+                        <div class="content-inner">
+                            <section id="first-time-section" class="doc-section">
+                                <h2 class="section-title">Intro</h2>
+                                <div class="section-block">
+                                    <p>js-turtle is an environment to learn/teach programming with JavaScript language. Idea
+                                        initialy comes from
+                                        <a target="_blank" href="http://www.papert.org/">Seymour Papert</a>.
+                                        <br>Javascript version of turtle graphycs initialy started by
+                                        <a target="_blank" href="https://github.com/bjpop">
+                                            <i class="fa fa-github"></i> bjpop</a>, then forked and developed by
+                                        <a target="_blank" href="https://github.com/hanumanum">
+                                            <i class="fa fa-github"></i> hanumanum</a>
+                                    </p>
+                                    <img class="example-gif" src="assets/images/flower.gif">
+                                </div>
+
+                            </section>
+                            <!--//doc-section-->
+                            <section id="installation-section" class="doc-section">
+                                <h2 class="section-title">Write and Run code</h2>
+                                <div id="step1" class="section-block">
+                                    <h3 class="block-title">Work Offline</h3>
+                                    <ol class="list">
+                                        <li>Download archive</li>
+                                        <li>Extract it</li>
+                                        <li>Open
+                                            <span class="label label-success">
+                                                <i class="fa fa-code"></i> turtle.js</span> in your favorite text editor (Visual Studio Code, Notepad++,
+                                            Geany, Sublime Text ...)
+                                        </li>
+                                        <li>Open
+                                            <span class="label label-success">
+                                                <i class="fa fa-code"></i> turtle.html</span> in browser</li>
+                                        <li>Write code in
+                                            <span class="label label-success">
+                                                <i class="fa fa-code"></i> turtle.js</span>, save and reload browser</li>
+                                    </ol>
+                                    <br>
+                                    <a href="https://github.com/hanumanum/js-turtle/archive/master.zip" class="btn btn-green" target="_blank">
+                                        <i class="fa fa-download"></i> Download js-turtle</a>
+                                    <br><br><a href="https://github.com/hanumanum/js-turtle/archive/oldbrwsers.zip" target="_blank">
+                                            <i class="fa fa-download"></i> js-turtle (for old browsers)</a>
+                                        
+                                </div>
+                                <!--//section-block-->
+                                <div id="step2" class="section-block">
+                                    <h3 class="block-title">Work Online</h3>
+                                    <p>You also can write and test your code at the codepan: js-turtle already integrated.
+                                    </p>
+                                    <p>
+                                        <a href="https://codepen.io/anon/pen/OEpxGx?editors=0010" class="btn btn-green" target="_blank">
+                                            <i class="fa fa-link"></i>js-turtle on codepan</a>
+
+                                    </p>
+
+                                </div>
+                                <!--//section-block-->
+                            </section>
+                            <!--//doc-section-->
+
+                            <section id="turtle-terms" class="doc-section">
+                                <h2 class="section-title">Turtle terms</h2>
+                                <div class="section-block">
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <dl>
+                                                <dt>turtle</dt>
+                                                <dd>- green triangle </dd>
+                                                <dt>canvas</dt>
+                                                <dd>- area where turtle moves</dd>
+                                                <dt>coordinates</dt>
+                                                <dd>- point in canvas, in x y</dd>
+                                            </dl>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <img class="example-gif" src="assets/images/turtle_intro.gif">
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="callout-block callout-success">
+                                    <div class="icon-holder">
+                                        <i class="fa fa-thumbs-up"></i>
+                                    </div>
+                                    <!--//icon-holder-->
+                                    <div class="content">
+                                        <h4 class="callout-title">Useful Tip:</h4>
+                                        <p>Coordinates will been copyed to buffer, then you click on the canvas. </p>
+                                    </div>
+                                    <!--//content-->
+                                </div>
+
+                                <div class="callout-block callout-success">
+                                    <div class="icon-holder">
+                                        <i class="fa fa-thumbs-up"></i>
+                                    </div>
+                                    <!--//icon-holder-->
+                                    <div class="content">
+                                        <h4 class="callout-title">Useful Tip:</h4>
+                                        <p>You can divide execution speed using <span class="label label-primary">«ֆ»</span> or <span class="label label-primary">«f»</span> keys.</p>
+                                    </div>
+                                    <!--//content-->
+                                </div>
+                            </section>
+
+                            <section id="basic-functions" class="doc-section">
+                                <h2 class="section-title">Basic functions</h2>
+                                <div id="forward" class="section-block">
+                                    <h3>forward()</h3>
+                                    <p>Turtle moves forward and draw line by given steps, if we write 100 between parentheses,
+                                        then turtle will move by 100 step.</p>
+                                    <p class="signature">forward(steps)</p>
+                                    <strong>arguments</strong>
+                                    <p>int: steps</p>
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Example 1</h6>
+                                            <pre><code class="language-javascript">forward(100)</code></pre>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Result</h6>
+                                            <img class="example-gif" src="assets/images/forward.gif">
+                                        </div>
+                                    </div>
+                                    <!--//row-->
+                                </div>
+                                <div id="left" class="section-block">
+                                    <h3>left()</h3>
+                                    <p>Turtle turn left by given degree, if we write 30 between parentheses, then turtle will
+                                        turn by 30 degrees.</p>
+                                    <p class="signature">left(degrees)</p>
+                                    <strong>arguments</strong>
+                                    <p>int: degrees</p>
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Example 1</h6>
+                                            <pre><code class="language-javascript">left(30)
+left(60)
+left(90)
+                                                </code></pre>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Result</h6>
+                                            <img class="example-gif" src="assets/images/left.gif">
+                                        </div>
+                                    </div>
+                                    <!--//row-->
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Example 2</h6>
+                                            <pre><code class="language-javascript">forward(100)
+left(30)
+forward(100)
+left(50)
+                                                    </code></pre>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Result</h6>
+                                            <img class="example-gif" src="assets/images/left_2.gif">
+                                        </div>
+                                    </div>
+                                    <!--//row-->
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Geometry</h6>
+                                            <div class="callout-block callout-danger">
+                                                <div class="icon-holder">
+                                                    <i class="fa fa-exclamation-triangle"></i>
+                                                </div>
+                                                <!--//icon-holder-->
+                                                <div class="content">
+                                                    <h4 class="callout-title">Note!</h4>
+                                                    <p> turtle turns by angle, not becomes to an angle provided to function left()</p>
+                                                </div>
+                                                <!--//content-->
+                                            </div>
+                                            <!--//callout-block-->
+                                            <p>You can play with it
+                                                <a href="https://www.geogebra.org/m/TzAjZFst" target="_blank">here.</a>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Result</h6>
+                                            <img class="example-gif" src="assets/images/angles.gif">
+                                        </div>
+                                    </div>
+                                    <!--//row-->
+                                </div>
+
+                                <div id="right" class="section-block">
+                                    <h3>right()</h3>
+                                    <p>Same as in left but to right :)</p>
+                                    <p>See
+                                        <a class="scrollto" href="#left">left</a>
+                                    </p>
+                                </div>
+
+                                <div id="width" class="section-block">
+                                    <h3>width()</h3>
+                                    <p>Sets line thickness</p>
+                                    <p class="signature">width(thickness)</p>
+                                    <strong>arguments</strong>
+                                    <p>int: thickness</p>
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Example</h6>
+                                            <pre><code class="language-javascript">width(3)
+forward(100)
+                                                       
+width(15)
+forward(100)
+
+width(6)
+forward(100)</code></pre>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Result</h6>
+                                            <img class="example-gif" src="assets/images/width.gif">
+                                        </div>
+                                    </div>
+                                    <!--//row-->
+                                </div>
+
+
+                                <div id="color" class="section-block">
+                                    <h3>color()</h3>
+                                    <p>Sets color of next lines</p>
+                                    <p class="signature">color(r [, g [, b ]]])</p>
+                                    <strong>arguments</strong>
+                                    <p>string: a (color name)
+                                        <br> int: a, b, c (RGB)
+                                        <br> string: a (color hexcode)
+                                        <br> array: [a,b,c]</p>
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Example 1 (color name)</h6>
+                                            <pre><code class="language-javascript">color("red")
+forward(100)
+
+color("green")
+forward(60)
+
+color("dodgerblue")
+forward(120)</code></pre>
+                                            <br> You can explore all
+                                            <a href="https://github.com/hanumanum/js-turtle/blob/master/lib/library.js#L597" target="_blank">available color names here</a>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Result</h6>
+                                            <img class="example-gif" src="assets/images/color_name.gif">
+                                        </div>
+                                    </div>
+                                    <!--//row-->
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Example 2 (RGB)</h6>
+                                            <pre><code class="language-javascript">color(255,15,20)
+forward(100)
+
+color(12,250,65)
+forward(60)
+
+color(89,100,36)
+forward(120)</code></pre>
+                                            <br> You can
+                                            <a href="https://htmlcolorcodes.com/color-picker/" target="_blank">pick colors from here</a>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Result</h6>
+                                            <img class="example-gif" src="assets/images/color_rgb.gif">
+                                        </div>
+                                    </div>
+                                    <!--//row-->
+
+
+
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Example 3 (HEX)</h6>
+                                            <pre><code class="language-javascript">color("#3EEF0F")
+forward(100)
+
+color("#ED16A2")
+forward(60)
+
+color("#EDCD16")
+forward(120)</code></pre>
+                                            <br> You can
+                                            <a href="https://htmlcolorcodes.com/color-picker/" target="_blank">pick colors from here</a>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Result</h6>
+                                            <img class="example-gif" src="assets/images/color_hex.gif">
+                                        </div>
+                                    </div>
+                                    <!--//row-->
+
+
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Example 4 (array RGB)</h6>
+                                            <pre><code class="language-javascript">color([15,20,200])
+forward(100)
+
+color([65,250,150])
+forward(60)
+
+color([255,100,200])
+forward(120)</code></pre>
+                                            <br> You can
+                                            <a href="https://htmlcolorcodes.com/color-picker/" target="_blank">pick colors from here</a>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Result</h6>
+                                            <img class="example-gif" src="assets/images/color_rgb_array.gif">
+                                        </div>
+                                    </div>
+                                    <!--//row-->
+
+
+                                </div>
+
+
+                                <div id="goto" class="section-block">
+                                    <h3>goto()</h3>
+                                    <p>Move to x,y coordinates without drawing a line</p>
+                                    <p class="signature">goto(x,y)</p>
+                                    <strong>arguments</strong>
+                                    <p>int: x, int: y</p>
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Example 1</h6>
+                                            <pre><code class="language-javascript">color("red")
+goto(-213,128)
+forward(100)
+
+color("blue")
+goto(-7,105)
+forward(60)
+
+color("green")
+goto(238,-182)
+forward(120)</code></pre>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Result</h6>
+                                            <img class="example-gif" src="assets/images/goto.gif">
+                                        </div>
+                                    </div>
+                                    <!--//row-->
+                                </div>
+                                <div id="penup" class="section-block">
+                                    <h3>penup() & pendown()</h3>
+                                    <p>penup() sets to not draw next lines. pendown() removes that setting</p>
+                                    <p class="signature">penup()</p>
+                                    <p class="signature">pendown()</p>
+                                    <strong>arguments</strong>
+                                    <p>no arguments</p>
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Example</h6>
+                                            <pre><code class="language-javascript">color("red")
+forward(100)
+
+penup()
+forward(60)
+
+pendown()
+color("blue")
+forward(100)</code></pre>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Result</h6>
+                                            <img class="example-gif" src="assets/images/penup.gif">
+                                        </div>
+                                    </div>
+                                    <!--//row-->
+                                </div>
+
+                                <div id="clear" class="section-block">
+                                    <h3>clear()</h3>
+                                    <p>Clear all canvas. Use clear() mostly for animations.</p>
+                                    <p class="signature">clear()</p>
+                                    <strong>arguments</strong>
+                                    <p>no arguments</p>
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Example</h6>
+                                            <pre><code class="language-javascript">clear()</code></pre>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                        </div>
+                                    </div>
+                                    <!--//row-->
+                                </div>
+                            </section>
+                            <!--//doc-section-->
+
+
+                            <section id="helper-section" class="doc-section">
+                                <h2 class="section-title">Helper Functions</h2>
+                                <div class="section-block">
+                                    <p>We have some interesting and useful functions here.
+                                    </p>
+                                </div>
+
+                                <div id="showgrid" class="section-block">
+                                    <h3>showGrid()</h3>
+                                    <p>Shows Euclidean grid on canvas. We recomend call this function before all others. Argument
+                                        sets grid scale.</p>
+                                    <p class="signature">showGrid(scale)</p>
+                                    <strong>arguments</strong>
+                                    <p>int: scale</p>
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Example 1</h6>
+                                            <pre><code class="language-javascript">showGrid(50)</code></pre>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Result</h6>
+                                            <img class="example-gif red-border" src="assets/images/grid2.png">
+                                        </div>
+                                    </div>
+                                    <!--//row-->
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Example 2</h6>
+                                            <pre><code class="language-javascript">showGrid(20)</code></pre>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Result</h6>
+                                            <img class="example-gif red-border" src="assets/images/grid1.png">
+                                        </div>
+                                    </div>
+                                    <!--//row-->
+                                </div>
+
+                                <div id="randomColor_h" class="section-block">
+                                    <h3>randomColor_h()</h3>
+                                    <p>Set random color on each time it called.</p>
+                                    <p class="signature">randomColor_h()</p>
+                                    <strong>arguments</strong>
+                                    <p>no arguments</p>
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Example 1</h6>
+                                            <pre><code class="language-javascript">width(4)
+
+setInterval(function(){
+    goto(0,0)
+    randomColor_h()
+    forward(100)
+    left(10)
+},300)</code></pre>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Result</h6>
+                                            <img class="example-gif" src="assets/images/randomColor_h.gif">
+                                        </div>
+                                    </div>
+                                    <!--//row-->
+                                </div>
+
+                            </section>
+                            <!--//doc-section-->
+
+
+
+                            <section id="strange-section" class="doc-section">
+                                <h2 class="section-title">"Strange" Functions</h2>
+                                <div id="strangeLine" class="section-block">
+                                    <h3>strangeLine()</h3>
+                                    <p>strangeLine() is like forward() but line has random pattern</p>
+                                    <p class="signature">strangeLine([steps])</p>
+                                    <strong>arguments</strong>
+                                    <p>int: steps</p>
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Example</h6>
+                                            <pre><code class="language-javascript">color("red")
+strangeLine(200)
+
+goto(186,-164)
+
+color("blue")
+strangeLine(250)</code></pre>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <h6>Result</h6>
+                                            <img class="example-gif red-border" src="assets/images/strangeLine.gif">
+                                        </div>
+                                    </div>
+                                    <!--//row-->
+
+                                    <div id="strangeSquare" class="section-block">
+                                        <h3>strangeSquare()</h3>
+                                        <p>strangeSquare() draws patterned square, by particles</p>
+                                        <p class="signature">strangeSquare(length[,step])</p>
+                                        <strong>arguments</strong>
+                                        <p>int: length
+                                            <br> int: step
+                                        </p>
+                                        <div class="row">
+                                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                                <h6>Example</h6>
+                                                <pre><code class="language-javascript">goto(-206,169)
+color("red")
+strangeSquare(200,15)
+
+goto(138,98)
+color("blue")
+strangeSquare(100,5)</code></pre>
+                                            </div>
+                                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                                <h6>Result</h6>
+                                                <img class="example-gif red-border" src="assets/images/strangeSquare.png">
+                                            </div>
+                                        </div>
+                                        <!--//row-->
+
+
+                                        <div id="strangeCircle" class="section-block">
+                                            <h3>strangeCircle()</h3>
+                                            <p>strangeCircle() draws patterned cirlce, by particles</p>
+                                            <p class="signature">strangeCircle(radius)</p>
+                                            <strong>arguments</strong>
+                                            <p>int: radius</p>
+                                            <div class="row">
+                                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                                    <h6>Example</h6>
+                                                    <pre><code class="language-javascript">goto(-15,-26)
+color("red")
+strangeCircle(200)
+
+goto(37,-63)
+color("blue")
+strangeCircle(100)</code></pre>
+                                                </div>
+                                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                                    <h6>Result</h6>
+                                                    <img class="example-gif red-border" src="assets/images/strangeCircle.png">
+                                                </div>
+                                            </div>
+                                            <!--//row-->
+
+                                            <div id="strangeGalaxy" class="section-block">
+                                                <h3>strangeGalaxy()</h3>
+                                                <p>strangeGalaxy() draws patterned "galaxy", by particles</p>
+                                                <p class="signature">strangeGalaxy(radius)</p>
+                                                <strong>arguments</strong>
+                                                <p>int: radius</p>
+                                                <div class="row">
+                                                    <div class="col-md-6 col-sm-6 col-xs-12">
+                                                        <h6>Example</h6>
+                                                        <pre><code class="language-javascript">goto(-158,167)
+color("red")
+strangeGalaxy(180)
+
+goto(149,-165)
+color("blue")
+strangeGalaxy(100)</code></pre>
+                                                    </div>
+                                                    <div class="col-md-6 col-sm-6 col-xs-12">
+                                                        <h6>Result</h6>
+                                                        <img class="example-gif red-border" src="assets/images/strangeGalaxy.png">
+                                                    </div>
+                                                </div>
+                                                <!--//row-->
+
+                                            </div>
+
+                            </section>
+
+
+                            <!--//doc-section-->
+
+                            </div>
+                            <!--//content-inner-->
+                            </div>
+                            <!--//doc-content-->
+                            <div class="doc-sidebar hidden-xs">
+                                <nav id="doc-nav">
+                                    <ul id="doc-menu" class="nav doc-menu" data-spy="affix">
+                                        <li>
+                                            <a class="scrollto" href="#first-time-section">Intro</a>
+                                        </li>
+                                        <li>
+                                            <a class="scrollto" href="#installation-section">Write And Run code</a>
+                                            <ul class="nav doc-sub-menu">
+                                                <li>
+                                                    <a class="scrollto" href="#step1">Work Offline</a>
+                                                </li>
+                                                <li>
+                                                    <a class="scrollto" href="#step2">Work Online</a>
+                                                </li>
+                                            </ul>
+                                            <!--//nav-->
+                                        </li>
+                                        <li>
+                                            <a class="scrollto" href="#turtle-terms">Turtle terms</a>
+                                        </li>
+                                        <li>
+                                            <a class="scrollto" href="#basic-functions">Basic Functions</a>
+                                            <ul class="nav doc-sub-menu">
+                                                <li>
+                                                    <a class="scrollto" href="#forward">forward()</a>
+                                                </li>
+                                                <li>
+                                                    <a class="scrollto" href="#left">left()</a>
+                                                </li>
+                                                <li>
+                                                    <a class="scrollto" href="#right">right()</a>
+                                                </li>
+                                                <li>
+                                                    <a class="scrollto" href="#width">width()</a>
+                                                </li>
+                                                <li>
+                                                    <a class="scrollto" href="#color">color()</a>
+                                                </li>
+                                                <li>
+                                                    <a class="scrollto" href="#goto">goto()</a>
+                                                </li>
+                                                <li>
+                                                    <a class="scrollto" href="#penup">penup()</a>
+                                                </li>
+                                                <li>
+                                                    <a class="scrollto" href="#penup">pendown()</a>
+                                                </li>
+                                                <li>
+                                                    <a class="scrollto" href="#clear">clear()</a>
+                                                </li>
+                                            </ul>
+                                            <!--//nav-->
+                                        </li>
+                                        <li>
+                                            <a class="scrollto" href="#helper-section">Helper Functions</a>
+                                            <ul class="nav doc-sub-menu">
+                                                <li>
+                                                    <a class="scrollto" href="#showgrid">showGrid()</a>
+                                                </li>
+                                                <li>
+                                                    <a class="scrollto" href="#randomColor_h">randomColor_h()</a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            <a class="scrollto" href="#strange-section">Strange Functions</a>
+                                            <ul class="nav doc-sub-menu">
+                                                <li>
+                                                    <a class="scrollto" href="#strangeLine">strangeLine()</a>
+                                                </li>
+                                                <li>
+                                                    <a class="scrollto" href="#strangeSquare">strangeSquare()</a>
+                                                </li>
+                                                <li>
+                                                    <a class="scrollto" href="#strangeCircle">strangeCircle()</a>
+                                                </li>
+                                                <li>
+                                                    <a class="scrollto" href="#strangeGalaxy">strangeGalaxy()</a>
+                                                </li>
+                                            </ul>
+                                        </li>
+
+                                    </ul>
+                                    <!--//doc-menu-->
+                                </nav>
+                            </div>
+                            <!--//doc-sidebar-->
+                            </div>
+                            <!--//doc-body-->
+                        </div>
+                        <!--//container-->
+                    </div>
+                    <!--//doc-wrapper-->
+
+
+                </div>
+                <!--//page-wrapper-->
+
+                <footer id="footer" class="footer text-center">
+                    <div class="container">
+                        <!--/* This template is released under the Creative Commons Attribution 3.0 License. Please keep the attribution link below when using for your own project. Thank you for your support. :) If you'd like to use the template without the attribution, you can check out other license options via our website: themes.3rdwavemedia.com */-->
+                        <small class="copyright">Theme Designed with
+                            <i class="fa fa-heart"></i> by
+                            <a href="http://themes.3rdwavemedia.com/" target="_blank">Xiaoying Riley</a> for developers</small>
+                        <br>
+                        <small class="copyright">Docs prepared with
+                            <i class="fa fa-heart"></i> by
+                            <a href="http://ablog.gratun.am" target="_blank">hanumanum</a> for learners and educators</small>
+                    </div>
+                    <!--//container-->
+                </footer>
+                <!--//footer-->
+
+                <!-- Main Javascript -->
+                <script type="text/javascript" src="assets/plugins/jquery-1.12.3.min.js"></script>
+                <script type="text/javascript" src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+                <script type="text/javascript" src="assets/plugins/prism/prism.js"></script>
+                <script type="text/javascript" src="assets/plugins/jquery-scrollTo/jquery.scrollTo.min.js"></script>
+                <script type="text/javascript" src="assets/plugins/jquery-match-height/jquery.matchHeight-min.js"></script>
+                <script type="text/javascript" src="assets/js/main.js"></script>
+                <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+</body>
+
+</html>

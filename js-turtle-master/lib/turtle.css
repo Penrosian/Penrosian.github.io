@@ -1,0 +1,87 @@
+body,
+html {
+   margin:0;
+   padding:0;
+}
+
+body h1 {
+   text-align:center;
+   margin: 9px;
+}
+
+#wrap {
+   width:1400px;
+   margin:0 auto;
+}
+
+#leftcolumn {
+   float:left;
+   width:30%;
+}
+
+#midcolumn {
+   float:left;
+   width:50%;
+}
+
+#rightcolumn {
+   float:right;
+   width:35%;
+}
+
+#turtlecanvas {
+   background:#fff;
+   border: 1px solid red;
+}
+
+#definitions {
+   width:300px;
+}
+
+#command {
+   width:300px;
+}
+
+#coords{
+   float:right;
+}
+
+.colours{
+   padding:5px;
+   width:150px;
+   text-align: center;
+}
+
+
+#turtlecanvas, #imagecanvas{
+    margin:20px auto;
+    display:block;
+}
+ 
+.message-hide{
+    display: none;
+}
+
+.message-show{
+    height: 12px;
+    color:red;
+    float: right;
+    font-size: 12px;
+}
+
+.doc-link{
+    background: rgb(34, 153, 84);
+    color: white;
+    padding: 5px;
+    font-size: 1.2em;
+    text-decoration: none;
+    box-shadow: 2px 2px 2px grey;
+    margin: 10px 0;
+    display: inline-block;
+    /* text-transform: uppercase; */
+    font-weight: bold;
+}
+
+.doc-link:hover{
+    background: rgb(81, 219, 139);
+}
