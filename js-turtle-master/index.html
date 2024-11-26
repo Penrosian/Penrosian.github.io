@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+   <head>
+      <script src="../src/js/init.js"></script>
+      <title>JavaScript Turtle Graphics</title>
+      <link type="text/css" rel="stylesheet" href="lib/turtle.css" />
+      <link href="turtlefavicon.ico" rel="shortcut icon" type="image/x-icon">
+      <meta charset="utf-8">
+   </head>
+   <body>
+      <div id="wrap">
+         <h1>JavaScript Turtle Graphics</h1>
+         <div id="midcolumn">
+            <h4>Canvas <span id="coords"></span></h4>
+            <canvas id="turtlecanvas" width="700" height="700"></canvas>
+            <canvas id="imagecanvas" width="700" height="700" style="display:none"></canvas>
+            <span id="message" class="message-hide">Coordinates has been copied to clipboard</span>
+         </div> <!-- midcolumn -->
+         <div id="rightcolumn">
+            <h4>Language Reference</h4>
+            <code>
+              showGrid(step) <br/>
+              forward(distance) <br/>
+              right(angle) <br/>
+              left(angle) <br/>
+              goto(x,y) <br/>
+              hide() <br/>
+              show() <br/>
+              angle(angle) <br/>
+              setSize(width) <br/>
+              color(r,g,b)  <br/> color([r,g,b])  <br/> color("#hexcolor")  <br/> color("name") <br/>
+              <!-- write(string) <br/> -->
+              <!-- n = random(low,high) <br/> -->
+              <!-- hideTurtle() <br/>
+              showTurtle() <br/> -->
+              <!--redrawOnMove(bool) <br/>
+              draw() <br/> 
+              repeat(n, action) <br/> 
+              wrap(bool) <br/> 
+              animate(action,ms) <br/>  -->
+             
+            </code>
+            <a href="https://hanumanum.github.io/js-turtle/" target="_blank" class="doc-link">Documentation »</a>
+            <h4>Choose Color</h4>
+            <div class="colours" style="background-color:rgb(231, 76, 60)">231, 76, 60</div>
+            <div class="colours" style="background-color:rgb(34, 153, 84)">34, 153, 84</div>
+            <div class="colours" style="background-color:rgb(243, 156, 18)">243, 156, 18</div>
+            <div class="colours" style="background-color:rgb(36, 113, 163)">36, 113, 163</div>
+            <div class="colours" style="background-color:rgb(142, 68, 173)">142, 68, 173</div>
+            <div class="colours" style="background-color:rgb(211, 84, 0)">211, 84, 0</div>
+            <div class="colours" style="background-color:rgb(39, 55, 70)">39, 55, 70</div>
+            <br>
+            <a href="http://htmlcolorcodes.com/color-chart/" target="_blank" class="doc-link">More colors »</a>
+
+         </div> <!-- rightcolumn -->
+      </div> <!-- wrap-->
+      <script src="lib/library.js"></script>
+      <script src="functions.js"></script>
+      <script src="turtle.js"></script>
+   </body>
+</html>
