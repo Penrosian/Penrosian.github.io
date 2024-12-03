@@ -1,0 +1,26 @@
+body {
+    background-color: rgb(227, 175, 45);
+}
+header {
+    background-color: rgb(28, 129, 28);
+    border: 2px solid;
+    border-bottom: 1px solid;
+}
+nav {
+    background-color: cornflowerblue;
+    height:70px; border: 2px solid;
+    border-top: 1px solid;
+}
+table {
+    border: 2px solid;
+    background-color: rgb(127, 172, 255);
+    border-top: 0px solid;
+}
+th {
+    border: 1px solid;
+    border-collapse: collapse;
+}
+caption {
+    border: 2px solid;
+    background-color: rgb(35, 160, 35);
+}
