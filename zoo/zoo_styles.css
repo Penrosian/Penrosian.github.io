@@ -1,5 +1,12 @@
 body {
     background-color: rgb(227, 175, 45);
+    color: black;
+}
+a {
+    color: blue;
+}
+footer a {
+    color: cornflowerblue;
 }
 header {
     background-color: rgb(28, 129, 28);

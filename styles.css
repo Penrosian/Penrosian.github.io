@@ -1,0 +1,56 @@
+/* Global styles */
+a {
+    color: #2CD3CB;
+}
+body {
+    background: #772cd3;
+    color: #CCCCCC;
+}
+td, th {
+    border: 2px solid;
+}
+table {
+    border-collapse: collapse;
+}
+caption {
+    border: 1px solid;
+}
+nav {
+    border: 2px solid;
+    background-color: rgb(0,0,0);
+    padding: 5px;
+}
+footer {
+    background-color: rgb(0,0,0);
+    border: 2px solid;
+    padding: 5px;
+}
+
+/* Classes */
+.sectioncol-1 {
+    background-color: #D32C34;
+}
+.sectioncol-2 {
+    background-color: #3120DF;
+}
+.section-1 {
+    background-color: #D32C34;
+    border: 2px solid;
+    padding: 5px;
+}
+.section-2 {
+    background-color: #3120DF;
+    border: 2px solid;
+    padding: 5px;
+}
+.tablenb td {
+    border: none;
+}
+.border {
+    border: 2px solid;
+    padding: 5px;
+}
+.blackborder {
+    border: 2px solid black;
+    padding: 5px;
+}
