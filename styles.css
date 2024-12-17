@@ -5,6 +5,7 @@ a {
 body {
     background: #772cd3;
     color: #CCCCCC;
+    font-family: "anonymous pro", monospace, "windings";
 }
 td, th {
     border: 2px solid;
@@ -23,11 +24,13 @@ nav {
 div {
     padding: 5px;
 }
-#htmlcss {
-    background-color: rgb(0,0,0);
-    border: 2px solid;
-    padding: 5px;
-    width: fit-content;
+footer #htmlcss {
+    background-color: rgb(0,0,0) !important;
+    border: 2px solid !important;
+    padding: 5px !important;
+    width: fit-content !important;
+    color: white !important;
+    text-align: center;
 }
 
 /* Classes */

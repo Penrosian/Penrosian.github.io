@@ -12,6 +12,11 @@ header {
     background-color: rgb(28, 129, 28);
     border: 2px solid;
     border-bottom: 1px solid;
+    text-align: center;
+    text-transform: uppercase;
+}
+h1 {
+    font-family: 'Courier New', Courier, monospace;
 }
 nav {
     background-color: cornflowerblue;
