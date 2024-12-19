@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Grid Practice</title>
+        <script src="../../src/js/init.js"></script>
+        <link href="../../favicon.ico" rel="shortcut icon" type="image/x-icon">
+        <link href="../../styles.css" rel="stylesheet" type="text/css">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                color: black;
+            }
+            .grid {
+                display: grid;
+                grid-template: 1fr 3fr 1fr / 1fr 3fr 1fr;
+                gap: 5px;
+            }
+            header {
+                grid-column: 1 / span 3;
+                background-color: green;
+                padding: 5px;
+                text-align: center;
+            }
+            #left {
+                background-color: green;
+                text-align: center;
+            }
+            main {
+                background-color: green;
+                padding: 5px;
+                text-align: center;
+            }
+            #right {
+                background-color: green;
+                text-align: center;
+            }
+            #foot {
+                grid-column: 1 / span 3;
+                background-color: green;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <nav>
+            <a href="../">Back</a>
+            <a href="index.html">Home</a>
+            <a href="img1.html">Image 1</a>
+            <a href="img2.html">Image 2</a>
+        </nav>
+        <div class="grid">
+            <header>HEADER</header>
+            <div id="left">SIDE</div>
+            <main>MAIN</main>
+            <div id="right">SIDE</div>
+            <div id="foot">FOOT</div>
+        </div>
+    </body>
+</html>
