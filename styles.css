@@ -65,6 +65,15 @@ footer #htmlcss {
     margin: 0px;
     padding: 0px;
 }
+#fsgrid {
+    display: grid;
+    grid-template: 1fr 3fr 1fr / 1fr 3fr 1fr;
+    gap: 5px;
+    margin: 0px;
+    padding: 0px;
+    height: 100vh;
+    width: 100vw;
+}
 #gridhead {
     grid-column: 1 / span 3;
     padding: 5px;
