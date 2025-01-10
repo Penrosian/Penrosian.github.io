@@ -70,7 +70,9 @@ footer #htmlcss {
     text-align: center;
 }
 .title {
-    font-family: Impact, 'Arial Narrow Bold', sans-serif;
+    font-family: "Titan One", serif;
+    font-weight: 400;
+    font-style: normal;
     font-size: 40pt;
     margin: 5px;
 }
@@ -106,3 +108,9 @@ footer #htmlcss {
 .font-impact {
     font-family: Impact, 'Arial Narrow Bold', sans-serif;
 }
+.font-titan-one {
+    font-family: "Titan One", serif;
+    font-weight: 400;
+    font-style: normal;
+  }
+  
