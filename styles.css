@@ -1,11 +1,9 @@
 /* Global styles */
-a {
-    color: #2CD3CB;
-}
 body {
     background: #7E6C6C;
-    color: #CCCCCC;
+    color: black;
     font-family: "anonymous pro", monospace, "windings";
+    margin: 0px;
 }
 td, th {
     border: 2px solid;
@@ -16,11 +14,8 @@ table {
 caption {
     border: 1px solid;
 }
-nav {
-    border: 2px solid white;
-    background-color: rgb(0,0,0);
-    padding: 5px;
-    width: fit-content;
+a {
+    color: #5C95FF;
 }
 div {
     padding: 5px;
@@ -67,6 +62,8 @@ footer #htmlcss {
     display: grid;
     grid-template: 1fr 3fr 1fr / 1fr 3fr 1fr;
     gap: 5px;
+    margin: 0px;
+    padding: 0px;
 }
 #gridhead {
     grid-column: 1 / span 3;
