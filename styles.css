@@ -3,7 +3,7 @@ a {
     color: #2CD3CB;
 }
 body {
-    background: #772cd3;
+    background: #7E6C6C;
     color: #CCCCCC;
     font-family: "anonymous pro", monospace, "windings";
 }
@@ -17,7 +17,7 @@ caption {
     border: 1px solid;
 }
 nav {
-    border: 2px solid;
+    border: 2px solid white;
     background-color: rgb(0,0,0);
     padding: 5px;
     width: fit-content;
@@ -35,21 +35,20 @@ footer #htmlcss {
 }
 
 /* Classes */
-.sectioncol-1 {
-    background-color: #D32C34;
+.color1 {
+    background-color: #F87575;
 }
-.sectioncol-2 {
-    background-color: #3120DF;
+.color2 {
+    background-color: #FFA9A3;
 }
-.section-1 {
-    background-color: #D32C34;
-    border: 2px solid;
-    padding: 5px;
+.color3 {
+    background-color: #B9E6FF;
 }
-.section-2 {
-    background-color: #3120DF;
-    border: 2px solid;
-    padding: 5px;
+.color4 {
+    background-color: #5C95FF;
+}
+.color5 {
+    background-color: #7E6C6C;
 }
 .tablenb td {
     border: none;
@@ -61,4 +60,30 @@ footer #htmlcss {
 .blackborder {
     border: 2px solid black;
     padding: 5px;
+}
+
+/* IDs */
+#grid {
+    display: grid;
+    grid-template: 1fr 3fr 1fr / 1fr 3fr 1fr;
+    gap: 5px;
+}
+#gridhead {
+    grid-column: 1 / span 3;
+    padding: 5px;
+    text-align: center;
+}
+#gridleft {
+    text-align: center;
+}
+#gridmain {
+    padding: 5px;
+    text-align: center;
+}
+#gridright {
+    text-align: center;
+}
+#gridfoot {
+    grid-column: 1 / span 3;
+    text-align: center;
 }
