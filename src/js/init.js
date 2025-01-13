@@ -75,10 +75,14 @@ function renderValidationResults(data) {
         ValidatorHTML += " NOT";
     }
     ValidatorHTML += ` Valid!</strong></p>`;
-    if(window.location.href.split(",").length - 1 == 0) {
+    if(
+        (window.location.href.split(".html").length - 1 == 0 & window.location.href.split("/").length - 1 == 0) || 
+        (window.location.href.split(".html").length - 1 != 0 & window.location.href.split("/").length - 1 <= 1)
+    ) {
         ValidatorHTML += `
         <p>
             <a id="vLink1" href="https://validator.w3.org/check?uri=${window.location.href}">Validate HTML</a> |
+            <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a>
             <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a>
         </p>
     `;
@@ -87,6 +91,7 @@ function renderValidationResults(data) {
         <p>
             <a id="vLink1" href="https://validator.w3.org/check?uri=${window.location.href}">Validate HTML</a> |
             <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a> | 
+            <a id="vLink3" href="../">Go Back</a>
             <a id="vLink3" href="../">Go Back</a>
         </p>
     `;
@@ -125,7 +130,10 @@ function renderErrorFooter() {
         footer = document.createElement('footer');
         document.body.appendChild(footer);
     }
-    if(window.location.href.split(",").length - 1 == 0) {
+    if(
+        (window.location.href.split(".html").length - 1 == 0 & window.location.href.split("/").length - 1 == 0) || 
+        (window.location.href.split(".html").length - 1 != 0 & window.location.href.split("/").length - 1 <= 1)
+    ) {
         footer.innerHTML += `
         <div id="htmlcss">
             <p><strong>HTML/CSS validation could not be performed due to an error.</strong></p>
