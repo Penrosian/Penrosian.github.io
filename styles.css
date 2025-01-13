@@ -1,7 +1,7 @@
 /* Global styles */
 body {
     background: #7E6C6C;
-    color: black;
+    color: white;
     font-family: "anonymous pro", monospace, "windings";
     margin: 0px;
 }
@@ -38,6 +38,7 @@ footer #htmlcss {
     padding: 0px;
     background-color: black; 
     border: 2px solid black;
+    color: black;
 }
 .fsgrid {
     display: grid;
@@ -49,6 +50,19 @@ footer #htmlcss {
     width: calc(100vw - 4px);
     background-color: black;
     border: 2px solid black;
+    color: black;
+}
+.trilayergrid {
+    display: grid;
+    grid-template: 1fr 3fr 1fr / 1fr 1fr;
+    gap: 2px;
+    margin: 0px;
+    padding: 0px;
+    height: calc(100vh - 4px);
+    width: calc(100vw - 4px);
+    background-color: black;
+    border: 2px solid black;
+    color: black;
 }
 .gridhead {
     grid-column: 1 / span 3;
@@ -90,6 +104,9 @@ footer #htmlcss {
 }
 .color5 {
     background-color: #7E6C6C;
+}
+.hyperlink-backup {
+    color: #F87575;
 }
 .tablenb td {
     border: none;
