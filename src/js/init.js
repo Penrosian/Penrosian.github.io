@@ -128,6 +128,7 @@ function renderErrorFooter() {
     footer.innerHTML += `
         <div id="htmlcss">
             <p><strong>HTML/CSS validation could not be performed due to an error.</strong></p>
+            <a id="vLink3" href="../">Go Back</a>
         </div>
         `;
 }
