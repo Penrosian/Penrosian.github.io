@@ -91,6 +91,8 @@ function renderValidationResults(data) {
     } else {
         ValidatorHTML += `
         <p>
+            Debug: .html ${window.location.href.split(".html").length}
+            Debug: / ${window.location.href.split("/").length}
             <a id="vLink1" href="https://validator.w3.org/check?uri=${window.location.href}">Validate HTML</a> |
             <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a> | 
             <a id="vLink3" href="../">Go Back</a>
