@@ -1,3 +1,3 @@
 # [penrosian.github.io](https://penrosian.github.io)
-## [penrosian.github.io/journal](https://penrosian.github.io/journal)
+## [penrosian.github.io/projects.html](https://penrosian.github.io/projects.html)
 website for my web design class
