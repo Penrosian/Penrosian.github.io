@@ -75,10 +75,7 @@ function renderValidationResults(data) {
         ValidatorHTML += " NOT";
     }
     ValidatorHTML += ` Valid!</strong></p>`;
-    if(
-        (window.location.href.split(".html").length - 1 == 0 & window.location.href.split("/").length - 1 == 0) || 
-        (window.location.href.split(".html").length - 1 > 0 & window.location.href.split("/").length - 1 <= 1)
-    ) {
+    if(window.location.href.split(".html").length - 1 == 0 & window.location.href.split("/").length - 1 == 3) {
         ValidatorHTML += `
         <p>
             Debug: .html ${window.location.href.split(".html").length}
@@ -134,10 +131,7 @@ function renderErrorFooter() {
         footer = document.createElement('footer');
         document.body.appendChild(footer);
     }
-    if(
-        (window.location.href.split(".html").length - 1 == 0 & window.location.href.split("/").length - 1 == 0) || 
-        (window.location.href.split(".html").length - 1 != 0 & window.location.href.split("/").length - 1 <= 1)
-    ) {
+    if(window.location.href.split(".html").length - 1 == 0 & window.location.href.split("/").length - 1 == 0) {
         footer.innerHTML += `
         <div id="htmlcss">
             <p><strong>HTML/CSS validation could not be performed due to an error.</strong></p>
