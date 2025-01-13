@@ -75,12 +75,22 @@ function renderValidationResults(data) {
         ValidatorHTML += " NOT";
     }
     ValidatorHTML += ` Valid!</strong></p>`;
-    ValidatorHTML += `
+    if(mainStr.split(",").length - 1 == 0) {
+        ValidatorHTML += `
         <p>
             <a id="vLink1" href="https://validator.w3.org/check?uri=${window.location.href}">Validate HTML</a> |
-            <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a>
+            <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a> | 
+            <a id="vLink3" href="../">Go Back</a>
         </p>
     `;
+    } else {
+        ValidatorHTML += `
+        <p>
+            <a id="vLink1" href="https://validator.w3.org/check?uri=${window.location.href}">Validate HTML</a> |
+            <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a> | 
+        </p>
+    `;
+    }
     if(window.location.href.startsWith("file://") && !isHTMLValid) {
         ValidatorHTML += `<p>There might be multiple errors. Here is the first one:</p>
         <table>
