@@ -66,6 +66,18 @@ footer #htmlcss {
     border: 2px solid black;
     color: black;
 }
+.dualcolumngrid {
+    display: grid;
+    grid-template: 1fr 4fr / 1fr 1fr;
+    gap: 2px;
+    margin: 0px;
+    padding: 0px;
+    height: calc(100vh - 4px);
+    width: calc(100vw - 4px);
+    background-color: black;
+    border: 2px solid black;
+    color: black;
+}
 .gridhead {
     grid-column: 1 / span 3;
     padding: 5px;
@@ -113,6 +125,9 @@ footer #htmlcss {
 .tablenb td {
     border: none;
 }
+.tablenb th {
+    border: none;
+}
 .border {
     border: 2px solid;
     padding: 5px;
@@ -131,5 +146,5 @@ footer #htmlcss {
     font-family: "Titan One", serif;
     font-weight: 400;
     font-style: normal;
-  }
+}
   

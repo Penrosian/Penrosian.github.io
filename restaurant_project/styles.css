@@ -1,0 +1,56 @@
+/* Styles */
+body {
+    font-family: "Jersey 15", serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 24pt;
+}
+
+/* Validator */
+footer #htmlcss {
+    font-size: 16pt;
+}
+
+.font-sixtyfour {
+    font-family: "Sixtyfour", serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+    font-variation-settings:
+        "BLED" 0,
+        "SCAN" 0;
+}
+.font-jersey-15-regular {
+    font-family: "Jersey 15", serif;
+    font-weight: 400;
+    font-style: normal;
+}
+.title {
+    font-family: "Sixtyfour", serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+    font-variation-settings:
+        "BLED" 0,
+        "SCAN" 0;
+    font-size: 40pt;
+}
+.subtitle {
+    font-family: "Jersey 15", serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 40pt;
+}
+.pastelpink {
+    background-color: pink;
+}
+.yellow {
+    background-color: yellow;
+}
+.mint {
+    background-color: #B2F7EF;
+}
+.teal {
+    background-color: #7BDFF2;
+}
+
