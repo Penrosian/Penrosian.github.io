@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Google Form</title>
+        <script src="src/js/init.js"></script>
+        <link href="favicon.ico" rel="shortcut icon" type="image/x-icon">
+        <link href="styles.css" rel="stylesheet" type="text/css">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <form action="https://httpbin.org/post" method="post">
+            <label for="email">What is your email address?</label>
+            <input id="email" type="email" name="email" placeholder="email@example.com">
+            <br>
+            <br>
+            <label for="phone">What is your phone number?</label>
+            <input id="phone" type="tel" name="phone" placeholder="123-456-7890" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}">
+            <br>
+            <br>
+            <label for="guests">How many people will you bring with you to the party?</label>
+            <input id="guests" type="number" name="guests" placeholder="0">
+            <br>
+            <br>
+            <p>What is your favorite ice cream flavor?</p>
+            <label for="vanilla">Vanilla</label>
+            <input id="vanilla" type="radio" name="ice-cream">
+            <label for="chocolate-chip">Chocolate Chip</label>
+            <input id="chocolate-chip" type="radio" name="ice-cream">
+            <label for="strawberry">Strawberry</label>
+            <input id="strawberry" type="radio" name="ice-cream">
+            <label for="other-ice-cream">Other</label>
+            <input id="other-ice-cream" type="radio" name="ice-cream">
+            <br>
+            <br>
+            <p>What toppings do you like?</p>
+            <label for="sprinkles">Sprinkles</label>
+            <input id="sprinkles" type="checkbox" name="toppings">
+            <label for="magic-shell">Magic Shell</label>
+            <input id="magic-shell" type="checkbox" name="toppings">
+            <label for="chocolate-chips">Chocolate Chips</label>
+            <input id="chocolate-chips" type="checkbox" name="toppings">
+            <label for="gummy-bears">Gummy Bears</label>
+            <input id="gummy-bears" type="checkbox" name="toppings">
+            <label for="other-toppings">Other</label>
+            <input id="other-toppings" type="checkbox" name="toppings">
+            <br>
+            <br>
+            <label for="entertainment">What kind of entertainment should we have at the party?</label>
+            <select name="entertainment" id="entertainment">
+                <option value="balloon-animals">Balloon Animals</option>
+                <option value="bounce-house">Bounce House</option>
+                <option value="clown">Clown</option>
+                <option value="cornhole">Cornhole</option>
+                <option value="dj">DJ</option>
+                <option value="face-painting">Face Painting</option>
+                <option value="magician">Magician</option>
+            </select>
+            <br>
+            <br>
+            <label for="suggestions-or-comments">Do you have any other suggestions or comments?</label>
+            <input id="suggestions-or-comments" type="text" name="suggestions-or-comments">
+            <input type="submit" name="submit">
+        </form>
+    </body>
+</html>
