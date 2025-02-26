@@ -17,4 +17,5 @@ for x in json_index["objects"]:
     if not(os.path.isdir(f"minecraft/assets.mirror/{file0}{file1}")):
         os.mkdir(f"minecraft/assets.mirror/{file0}{file1}")
     if not(os.path.exists(f"minecraft/assets.mirror/{file0}{file1}/{file}")) or update == "update":
-        urllib.request.urlretrieve(f"https://resources.download.minecraft.net/{file0}{file1}/{file}", f"minecraft/assets.mirror/{file0}{file1}/{file}")
+        urllib.request.urlretrieve(f"https://resources.download.minecraft.net/{file0}{file1}/{file}", 
+                                   f"minecraft/assets.mirror/{file0}{file1}/{file}")
