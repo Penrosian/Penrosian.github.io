@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Canvas</title>
+        <script src="src/js/init.js"></script>
+        <link href="favicon.ico" rel="shortcut icon" type="image/x-icon">
+        <link href="styles.css" rel="stylesheet" type="text/css">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <canvas id="canvas" width="400" height="400" style="border: 2px solid;"></canvas>
+        <script>
+            const canvas = document.getElementById("canvas");
+            const ctx = canvas.getContext("2d");
+            
+            ctx.fillStyle = "blue";
+            ctx.strokeStyle = "white";
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(75, 100, 20, 0, Math.PI);
+            ctx.stroke();
+            ctx.fill();
+
+            ctx.fillStyle = "blue";
+            ctx.strokeStyle = "white";
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(285, 100, 20, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.fill();
+        </script>
+    </body>
+</html>
