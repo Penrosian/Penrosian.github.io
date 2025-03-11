@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Animations</title>
+    <script src="src/js/init.js"></script>
+    <link href="favicon.ico" rel="shortcut icon" type="image/x-icon">
+    <link href="styles.css" rel="stylesheet" type="text/css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .emoji {
+            height: 50vh;
+            width: 50vh;
+            background-color: yellow;
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .eye1 {
+            height: 3vh;
+            width: 3vh;
+            background-color: black;
+            border-radius: 50%;
+            position: absolute;
+            top: 5vh;
+            left: 10vh;
+            z-index: 1;
+        }
+
+        .eye2 {
+            height: 3vh;
+            width: 3vh;
+            background-color: black;
+            border-radius: 50%;
+            position: absolute;
+            top: 5vh;
+            left: 37vh;
+            z-index: 1;
+        }
+
+        .mouth {
+            height: 12vh;
+            width: 24vh;
+            background-color: black;
+            border-radius: 50%;
+            position: absolute;
+            top: 30vh;
+            left: 13vh;
+            z-index: 1;
+        }
+
+        .mouth1 {
+            height: 10vh;
+            width: 22vh;
+            background-color: yellow;
+            border-radius: 50%;
+            position: absolute;
+            top: 28vh;
+            left: 14vh;
+            z-index: 2;
+        }
+
+        .mouth2 {
+            height: 20vh;
+            width: 24vh;
+            background-color: yellow;
+            position: absolute;
+            left: 13vh;
+            z-index: 3;
+            animation-name: move;
+            animation-duration: 3s;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+            animation-timing-function: ease-in-out;
+        }
+
+        @keyframes move {
+            from {top: 18vh;}
+            to {top: 13vh;}
+        }
+    </style>
+</head>
+
+<body>
+    <div class="emoji">
+        <div class="eye1"></div>
+        <div class="eye2"></div>
+        <div class="mouth"></div>
+        <div class="mouth1"></div>
+        <div class="mouth2"></div>
+    </div>
+</body>
+
+</html>
