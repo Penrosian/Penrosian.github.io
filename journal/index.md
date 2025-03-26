@@ -10,5 +10,7 @@
 
 [WORDPRESS WEBSITE](website.md)
 
+[SELF GRADE THING](grades.md)
+
 
 [BACK](..)
