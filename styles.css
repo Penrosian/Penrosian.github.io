@@ -15,7 +15,7 @@ caption {
     border: 1px solid;
 }
 a {
-    color: #5C95FF;
+    color: black;
 }
 div {
     padding: 5px;
@@ -29,6 +29,9 @@ footer #htmlcss {
     width: fit-content !important;
     color: white !important;
     text-align: center;
+}
+footer #htmlcss a {
+    color: #5C95FF;
 }
 
 /* Classes */
