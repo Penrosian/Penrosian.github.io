@@ -142,8 +142,8 @@ function animate(){
         fillCircle(circle.x, circle.y, circle.radius, circle.color, circle.lineColor, circle.lineWidth, circle.length)
         // Different animation styles move in different ways
         if (circle.animation == "bounce"){
-            if (circle.x >= canvasWidth - circle.radius || rect.x <= circle.radius) circle.xVel *= -1;
-            if (circle.y >= canvasHeight - circle.radius || circle.y <= circle.radius) rect.yVel *= -1;
+            if (circle.x >= canvasWidth - circle.radius || circle.x <= circle.radius) circle.xVel *= -1;
+            if (circle.y >= canvasHeight - circle.radius || circle.y <= circle.radius) circle.yVel *= -1;
         }
         if (circle.animation != "static"){
             circle.x += circle.xVel;
