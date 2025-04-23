@@ -31,7 +31,7 @@ function fillRect(x, y, width, height, fillColor){
     ctx.fillRect(x, y, width, height);
 }
 
-/* Anim Params: 
+/* Anim Data: 
 {
     "rects":[
         {
@@ -75,7 +75,7 @@ function fillRect(x, y, width, height, fillColor){
 }
 */
 
-let params = {
+let animData = {
     "rects":[
         {
             "id":"player",
@@ -120,8 +120,8 @@ let params = {
 function animate(){
     fillPage("lightBlue");
 
-    for (let i = 0; i < params.rects.length; i++){
-        rect = params.rects[i];
+    for (let i = 0; i < animData.rects.length; i++){
+        rect = animData.rects[i];
         fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
         // Different animation styles move in different ways
         if (rect.animation == "bounce"){
@@ -133,12 +133,12 @@ function animate(){
             rect.y += rect.yVel;
         }
         // Changes to the rectangle have to be put back into the object for future use
-        params.rects[i] = rect;
+        animData.rects[i] = rect;
     }
 
     // Rectangles and circles are drawn/stored seperately
-    for (let i = 0; i < params.circles.length; i++){
-        circle = params.circles[i];
+    for (let i = 0; i < animData.circles.length; i++){
+        circle = animData.circles[i];
         fillCircle(circle.x, circle.y, circle.radius, circle.color, circle.lineColor, circle.lineWidth, circle.length)
         // Different animation styles move in different ways
         if (rect.animation == "bounce"){
@@ -146,11 +146,11 @@ function animate(){
             if (circle.y >= canvasHeight - circle.radius || circle.y <= circle.radius) rect.yVel *= -1;
         }
         if (rect.animation != "static"){
-            rect.x += rect.xVel;
-            rect.y += rect.yVel;
+            circle.x += circle.xVel;
+            circle.y += circle.yVel;
         }
         // Changes to the circle have to be put back into the object for future use
-        params.circles[i] = circle;
+        animData.circles[i] = circle;
     }
 
     requestAnimationFrame(animate);
