@@ -141,11 +141,11 @@ function animate(){
         circle = animData.circles[i];
         fillCircle(circle.x, circle.y, circle.radius, circle.color, circle.lineColor, circle.lineWidth, circle.length)
         // Different animation styles move in different ways
-        if (rect.animation == "bounce"){
+        if (circle.animation == "bounce"){
             if (circle.x >= canvasWidth - circle.radius || rect.x <= circle.radius) circle.xVel *= -1;
             if (circle.y >= canvasHeight - circle.radius || circle.y <= circle.radius) rect.yVel *= -1;
         }
-        if (rect.animation != "static"){
+        if (circle.animation != "static"){
             circle.x += circle.xVel;
             circle.y += circle.yVel;
         }
