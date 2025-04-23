@@ -31,7 +31,7 @@ function fillRect(x, y, width, height, fillColor) {
     ctx.fillRect(x, y, width, height);
 }
 
-/* Anim Data: 
+/* Anim Data Format: 
 {
     "rects":[
         {
@@ -117,6 +117,23 @@ let animData = {
     ]
 };
 
+function getAnimById(shape, id) {
+    if (shape == "circle") {
+        for (let i = 0; i < animData.circles.length; i++) {
+            if (animData.circles[i].id == id) {
+                return animData.circles[i];
+            }
+        }
+    }
+    if (shape == "rect") {
+        for (let i = 0; i < animData.rects.length; i++) {
+            if (animData.rects[i].id == id) {
+                return animData.rects[i];
+            }
+        }
+    }
+}
+
 function animate() {
     fillPage("lightBlue");
 
@@ -157,3 +174,17 @@ function animate() {
 }
 
 animate();
+
+document.getElementById("circleButton").addEventListener("click", () => {
+    circle = getAnimById("circle", "ball")
+    
+    circle.x = randInt(0, canvasWidth/Math.abs(circle.xVel)) * Math.abs(circle.xVel);
+    circle.y = randInt(0, canvasHeight/Math.abs(circle.yVel)) * Math.abs(circle.yVel);
+});
+
+document.getElementById("squareButton").addEventListener("click", () => {
+    rect = getAnimById("rect", "player")
+    
+    rect.x = randInt(0, canvasWidth/Math.abs(rect.xVel)) * Math.abs(rect.xVel);
+    rect.y = randInt(0, canvasHeight/Math.abs(rect.yVel)) * Math.abs(rect.yVel);
+});
