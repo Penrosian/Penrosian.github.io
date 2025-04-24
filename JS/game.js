@@ -28,53 +28,9 @@ function fillRect(x, y, width, height, fillColor) {
     ctx.fillRect(x, y, width, height);
 }
 
-/* Anim Data Format: 
-{
-    "rects":[
-        {
-            "id":"player",
-            "x":55,
-            "y":80,
-            "width":20,
-            "height":20,
-            "color":"black",
-            "animation":"bounce",
-            "xVel":5,
-            "yVel":-5
-        },
-        {
-            "id":"ground",
-            "x":0,
-            "y":520,
-            "width":960,
-            "height":20,
-            "color":"green",
-            "animation":"static",
-            "xVel":0,
-            "yVel":0,
-            "color":"blue",
-            "lineColor":"black",
-            "lineWidth":0
-        }
-    ],
-    "circles":[
-        {
-            "id":"ball",
-            "x":55,
-            "y":80,
-            "radius":10,
-            "length":1,
-            "animation":"bounce",
-            "xVel":5,
-            "yVel":-5
-        }
-    ]
-}
-*/
-
 // Storing in an object instead of in a bunch of variables is
 // cleaner and means I can add more shapes using code
-let animData = {
+const animData = {
     "rects": [
         {
             "id": "player",
@@ -234,12 +190,11 @@ function animate() {
     ground = getAnimById("rect", "ground");
 
     // Custom ground collision
-    // Feeling cute, might make the ball collide here too later
     if (player.y + player.height >= ground.y) {
         player.y = ground.y - player.height;
         if (player.yVel < 0) player.yVel = 0;
     }
-    balls = getAnimsByClass("circle", "ball");
+    let balls = getAnimsByClass("circle", "ball");
     for (let i = 0; i < balls.length; i++) {
         ball = balls[i];
         if (ball.y + ball.radius >= ground.y) {
@@ -296,4 +251,3 @@ document.addEventListener("keyup", (event) => {
     event.preventDefault();
     pressed = pressed.filter(i => i !== event.code);
 });
-
