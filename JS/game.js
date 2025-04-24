@@ -125,13 +125,15 @@ function getAnimById(shape, id) {
                 return animData.circles[i];
             }
         }
-    } else if (shape == "rect") {
+    }
+    if (shape == "rect") {
         for (let i = 0; i < animData.rects.length; i++) {
             if (animData.rects[i].id == id) {
                 return animData.rects[i];
             }
         }
-    } else return false;
+    }
+    return false;
 }
 
 function animate() {
@@ -221,6 +223,28 @@ function animate() {
 }
 
 animate();
+
+
+document.getElementById("circleButton").addEventListener("click", () => {
+    let id = Math.random();
+    for (; ; ) {
+        if (! getAnimById("circle", id)) break;
+        id = Math.random();
+    }
+    animData.circles.push({
+        "id": id,
+        "x": randInt(0, canvasWidth / 5) * 5,
+        "y": randInt(0, (canvasHeight - getAnimById("rect", "ground").height) / 5) * 5,
+        "radius": 10,
+        "length": 1,
+        "animation": "bounce",
+        "xVel": 5,
+        "yVel": -5,
+        "color": "blue",
+        "lineColor": "white",
+        "lineWidth": 0
+    })
+});
 
 // Keys need to be tracked in a list to allow for key holding
 // and so that multiple keys can be pressed at once
