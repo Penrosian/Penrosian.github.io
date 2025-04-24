@@ -196,7 +196,7 @@ function animate() {
     }
     let balls = getAnimsByClass("circle", "ball");
     for (let i = 0; i < balls.length; i++) {
-        ball = balls[i];
+        let ball = balls[i];
         if (ball.y + ball.radius >= ground.y) {
             ball.y = ground.y - ball.radius;
             ball.yVel *= -1;
@@ -243,11 +243,22 @@ document.getElementById("circleButton").addEventListener("click", () => {
 
 // Keys need to be tracked in a list to allow for key holding
 // and so that multiple keys can be pressed at once
-document.addEventListener("keydown", (event) => {
+document.addEventListener("keydown", event => {
     event.preventDefault();
     pressed.push(event.code);
 });
-document.addEventListener("keyup", (event) => {
+document.addEventListener("keyup", event => {
     event.preventDefault();
-    pressed = pressed.filter(i => i !== event.code);
+    pressed = pressed.filter(i => i != event.code);
 });
+
+// pressed = pressed.filter(filterFunction);
+
+/* function filterFunction(input) {
+    result = input != event.code;
+    return result;
+} */
+
+// Filter filters through all items in the list, and puts that item into the function
+// If the returned value is true it adds it to the output list, if it is false it does not
+// It then returns the new list, so I have to put it back in as the list's new value
