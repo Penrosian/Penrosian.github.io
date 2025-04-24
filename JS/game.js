@@ -4,9 +4,6 @@ const ctx = canvas.getContext("2d");
 const canvasWidth = Number(canvas.getAttribute("width"));
 const canvasHeight = Number(canvas.getAttribute("height"));
 
-console.log(canvasWidth);
-console.log(canvasHeight);
-
 function randInt(low, high) {
     return Math.floor(Math.random() * (1 + high - low)) + low;
 }
@@ -75,6 +72,8 @@ function fillRect(x, y, width, height, fillColor) {
 }
 */
 
+// Storing in an object instead of in a bunch of variables is
+// cleaner and means I can add more shapes using code
 let animData = {
     "rects": [
         {
@@ -117,6 +116,8 @@ let animData = {
     ]
 };
 
+let pressed = [];
+
 function getAnimById(shape, id) {
     if (shape == "circle") {
         for (let i = 0; i < animData.circles.length; i++) {
@@ -124,14 +125,13 @@ function getAnimById(shape, id) {
                 return animData.circles[i];
             }
         }
-    }
-    if (shape == "rect") {
+    } else if (shape == "rect") {
         for (let i = 0; i < animData.rects.length; i++) {
             if (animData.rects[i].id == id) {
                 return animData.rects[i];
             }
         }
-    }
+    } else return false;
 }
 
 function animate() {
@@ -141,16 +141,30 @@ function animate() {
         rect = animData.rects[i];
         fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
         // Different animation styles move in different ways
+        // If you held both directions you could shimmy through the wall,
+        // moving the player out of the wall fixes that
         if (rect.animation == "bounce") {
-            if (rect.x >= canvasWidth - rect.width || rect.x <= 0) rect.xVel *= -1;
-            if (rect.y >= canvasHeight - rect.height || rect.y <= 0) rect.yVel *= -1;
+            if (rect.x + rect.width > canvasWidth) {
+                rect.xVel *= -1;
+                rect.x = canvasWidth - rect.width;
+            }
+            if (rect.x < 0) {
+                rect.xVel *= -1;
+                rect.x = 0;
+            }
+            if (rect.y + rect.height > canvasHeight) {
+                rect.yVel *= -1;
+                rect.y = canvasHeight - rect.height;
+            }
+            if (rect.y < 0) {
+                rect.yVel *= -1;
+                rect.y = 0;
+            }
         }
         if (rect.animation != "static") {
             rect.x += rect.xVel;
             rect.y += rect.yVel;
         }
-        // Changes to the rectangle have to be put back into the object for future use
-        animData.rects[i] = rect;
     }
 
     // Rectangles and circles are drawn/stored seperately
@@ -158,16 +172,49 @@ function animate() {
         circle = animData.circles[i];
         fillCircle(circle.x, circle.y, circle.radius, circle.color, circle.lineColor, circle.lineWidth, circle.length)
         // Different animation styles move in different ways
+        // Same collision is applied here, just in case
         if (circle.animation == "bounce") {
-            if (circle.x >= canvasWidth - circle.radius || circle.x <= circle.radius) circle.xVel *= -1;
-            if (circle.y >= canvasHeight - circle.radius || circle.y <= circle.radius) circle.yVel *= -1;
+            if (circle.x + circle.radius > canvasWidth) {
+                circle.xVel *= -1;
+                circle.x = canvasWidth - circle.radius;
+            }
+            if (circle.x - circle.radius < 0) {
+                circle.xVel *= -1;
+                circle.x = 0 + circle.radius;
+            }
+            if (circle.y + circle.radius > canvasHeight) {
+                circle.yVel *= -1;
+                circle.y = canvasHeight - circle.radius;
+            }
+            if (circle.y - circle.radius < 0) {
+                circle.yVel *= -1;
+                circle.y = 0 + circle.radius;
+            }
         }
         if (circle.animation != "static") {
             circle.x += circle.xVel;
             circle.y += circle.yVel;
         }
-        // Changes to the circle have to be put back into the object for future use
-        animData.circles[i] = circle;
+    }
+
+    // Custom/Advanced rules
+    player = getAnimById("rect", "player");
+    ground = getAnimById("rect", "ground");
+
+    // Custom ground collision
+    // Feeling cute, might make the ball collide here too later
+    if (player.y + player.height >= ground.y) {
+        player.y = ground.y - player.height;
+        if (player.yVel < 0) player.yVel = 0;
+    }
+
+    if (pressed.includes("KeyA")) player.xVel -= 2;
+    if (pressed.includes("KeyD")) player.xVel += 2;
+    if (pressed.includes("Space") && player.y + player.height >= ground.y) player.yVel = -5;
+
+    player.xVel *= 0.8
+    if (player.yVel < 10) {
+        player.yVel += 0.2
     }
 
     requestAnimationFrame(animate);
@@ -175,16 +222,14 @@ function animate() {
 
 animate();
 
-document.getElementById("circleButton").addEventListener("click", () => {
-    circle = getAnimById("circle", "ball")
-    
-    circle.x = randInt(0, canvasWidth/Math.abs(circle.xVel)) * Math.abs(circle.xVel);
-    circle.y = randInt(0, canvasHeight/Math.abs(circle.yVel)) * Math.abs(circle.yVel);
+// Keys need to be tracked in a list to allow for key holding
+// and so that multiple keys can be pressed at once
+document.addEventListener("keydown", function(event) {
+    event.preventDefault();
+    pressed.push(event.code);
+});
+document.addEventListener("keyup", function(event) {
+    event.preventDefault();
+    pressed = pressed.filter(i => i !== event.code);
 });
 
-document.getElementById("squareButton").addEventListener("click", () => {
-    rect = getAnimById("rect", "player")
-    
-    rect.x = randInt(0, canvasWidth/Math.abs(rect.xVel)) * Math.abs(rect.xVel);
-    rect.y = randInt(0, canvasHeight/Math.abs(rect.yVel)) * Math.abs(rect.yVel);
-});
