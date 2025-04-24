@@ -78,6 +78,7 @@ let animData = {
     "rects": [
         {
             "id": "player",
+            "class": null,
             "x": 55,
             "y": 80,
             "width": 20,
@@ -89,6 +90,7 @@ let animData = {
         },
         {
             "id": "ground",
+            "class": null,
             "x": 0,
             "y": 520,
             "width": 960,
@@ -102,6 +104,7 @@ let animData = {
     "circles": [
         {
             "id": "ball",
+            "class": "ball",
             "x": 55,
             "y": 80,
             "radius": 10,
@@ -135,6 +138,21 @@ function getAnimById(shape, id) {
     }
     return false;
 }
+function getAnimsByClass(shape, className) {
+    let returns = [];
+    if (shape == "circle") {
+        for (let i = 0; i < animData.circles.length; i++) {
+            if (animData.circles[i].class == className) returns.push(animData.circles[i]);
+        }
+    }
+    if (shape == "rect") {
+        for (let i = 0; i < animData.rects.length; i++) {
+            if (animData.rects[i].class == className) returns.push(animData.rects[i]);
+        }
+    }
+    if (returns.length == 0) return false;
+    return returns;
+}
 
 function animate() {
     fillPage("lightBlue");
@@ -143,8 +161,8 @@ function animate() {
         rect = animData.rects[i];
         fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
         // Different animation styles move in different ways
-        // If you held both directions you could shimmy through the wall,
-        // moving the player out of the wall fixes that
+        // If you held both directions in bounce mode you could shimmy through the wall,
+        // moving the player out of the wall fixes that and prevents future issues
         if (rect.animation == "bounce") {
             if (rect.x + rect.width > canvasWidth) {
                 rect.xVel *= -1;
@@ -180,7 +198,7 @@ function animate() {
         circle = animData.circles[i];
         fillCircle(circle.x, circle.y, circle.radius, circle.color, circle.lineColor, circle.lineWidth, circle.length)
         // Different animation styles move in different ways
-        // Same collision is applied here, just in case
+        // Same bounce collision is applied here, just in case
         if (circle.animation == "bounce") {
             if (circle.x + circle.radius > canvasWidth) {
                 circle.xVel *= -1;
@@ -221,6 +239,15 @@ function animate() {
         player.y = ground.y - player.height;
         if (player.yVel < 0) player.yVel = 0;
     }
+    balls = getAnimsByClass("circle", "ball");
+    for (let i = 0; i < balls.length; i++) {
+        ball = balls[i];
+        if (ball.y + ball.radius >= ground.y) {
+            ball.y = ground.y - ball.radius;
+            ball.yVel *= -1;
+        }
+    }
+
 
     if (pressed.includes("KeyA")) player.xVel -= 2;
     if (pressed.includes("KeyD")) player.xVel += 2;
@@ -239,12 +266,13 @@ animate();
 
 document.getElementById("circleButton").addEventListener("click", () => {
     let id = Math.random();
-    for (; ; ) {
-        if (! getAnimById("circle", id)) break;
+    for (; ;) {
+        if (!getAnimById("circle", id)) break;
         id = Math.random();
     }
     animData.circles.push({
         "id": id,
+        "class": "ball",
         "x": randInt(0, canvasWidth / 5) * 5,
         "y": randInt(0, (canvasHeight - getAnimById("rect", "ground").height) / 5) * 5,
         "radius": 10,
@@ -260,11 +288,11 @@ document.getElementById("circleButton").addEventListener("click", () => {
 
 // Keys need to be tracked in a list to allow for key holding
 // and so that multiple keys can be pressed at once
-document.addEventListener("keydown", function(event) {
+document.addEventListener("keydown", (event) => {
     event.preventDefault();
     pressed.push(event.code);
 });
-document.addEventListener("keyup", function(event) {
+document.addEventListener("keyup", (event) => {
     event.preventDefault();
     pressed = pressed.filter(i => i !== event.code);
 });
