@@ -83,7 +83,7 @@ let animData = {
             "width": 20,
             "height": 20,
             "color": "black",
-            "animation": "bounce",
+            "animation": "locked",
             "xVel": 5,
             "yVel": -5
         },
@@ -163,6 +163,12 @@ function animate() {
                 rect.y = 0;
             }
         }
+        if (rect.animation == "locked") {
+            if (rect.x + rect.width > canvasWidth) rect.x = canvasWidth - rect.width;
+            if (rect.x < 0) rect.x = 0;
+            if (rect.y + rect.height > canvasHeight) rect.y = canvasHeight - rect.height;
+            if (rect.y < 0) rect.y = 0;
+        }
         if (rect.animation != "static") {
             rect.x += rect.xVel;
             rect.y += rect.yVel;
@@ -192,6 +198,12 @@ function animate() {
                 circle.yVel *= -1;
                 circle.y = 0 + circle.radius;
             }
+        }
+        if (circle.animation == "locked") {
+            if (circle.x + circle.radius > canvasWidth) circle.x = canvasWidth - circle.radius;
+            if (circle.x - circle.radius < 0) circle.x = 0 + circle.radius;
+            if (circle.y + circle.radius > canvasHeight) circle.y = canvasHeight - circle.radius;
+            if (circle.y - circle.radius < 0) circle.y = 0 + circle.radius;
         }
         if (circle.animation != "static") {
             circle.x += circle.xVel;
