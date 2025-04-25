@@ -76,6 +76,10 @@ const animData = {
 };
 
 let pressed = [];
+let cooldown = 0;
+let fireMode = "fast";
+let xVel = 0;
+let yVel = 0;
 
 function getAnimById(shape, id) {
     if (shape == "circle") {
@@ -109,6 +113,7 @@ function getAnimsByClass(shape, className) {
     if (returns.length == 0) return false;
     return returns;
 }
+function nextFreeNumericId(shape) {for (let x = 0; ; x++) if (!getAnimById(shape, x)) return x;}
 
 function animate() {
     fillPage("lightBlue");
@@ -142,6 +147,10 @@ function animate() {
             if (rect.x < 0) rect.x = 0;
             if (rect.y + rect.height > canvasHeight) rect.y = canvasHeight - rect.height;
             if (rect.y < 0) rect.y = 0;
+        }
+        if (rect.animation == "exitKill") {
+            if (rect.x > canvasWidth || rect.x + rect.width < 0 || rect.y > canvasHeight || rect.y + rect.height < 0) 
+                animData.rects = animData.rects.filter(i => i != rect);
         }
         if (rect.animation != "static") {
             rect.x += rect.xVel;
@@ -179,6 +188,10 @@ function animate() {
             if (circle.y + circle.radius > canvasHeight) circle.y = canvasHeight - circle.radius;
             if (circle.y - circle.radius < 0) circle.y = 0 + circle.radius;
         }
+        if (circle.animation == "exitKill") {
+            if (circle.x - circle.radius > canvasWidth || circle.x + circle.radius < 0 || circle.y - circle.radius > canvasHeight || circle.y + circle.radius < 0) 
+                animData.circles = animData.circles.filter(i => i != circle);
+        }
         if (circle.animation != "static") {
             circle.x += circle.xVel;
             circle.y += circle.yVel;
@@ -188,18 +201,26 @@ function animate() {
     // Custom/Advanced rules
     player = getAnimById("rect", "player");
     ground = getAnimById("rect", "ground");
-
+    
     // Custom ground collision
     if (player.y + player.height >= ground.y) {
         player.y = ground.y - player.height;
         if (player.yVel < 0) player.yVel = 0;
     }
     let balls = getAnimsByClass("circle", "ball");
+    let bullets = getAnimsByClass("circle", "bullet")
     for (let i = 0; i < balls.length; i++) {
         let ball = balls[i];
         if (ball.y + ball.radius >= ground.y) {
             ball.y = ground.y - ball.radius;
             ball.yVel *= -1;
+        }
+        for (let x = 0; x < bullets.length; x++) {
+            let bullet = bullets[x];
+            if (bullet.radius + ball.radius >= Math.sqrt(Math.pow(bullet.x - ball.x, 2) + Math.pow(bullet.y - ball.y, 2))) {
+                animData.circles = animData.circles.filter(a => a != ball);
+                console.log("collision")
+            }
         }
     }
 
@@ -213,6 +234,177 @@ function animate() {
         player.yVel += 0.2
     }
 
+    if (pressed.includes("ArrowLeft")) xVel -= 10;
+    if (pressed.includes("ArrowRight")) xVel += 10;
+    if (pressed.includes("ArrowUp")) yVel -= 10;
+    if (pressed.includes("ArrowDown")) yVel += 10;
+    if (cooldown <= 0 && (xVel != 0 || yVel != 0)) {
+        switch (fireMode) {
+            case "single":
+                animData.circles.push({
+                    "id": nextFreeNumericId("circle"),
+                    "class": "bullet",
+                    "x": player.x + player.width/2,
+                    "y": player.y + player.height/2,
+                    "radius": 5,
+                    "length": 1,
+                    "animation": "exitKill",
+                    "xVel": xVel,
+                    "yVel": yVel,
+                    "color": "lightGrey",
+                    "lineColor": "black",
+                    "lineWidth": 0
+                });
+                cooldown = 20;
+                break;
+            case "triple":
+                animData.circles.push({
+                    "id": nextFreeNumericId("circle"),
+                    "class": "bullet",
+                    "x": player.x + player.width/2,
+                    "y": player.y + player.height/2,
+                    "radius": 5,
+                    "length": 1,
+                    "animation": "exitKill",
+                    "xVel": xVel,
+                    "yVel": yVel,
+                    "color": "lightGrey",
+                    "lineColor": "black",
+                    "lineWidth": 0
+                });
+                if (xVel != 0 && yVel != 0) {
+                    animData.circles.push({
+                        "id": nextFreeNumericId("circle"),
+                        "class": "bullet",
+                        "x": player.x + player.width/2,
+                        "y": player.y + player.height/2,
+                        "radius": 5,
+                        "length": 1,
+                        "animation": "exitKill",
+                        "xVel": xVel * 0.9,
+                        "yVel": yVel,
+                        "color": "lightGrey",
+                        "lineColor": "black",
+                        "lineWidth": 0
+                    });
+                    animData.circles.push({
+                        "id": nextFreeNumericId("circle"),
+                        "class": "bullet",
+                        "x": player.x + player.width/2,
+                        "y": player.y + player.height/2,
+                        "radius": 5,
+                        "length": 1,
+                        "animation": "exitKill",
+                        "xVel": xVel,
+                        "yVel": yVel * 0.9,
+                        "color": "lightGrey",
+                        "lineColor": "black",
+                        "lineWidth": 0
+                    });
+                }
+                if (xVel != 0 && yVel == 0) {
+                    animData.circles.push({
+                        "id": nextFreeNumericId("circle"),
+                        "class": "bullet",
+                        "x": player.x + player.width/2,
+                        "y": player.y + player.height/2,
+                        "radius": 5,
+                        "length": 1,
+                        "animation": "exitKill",
+                        "xVel": xVel,
+                        "yVel": 1,
+                        "color": "lightGrey",
+                        "lineColor": "black",
+                        "lineWidth": 0
+                    });
+                    animData.circles.push({
+                        "id": nextFreeNumericId("circle"),
+                        "class": "bullet",
+                        "x": player.x + player.width/2,
+                        "y": player.y + player.height/2,
+                        "radius": 5,
+                        "length": 1,
+                        "animation": "exitKill",
+                        "xVel": xVel,
+                        "yVel": -1,
+                        "color": "lightGrey",
+                        "lineColor": "black",
+                        "lineWidth": 0
+                    });
+                }
+                if (xVel == 0 && yVel != 0) {
+                    animData.circles.push({
+                        "id": nextFreeNumericId("circle"),
+                        "class": "bullet",
+                        "x": player.x + player.width/2,
+                        "y": player.y + player.height/2,
+                        "radius": 5,
+                        "length": 1,
+                        "animation": "exitKill",
+                        "xVel": 1,
+                        "yVel": yVel,
+                        "color": "lightGrey",
+                        "lineColor": "black",
+                        "lineWidth": 0
+                    });
+                    animData.circles.push({
+                        "id": nextFreeNumericId("circle"),
+                        "class": "bullet",
+                        "x": player.x + player.width/2,
+                        "y": player.y + player.height/2,
+                        "radius": 5,
+                        "length": 1,
+                        "animation": "exitKill",
+                        "xVel": -1,
+                        "yVel": yVel,
+                        "color": "lightGrey",
+                        "lineColor": "black",
+                        "lineWidth": 0
+                    });
+                }
+                cooldown = 40;
+                break;
+            case "big":
+                animData.circles.push({
+                    "id": nextFreeNumericId("circle"),
+                    "class": "bullet",
+                    "x": player.x + player.width/2,
+                    "y": player.y + player.height/2,
+                    "radius": 15,
+                    "length": 1,
+                    "animation": "exitKill",
+                    "xVel": xVel,
+                    "yVel": yVel,
+                    "color": "lightGrey",
+                    "lineColor": "black",
+                    "lineWidth": 0
+                });
+                cooldown = 30;
+                break;
+            case "fast":
+                animData.circles.push({
+                    "id": nextFreeNumericId("circle"),
+                    "class": "bullet",
+                    "x": player.x + player.width/2,
+                    "y": player.y + player.height/2,
+                    "radius": 3,
+                    "length": 1,
+                    "animation": "exitKill",
+                    "xVel": xVel,
+                    "yVel": yVel,
+                    "color": "lightGrey",
+                    "lineColor": "black",
+                    "lineWidth": 0
+                });
+                cooldown = 5;
+                break;
+        }
+    }
+
+    xVel = 0;
+    yVel = 0;
+
+    cooldown--;
     requestAnimationFrame(animate);
 }
 
@@ -220,13 +412,8 @@ animate();
 
 
 document.getElementById("circleButton").addEventListener("click", () => {
-    let id = Math.random();
-    for (; ;) {
-        if (!getAnimById("circle", id)) break;
-        id = Math.random();
-    }
     animData.circles.push({
-        "id": id,
+        "id": nextFreeNumericId("shape"),
         "class": "ball",
         "x": randInt(0, canvasWidth / 5) * 5,
         "y": randInt(0, (canvasHeight - getAnimById("rect", "ground").height) / 5) * 5,
@@ -240,6 +427,11 @@ document.getElementById("circleButton").addEventListener("click", () => {
         "lineWidth": 0
     })
 });
+
+document.getElementById("singleFire").addEventListener("click", () => fireMode = "single");
+document.getElementById("tripleFire").addEventListener("click", () => fireMode = "triple");
+document.getElementById("bigFire").addEventListener("click", () => fireMode = "big");
+document.getElementById("fastFire").addEventListener("click", () => fireMode = "fast");
 
 // Keys need to be tracked in a list to allow for key holding
 // and so that multiple keys can be pressed at once
