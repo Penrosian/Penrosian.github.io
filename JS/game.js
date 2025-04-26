@@ -77,9 +77,20 @@ const animData = {
 
 let pressed = [];
 let cooldown = 0;
-let fireMode = "fast";
+let fireMode = "single";
 let xVel = 0;
 let yVel = 0;
+let score = 0;
+let wave = 0;
+let health = 5;
+let shield = 0;
+let powerDuration = 0;
+let immunity = 60;
+let hurt = 0;
+let money = 0;
+let gameStatus = "Survive!";
+let shopTimer = -1;
+let powerup = "None";
 
 function getAnimById(shape, id) {
     if (shape == "circle") {
@@ -117,6 +128,7 @@ function nextFreeNumericId(shape) {for (let x = 0; ; x++) if (!getAnimById(shape
 
 function animate() {
     fillPage("lightBlue");
+    gameStatus = "Survive!";
 
     for (let i = 0; i < animData.rects.length; i++) {
         rect = animData.rects[i];
@@ -215,11 +227,16 @@ function animate() {
             ball.y = ground.y - ball.radius;
             ball.yVel *= -1;
         }
+        if (player.width + ball.radius >= Math.sqrt(Math.pow(player.x + player.width/2 - ball.x, 2) + Math.pow(player.y + player.height/2 - ball.y, 2)) && immunity <= 0) {
+            immunity = 60;
+            health -= 1;
+            hurt = 20;
+        }
         for (let x = 0; x < bullets.length; x++) {
             let bullet = bullets[x];
             if (bullet.radius + ball.radius >= Math.sqrt(Math.pow(bullet.x - ball.x, 2) + Math.pow(bullet.y - ball.y, 2))) {
                 animData.circles = animData.circles.filter(a => a != ball);
-                console.log("collision")
+                score += 1;
             }
         }
     }
@@ -234,6 +251,14 @@ function animate() {
         player.yVel += 0.2
     }
 
+    if (hurt > 15) player.color = "red";
+    else if (hurt > 10) player.color = "black";
+    else if (hurt > 5) player.color = "red";
+    else player.color = "black";
+
+    // Firing
+    // Very cursed, don't @ me
+    // It works with the power of magic and if statements inside of switch case
     if (pressed.includes("ArrowLeft")) xVel -= 10;
     if (pressed.includes("ArrowRight")) xVel += 10;
     if (pressed.includes("ArrowUp")) yVel -= 10;
@@ -253,7 +278,7 @@ function animate() {
                     "yVel": yVel,
                     "color": "lightGrey",
                     "lineColor": "black",
-                    "lineWidth": 0
+                    "lineWidth": 3
                 });
                 cooldown = 20;
                 break;
@@ -270,7 +295,7 @@ function animate() {
                     "yVel": yVel,
                     "color": "lightGrey",
                     "lineColor": "black",
-                    "lineWidth": 0
+                    "lineWidth": 3
                 });
                 if (xVel != 0 && yVel != 0) {
                     animData.circles.push({
@@ -285,7 +310,7 @@ function animate() {
                         "yVel": yVel,
                         "color": "lightGrey",
                         "lineColor": "black",
-                        "lineWidth": 0
+                        "lineWidth": 3
                     });
                     animData.circles.push({
                         "id": nextFreeNumericId("circle"),
@@ -299,7 +324,7 @@ function animate() {
                         "yVel": yVel * 0.9,
                         "color": "lightGrey",
                         "lineColor": "black",
-                        "lineWidth": 0
+                        "lineWidth": 3
                     });
                 }
                 if (xVel != 0 && yVel == 0) {
@@ -315,7 +340,7 @@ function animate() {
                         "yVel": 1,
                         "color": "lightGrey",
                         "lineColor": "black",
-                        "lineWidth": 0
+                        "lineWidth": 3
                     });
                     animData.circles.push({
                         "id": nextFreeNumericId("circle"),
@@ -329,7 +354,7 @@ function animate() {
                         "yVel": -1,
                         "color": "lightGrey",
                         "lineColor": "black",
-                        "lineWidth": 0
+                        "lineWidth": 3
                     });
                 }
                 if (xVel == 0 && yVel != 0) {
@@ -345,7 +370,7 @@ function animate() {
                         "yVel": yVel,
                         "color": "lightGrey",
                         "lineColor": "black",
-                        "lineWidth": 0
+                        "lineWidth": 3
                     });
                     animData.circles.push({
                         "id": nextFreeNumericId("circle"),
@@ -359,7 +384,7 @@ function animate() {
                         "yVel": yVel,
                         "color": "lightGrey",
                         "lineColor": "black",
-                        "lineWidth": 0
+                        "lineWidth": 3
                     });
                 }
                 cooldown = 40;
@@ -377,7 +402,7 @@ function animate() {
                     "yVel": yVel,
                     "color": "lightGrey",
                     "lineColor": "black",
-                    "lineWidth": 0
+                    "lineWidth": 3
                 });
                 cooldown = 30;
                 break;
@@ -394,7 +419,7 @@ function animate() {
                     "yVel": yVel,
                     "color": "lightGrey",
                     "lineColor": "black",
-                    "lineWidth": 0
+                    "lineWidth": 3
                 });
                 cooldown = 5;
                 break;
@@ -404,36 +429,56 @@ function animate() {
     xVel = 0;
     yVel = 0;
 
+    if (!getAnimsByClass("circle", "ball") && (wave + 1) % 5 == 0) {
+        console.log("Shop time!");
+        wave += 1;
+        shopTimer = 1800;
+    }
+    if (!getAnimsByClass("circle", "ball") && shopTimer < 0) {
+        wave += 1;
+        immunity = 120;
+        if (health < 5) health++;
+        money += 5;
+        for (let i = 0; i < wave * 2.5; i++)
+            animData.circles.push({
+                "id": nextFreeNumericId("shape"),
+                "class": "ball",
+                "x": randInt(0, canvasWidth / 5) * 5,
+                "y": randInt(0, (canvasHeight - getAnimById("rect", "ground").height) / 5) * 5,
+                "radius": 10,
+                "length": 1,
+                "animation": "bounce",
+                "xVel": randInt(-5, 5),
+                "yVel": randInt(-5, 5),
+                "color": "blue",
+                "lineColor": "white",
+                "lineWidth": 0
+            });
+    }
+    if (shopTimer > 0) gameStatus = "Shop time! Game starts again in " + Math.ceil(shopTimer/60);
+
+    shopTimer--;
+    hurt--;
+    immunity--;
     cooldown--;
+    if (powerDuration > 0) powerDuration--;
+
+    document.getElementById("status").innerHTML = gameStatus;
+    document.getElementById("wave").innerHTML = "Wave: " + wave + " - Score: " + score + " - Health: " + health + " - Money: " + money;
+    document.getElementById("item").innerHTML = "Shield: " + shield + " - Powerup: " + powerup + " - Powerup Duration: " + Math.ceil(powerDuration/60);
+
+    if (health > 0)
     requestAnimationFrame(animate);
 }
 
 animate();
-
-
-document.getElementById("circleButton").addEventListener("click", () => {
-    animData.circles.push({
-        "id": nextFreeNumericId("shape"),
-        "class": "ball",
-        "x": randInt(0, canvasWidth / 5) * 5,
-        "y": randInt(0, (canvasHeight - getAnimById("rect", "ground").height) / 5) * 5,
-        "radius": 10,
-        "length": 1,
-        "animation": "bounce",
-        "xVel": 5,
-        "yVel": -5,
-        "color": "blue",
-        "lineColor": "white",
-        "lineWidth": 0
-    })
-});
 
 document.getElementById("singleFire").addEventListener("click", () => fireMode = "single");
 document.getElementById("tripleFire").addEventListener("click", () => fireMode = "triple");
 document.getElementById("bigFire").addEventListener("click", () => fireMode = "big");
 document.getElementById("fastFire").addEventListener("click", () => fireMode = "fast");
 
-// Keys need to be tracked in a list to allow for key holding
+// Keys need to be tracked in a list to allow for key holding,
 // and so that multiple keys can be pressed at once
 document.addEventListener("keydown", event => {
     event.preventDefault();
