@@ -227,7 +227,7 @@ function animate() {
             ball.y = ground.y - ball.radius;
             ball.yVel *= -1;
         }
-        if (player.width + ball.radius >= Math.sqrt(Math.pow(player.x + player.width/2 - ball.x, 2) + Math.pow(player.y + player.height/2 - ball.y, 2)) && immunity <= 0) {
+        if (player.width/2 + ball.radius >= Math.sqrt(Math.pow(player.x + player.width/2 - ball.x, 2) + Math.pow(player.y + player.height/2 - ball.y, 2)) && immunity <= 0) {
             immunity = 60;
             health -= 1;
             hurt = 20;
