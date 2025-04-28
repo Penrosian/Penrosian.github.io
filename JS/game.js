@@ -100,6 +100,7 @@ let fastCost = 220;
 let triple = false;
 let big = false;
 let fast = false;
+let shieldStatus = "";
 
 function getAnimById(shape, id) {
     if (shape == "circle") {
@@ -523,9 +524,11 @@ function animate() {
     
     if (speedCounter > 0) powerDuration = speedCounter;
 
+    if (shield > 0) shieldStatus = "+" + shield;
+    else shieldStatus = "";
     document.getElementById("status").innerHTML = gameStatus;
-    document.getElementById("wave").innerHTML = "Wave: " + wave + " - Score: " + score + " - Health: " + health + " - Money: " + money;
-    document.getElementById("item").innerHTML = "Shield: " + shield + " - Powerup: " + powerup + " - Powerup Duration: " + Math.ceil(powerDuration/60);
+    document.getElementById("wave").innerHTML = "Wave: " + wave + " - Score: " + score + " - Health: " + health + shieldStatus;
+    document.getElementById("item").innerHTML = "Money: " + money + " - Powerup: " + powerup + " - Powerup Duration: " + Math.ceil(powerDuration/60);
     document.getElementById("powerMode").innerHTML = powerMode;
     if (powerMode == "Unlock Mode") {
         tripleCost = 220;
