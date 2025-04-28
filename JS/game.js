@@ -92,6 +92,14 @@ let gameStatus = "Survive!";
 let shopTimer = -1;
 let powerup = "None";
 let speedCounter = -1;
+let firePower = false;
+let powerMode = "Unlock Mode";
+let tripleCost = 100;
+let bigCost = 130;
+let fastCost = 220;
+let triple = false;
+let big = false;
+let fast = false;
 
 function getAnimById(shape, id) {
     if (shape == "circle") {
@@ -244,7 +252,7 @@ function animate() {
         }
     }
 
-    if (pressed.includes("KeyQ") && powerup != "None") {
+    if (pressed.includes("KeyQ") && powerup != "None" && powerDuration == 0) {
         switch (powerup) {
             case "Teleport":
                 player.x = randInt(0, canvasWidth - player.width);
@@ -261,6 +269,24 @@ function animate() {
                 break;
             case "Speed Boost":
                 speedCounter = 600;
+                break;
+            case "Triple Shot":
+                savedMode = fireMode;
+                fireMode = "triple";
+                firePower = true;
+                powerDuration = 600;
+                break;
+            case "Big Shot":
+                savedMode = fireMode;
+                fireMode = "big";
+                firePower = true;
+                powerDuration = 600;
+                break;
+            case "Fast Shot":
+                savedMode = fireMode;
+                fireMode = "fast";
+                firePower = true;
+                powerDuration = 600;
                 break;
         }
         powerup = "None";
@@ -482,6 +508,11 @@ function animate() {
     }
     if (shopTimer > 0) gameStatus = "Shop time! Game starts again in " + Math.ceil(shopTimer/60);
 
+    if (firePower && powerDuration == 0) {
+        fireMode = savedMode; 
+        firePower = false;
+    }
+
     shopTimer--;
     hurt--;
     immunity--;
@@ -495,17 +526,32 @@ function animate() {
     document.getElementById("status").innerHTML = gameStatus;
     document.getElementById("wave").innerHTML = "Wave: " + wave + " - Score: " + score + " - Health: " + health + " - Money: " + money;
     document.getElementById("item").innerHTML = "Shield: " + shield + " - Powerup: " + powerup + " - Powerup Duration: " + Math.ceil(powerDuration/60);
+    document.getElementById("powerMode").innerHTML = powerMode;
+    if (powerMode == "Unlock Mode") {
+        tripleCost = 220;
+        bigCost = 340;
+        fastCost = 600;
+    }
+    else {
+        tripleCost = 60;
+        bigCost = 70;
+        fastCost = 100;
+    }
+    document.getElementById("triple").innerHTML = "Triple Shot $" + tripleCost;
+    document.getElementById("big").innerHTML = "Big Shot $" + bigCost;
+    document.getElementById("fast").innerHTML = "Fast Shot $" + fastCost;
 
     if (health > 0)
     requestAnimationFrame(animate);
+    else document.getElementById("status").innerHTML = "Game over!";
 }
 
 animate();
 
 document.getElementById("singleFire").addEventListener("click", () => fireMode = "single");
-document.getElementById("tripleFire").addEventListener("click", () => fireMode = "triple");
-document.getElementById("bigFire").addEventListener("click", () => fireMode = "big");
-document.getElementById("fastFire").addEventListener("click", () => fireMode = "fast");
+document.getElementById("tripleFire").addEventListener("click", () => {if (triple) fireMode = "triple";});
+document.getElementById("bigFire").addEventListener("click", () => {if (big) fireMode = "big";});
+document.getElementById("fastFire").addEventListener("click", () => {if (fast) fireMode = "fast";});
 
 document.getElementById("skip").addEventListener("click", () => {if (shopTimer > 300) shopTimer = 300});
 
@@ -531,6 +577,41 @@ document.getElementById("speed").addEventListener("click", () => {
     if (powerup == "None" && money >= 60) {
         powerup = "Speed Boost";
         money -= 60;
+    }
+});
+
+document.getElementById("powerMode").addEventListener("click", () => {
+    if (powerMode == "Unlock Mode") powerMode = "Powerup Mode";
+    else powerMode = "Unlock Mode";
+});
+document.getElementById("triple").addEventListener("click", () => {
+    if (powerMode == "Unlock Mode" && !triple && money >= 220) {
+        triple = true;
+        money -= 220;
+    }
+    if (powerMode == "Powerup Mode" && powerup == "None" && money >= 60) {
+        powerup = "Triple Shot";
+        money -= 60;
+    }
+});
+document.getElementById("big").addEventListener("click", () => {
+    if (powerMode == "Unlock Mode" && !big && money >= 340) {
+        big = true;
+        money -= 340;
+    }
+    if (powerMode == "Powerup Mode" && powerup == "None" && money >= 70) {
+        powerup = "Big Shot";
+        money -= 70;
+    }
+});
+document.getElementById("fast").addEventListener("click", () => {
+    if (powerMode == "Unlock Mode" && !fast && money >= 600) {
+        fast = true;
+        money -= 600;
+    }
+    if (powerMode == "Powerup Mode" && powerup == "None" && money >= 100) {
+        powerup = "Fast Shot";
+        money -= 100;
     }
 });
 
