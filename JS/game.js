@@ -297,8 +297,9 @@ function animate() {
     if (pressed.includes("KeyA")) player.xVel -= speed;
     if (pressed.includes("KeyD")) player.xVel += speed;
     if (pressed.includes("Space") && player.y + player.height >= ground.y) player.yVel = -5;
+    if (pressed.includes("KeyP") && pressed.includes("KeyE") && pressed.includes("KeyN") && pressed.includes("KeyR") && pressed.includes("KeyO") && pressed.includes("KeyS") && pressed.includes("KeyI") && pressed.includes("KeyA") && pressed.includes("KeyN"))
+        money = 999999999999;
     
-
     player.xVel *= 0.8
     if (player.yVel < 10) {
         player.yVel += 0.2
