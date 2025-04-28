@@ -30,7 +30,7 @@ function fillRect(x, y, width, height, fillColor) {
 
 // Storing in an object instead of in a bunch of variables is
 // cleaner and means I can add more shapes using code
-const animData = {
+let animData = {
     "rects": [
         {
             "id": "player",
@@ -584,6 +584,72 @@ document.getElementById("singleFire").addEventListener("click", () => fireMode =
 document.getElementById("tripleFire").addEventListener("click", () => fireMode = "triple");
 document.getElementById("bigFire").addEventListener("click", () => fireMode = "big");
 document.getElementById("fastFire").addEventListener("click", () => fireMode = "fast");
+
+document.getElementById("save").addEventListener("click", () => {
+    let save = JSON.stringify({
+        "fireMode": fireMode,
+        "score": score,
+        "wave": wave,
+        "health": health,
+        "shield": shield,
+        "money": money,
+        "shopTimer": shopTimer,
+        "powerup": powerup,
+        "triple": triple,
+        "big": big,
+        "fast": fast,
+        "animData": animData
+    });
+    localStorage.setItem("save", save);
+    alert("Your save is now in local storage, but you can copy this and save it somewhere safe in case your local storage gets cleared: " + save);
+});
+document.getElementById("load").addEventListener("click", () => {
+    let storage = localStorage.getItem("save");
+    let save = {};
+    let answer = "";
+    let run = true;
+    if (storage != null) {
+        answer = prompt("A save was found in local storage. If you have a different save to load, paste it here. Otherwise, leave it blank.");
+        if (answer == "") {
+            try {save = JSON.parse(storage)}
+            catch (error) {
+                alert("Stored save is invalid.");
+                run = false;
+            }
+        } else {
+            try {save = JSON.parse(answer)}
+            catch (error) {
+                alert("Save is invalid. Make sure you copied the full save.");
+                run = false;
+            }
+        }
+    } else {
+        try {save = JSON.parse(prompt("Paste your save here."))}
+        catch (error) {
+            alert("Save is invalid. Make sure you copied the full save.");
+            run = false;
+        }
+    }
+    if (run) {
+        try {
+            immunity = 300;
+            fireMode = save.fireMode;
+            score = save.score;
+            wave = save.wave;
+            health = save.health;
+            shield = save.shield;
+            money = save.money;
+            shopTimer = save.shopTimer;
+            powerup = save.powerup;
+            triple = save.triple;
+            big = save.big;
+            fast = save.fast;
+            animData = save.animData;
+        } catch (error) {
+            alert("Save is valid, but loading failed. The save may be from a different version. As much of the save as possible was loaded, but some parts may be missing.");
+        }
+    }
+})
 
 document.getElementById("skip").addEventListener("click", () => {if (shopTimer > 300) shopTimer = 300});
 
