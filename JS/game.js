@@ -544,6 +544,8 @@ function animate() {
     // Sets and unsets disabled for the shop buttons if they aren't purchasable
     document.getElementById("shield").setAttribute("disabled", "");
     if (shield < 5 && money >= 50) document.getElementById("shield").removeAttribute("disabled");
+    document.getElementById("teleport").setAttribute("disabled", "");
+    if (powerup == "None" && money >= 30) document.getElementById("teleport").removeAttribute("disabled");
     document.getElementById("bomb").setAttribute("disabled", "");
     if (powerup == "None" && money >= 40) document.getElementById("bomb").removeAttribute("disabled");
     document.getElementById("speed").setAttribute("disabled", "");
@@ -559,6 +561,10 @@ function animate() {
     if (powerMode == "Unlock Mode" && !fast && money >= 600) document.getElementById("fast").removeAttribute("disabled");
     if (powerMode == "Powerup Mode" && powerup == "None" && money >= 100) document.getElementById("fast").removeAttribute("disabled");
 
+    if (triple) document.getElementById("tripleFire").removeAttribute("disabled");
+    if (big) document.getElementById("bigFire").removeAttribute("disabled");
+    if (fast) document.getElementById("fastFire").removeAttribute("disabled");
+
     if (health > 0)
     requestAnimationFrame(animate);
     else document.getElementById("status").innerHTML = "Game over!";
@@ -569,10 +575,6 @@ animate();
 document.getElementById("tripleFire").setAttribute("disabled", "");
 document.getElementById("bigFire").setAttribute("disabled", "");
 document.getElementById("fastFire").setAttribute("disabled", "");
-
-if (triple) document.getElementById("tripleFire").removeAttribute("disabled");
-if (big) document.getElementById("bigFire").removeAttribute("disabled");
-if (fast) document.getElementById("fastFire").removeAttribute("disabled");
 
 document.getElementById("singleFire").addEventListener("click", () => fireMode = "single");
 document.getElementById("tripleFire").addEventListener("click", () => fireMode = "triple");
@@ -585,8 +587,6 @@ document.getElementById("shield").addEventListener("click", () => {
     shield += 1;
     money -= 50;
 });
-document.getElementById("teleport").setAttribute("disabled", "");
-if (powerup == "None" && money >= 30) document.getElementById("teleport").removeAttribute("disabled");
 document.getElementById("teleport").addEventListener("click", () => {
     powerup = "Teleport";
     money -= 30;
