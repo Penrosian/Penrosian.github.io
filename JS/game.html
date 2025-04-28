@@ -1,38 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>JS Game</title>
-        <script src="../src/js/init.js"></script>
-        <link href="../favicon.ico" rel="shortcut icon" type="image/x-icon">
-        <link href="../styles.css" rel="stylesheet" type="text/css">
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-            #grid {
-                display: grid;
-                grid-template: 1fr 1fr 1fr / 1fr 1fr;
-                margin: 0.3%;
-                max-height: 20vh;
-                max-width: 100vw;
-            }
-        </style>
-    </head>
-    <body>
-        <canvas id="gameCanvas" width="960" height="540" style="border: 4px solid black; height: 70vh; max-width: calc(100vw - 8px);"></canvas>
-        <div id="grid">
-        <p style="grid-column: 1 / 3;" id="status">Survive!</p>
-        <p id="wave">Wave: 0 - Score: 0 - Health: 5</p>
-        <div>
 
+<head>
+    <title>JS Game</title>
+    <link href="../favicon.ico" rel="shortcut icon" type="image/x-icon">
+    <link href="../styles.css" rel="stylesheet" type="text/css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #grid {
+            display: grid;
+            grid-template: 1fr 1fr 1fr 1fr / 1fr 1fr;
+            margin: 0.3%;
+            height: 20vh;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="gameCanvas" width="960" height="540"
+        style="border: 4px solid black; height: 70vh; max-width: calc(100vw - 8px);"></canvas>
+    <div id="grid">
+        <div style="grid-column: 1 / 3;">
+            <span id="status">Survive!</span>
+            <button type="button" id="skip" style="border-radius: 25px; border: 2px solid black;">Skip shop
+                time</button>
         </div>
-        <p id="item">Shield: 0 - Powerup Duration: 0</p>
+
+        <p id="wave" style="grid-row: 2 / 4;">Wave: 0 - Score: 0 - Health: 5</p>
         <div>
-            <button type="button" id="singleFire" style="width: 50px; border-radius: 25px; border: 2px solid black;">Single</button>
-            <button type="button" id="tripleFire" style="width: 50px; border-radius: 25px; border: 2px solid black;">Triple</button>
-            <button type="button" id="bigFire" style="width: 50px; border-radius: 25px; border: 2px solid black;">Big</button>
-            <button type="button" id="fastFire" style="width: 50px; border-radius: 25px; border: 2px solid black;">Fast</button>
+            <button type="button" id="shield" style="border-radius: 25px; border: 2px solid black;">Shield $50</button>
+            <button type="button" id="teleport" style="border-radius: 25px; border: 2px solid black;">Teleport
+                $30</button>
+            <button type="button" id="bomb" style="border-radius: 25px; border: 2px solid black;">Bomb $40</button>
+            <button type="button" id="speed" style="border-radius: 25px; border: 2px solid black;">Speed Boost
+                $60</button>
         </div>
+        <div>
+            <button type="button" id="powerMode" style="border-radius: 25px; border: 2px solid black;">Unlock
+                Mode</button>
+            <button type="button" id="triple" style="border-radius: 25px; border: 2px solid black;">Triple Shot
+                $100</button>
+            <button type="button" id="big" style="border-radius: 25px; border: 2px solid black;">Big Shot $130</button>
+            <button type="button" id="fast" style="border-radius: 25px; border: 2px solid black;">Fast Shot
+                $220</button>
         </div>
-        <script src="game.js"></script>
-    </body>
+        <p id="item">Shield: 0 - Powerup: None - Powerup Duration: 0</p>
+        <div>
+            <button type="button" id="singleFire" style="border-radius: 25px; border: 2px solid black;">Single</button>
+            <button type="button" id="tripleFire" style="border-radius: 25px; border: 2px solid black;">Triple</button>
+            <button type="button" id="bigFire" style="border-radius: 25px; border: 2px solid black;">Big</button>
+            <button type="button" id="fastFire" style="border-radius: 25px; border: 2px solid black;">Fast</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+
 </html>

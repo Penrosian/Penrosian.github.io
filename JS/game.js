@@ -91,6 +91,7 @@ let money = 0;
 let gameStatus = "Survive!";
 let shopTimer = -1;
 let powerup = "None";
+let speedCounter = -1;
 
 function getAnimById(shape, id) {
     if (shape == "circle") {
@@ -229,7 +230,8 @@ function animate() {
         }
         if (player.width/2 + ball.radius >= Math.sqrt(Math.pow(player.x + player.width/2 - ball.x, 2) + Math.pow(player.y + player.height/2 - ball.y, 2)) && immunity <= 0) {
             immunity = 60;
-            health -= 1;
+            if (shield > 0) shield -= 1;
+            else health -= 1;
             hurt = 20;
         }
         for (let x = 0; x < bullets.length; x++) {
@@ -237,14 +239,38 @@ function animate() {
             if (bullet.radius + ball.radius >= Math.sqrt(Math.pow(bullet.x - ball.x, 2) + Math.pow(bullet.y - ball.y, 2))) {
                 animData.circles = animData.circles.filter(a => a != ball);
                 score += 1;
+                money += 1;
             }
         }
     }
 
-
-    if (pressed.includes("KeyA")) player.xVel -= 2;
-    if (pressed.includes("KeyD")) player.xVel += 2;
+    if (pressed.includes("KeyQ") && powerup != "None") {
+        switch (powerup) {
+            case "Teleport":
+                player.x = randInt(0, canvasWidth - player.width);
+                player.y = randInt(0, canvasHeight - player.height - ground.height);
+                immunity = 120;
+                break;
+            case "Bomb":
+                balls = getAnimsByClass("circle", "ball");
+                for (let i = 0; i < balls.length; i++) {
+                    let ball = balls[i];
+                    if (player.width/2 + 400 >= Math.sqrt(Math.pow(player.x + player.width/2 - ball.x, 2) + Math.pow(player.y + player.height/2 - ball.y, 2))) 
+                        animData.circles = animData.circles.filter(a => a != ball);
+                }
+                break;
+            case "Speed Boost":
+                speedCounter = 600;
+                break;
+        }
+        powerup = "None";
+    }
+    if (speedCounter > 0) speed = 4;
+    else speed = 2;
+    if (pressed.includes("KeyA")) player.xVel -= speed;
+    if (pressed.includes("KeyD")) player.xVel += speed;
     if (pressed.includes("Space") && player.y + player.height >= ground.y) player.yVel = -5;
+    
 
     player.xVel *= 0.8
     if (player.yVel < 10) {
@@ -438,7 +464,6 @@ function animate() {
         wave += 1;
         immunity = 120;
         if (health < 5) health++;
-        money += 5;
         for (let i = 0; i < wave * 2.5; i++)
             animData.circles.push({
                 "id": nextFreeNumericId("shape"),
@@ -460,8 +485,12 @@ function animate() {
     shopTimer--;
     hurt--;
     immunity--;
+    speedCounter--;
     cooldown--;
+    if (speedCounter > 0) cooldown--;
     if (powerDuration > 0) powerDuration--;
+    
+    if (speedCounter > 0) powerDuration = speedCounter;
 
     document.getElementById("status").innerHTML = gameStatus;
     document.getElementById("wave").innerHTML = "Wave: " + wave + " - Score: " + score + " - Health: " + health + " - Money: " + money;
@@ -477,6 +506,33 @@ document.getElementById("singleFire").addEventListener("click", () => fireMode =
 document.getElementById("tripleFire").addEventListener("click", () => fireMode = "triple");
 document.getElementById("bigFire").addEventListener("click", () => fireMode = "big");
 document.getElementById("fastFire").addEventListener("click", () => fireMode = "fast");
+
+document.getElementById("skip").addEventListener("click", () => {if (shopTimer > 300) shopTimer = 300});
+
+document.getElementById("shield").addEventListener("click", () => {
+    if (shield < 5 && money >= 50) {
+        shield += 1;
+        money -= 50;
+    }
+});
+document.getElementById("teleport").addEventListener("click", () => {
+    if (powerup == "None" && money >= 30) {
+        powerup = "Teleport";
+        money -= 30;
+    }
+});
+document.getElementById("bomb").addEventListener("click", () => {
+    if (powerup == "None" && money >= 40) {
+        powerup = "Bomb";
+        money -= 40;
+    }
+});
+document.getElementById("speed").addEventListener("click", () => {
+    if (powerup == "None" && money >= 60) {
+        powerup = "Speed Boost";
+        money -= 60;
+    }
+});
 
 // Keys need to be tracked in a list to allow for key holding,
 // and so that multiple keys can be pressed at once
