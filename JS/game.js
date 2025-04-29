@@ -42,7 +42,8 @@ let animData = {
             "color": "black",
             "animation": "locked",
             "xVel": 5,
-            "yVel": -5
+            "yVel": -5,
+            "meta": {}
         },
         {
             "id": "ground",
@@ -54,7 +55,8 @@ let animData = {
             "color": "green",
             "animation": "static",
             "xVel": 0,
-            "yVel": 0
+            "yVel": 0,
+            "meta": {}
         }
     ],
     "circles": [
@@ -70,7 +72,8 @@ let animData = {
             "yVel": -5,
             "color": "blue",
             "lineColor": "black",
-            "lineWidth": 0
+            "lineWidth": 0,
+            "meta": {}
         }
     ]
 };
@@ -134,7 +137,7 @@ function getAnimsByClass(shape, className) {
     if (returns.length == 0) return false;
     return returns;
 }
-function nextFreeNumericId(shape) {for (let x = 0; ; x++) if (!getAnimById(shape, x)) return x;}
+function nextFreeNumericId(shape) { for (let x = 0; ; x++) if (!getAnimById(shape, x)) return x; }
 
 function animate() {
     fillPage("lightBlue");
@@ -171,7 +174,7 @@ function animate() {
             if (rect.y < 0) rect.y = 0;
         }
         if (rect.animation == "exitKill") {
-            if (rect.x > canvasWidth || rect.x + rect.width < 0 || rect.y > canvasHeight || rect.y + rect.height < 0) 
+            if (rect.x > canvasWidth || rect.x + rect.width < 0 || rect.y > canvasHeight || rect.y + rect.height < 0)
                 animData.rects = animData.rects.filter(i => i != rect);
         }
         if (rect.animation != "static") {
@@ -211,7 +214,7 @@ function animate() {
             if (circle.y - circle.radius < 0) circle.y = 0 + circle.radius;
         }
         if (circle.animation == "exitKill") {
-            if (circle.x - circle.radius > canvasWidth || circle.x + circle.radius < 0 || circle.y - circle.radius > canvasHeight || circle.y + circle.radius < 0) 
+            if (circle.x - circle.radius > canvasWidth || circle.x + circle.radius < 0 || circle.y - circle.radius > canvasHeight || circle.y + circle.radius < 0)
                 animData.circles = animData.circles.filter(i => i != circle);
         }
         if (circle.animation != "static") {
@@ -223,21 +226,21 @@ function animate() {
     // Custom/Advanced rules
     player = getAnimById("rect", "player");
     ground = getAnimById("rect", "ground");
-    
+
     // Custom ground collision
     if (player.y + player.height >= ground.y) {
         player.y = ground.y - player.height;
         if (player.yVel < 0) player.yVel = 0;
     }
     let balls = getAnimsByClass("circle", "ball");
-    let bullets = getAnimsByClass("circle", "bullet")
+    let bullets = getAnimsByClass("circle", "bullet");
     for (let i = 0; i < balls.length; i++) {
         let ball = balls[i];
         if (ball.y + ball.radius >= ground.y) {
             ball.y = ground.y - ball.radius;
             ball.yVel *= -1;
         }
-        if (player.width/2 + ball.radius >= Math.sqrt(Math.pow(player.x + player.width/2 - ball.x, 2) + Math.pow(player.y + player.height/2 - ball.y, 2)) && immunity <= 0) {
+        if (player.width / 2 + ball.radius >= Math.sqrt(Math.pow(player.x + player.width / 2 - ball.x, 2) + Math.pow(player.y + player.height / 2 - ball.y, 2)) && immunity <= 0) {
             immunity = 60;
             if (shield > 0) shield -= 1;
             else health -= 1;
@@ -247,6 +250,8 @@ function animate() {
             let bullet = bullets[x];
             if (bullet.radius + ball.radius >= Math.sqrt(Math.pow(bullet.x - ball.x, 2) + Math.pow(bullet.y - ball.y, 2))) {
                 animData.circles = animData.circles.filter(a => a != ball);
+                bullet.meta["pierce"]--;
+                if (bullet.meta["pierce"] <= 0) animData.circles = animData.circles.filter(a => a != bullet);
                 score += 1;
                 money += 1;
             }
@@ -264,7 +269,7 @@ function animate() {
                 balls = getAnimsByClass("circle", "ball");
                 for (let i = 0; i < balls.length; i++) {
                     let ball = balls[i];
-                    if (player.width/2 + 400 >= Math.sqrt(Math.pow(player.x + player.width/2 - ball.x, 2) + Math.pow(player.y + player.height/2 - ball.y, 2))) 
+                    if (player.width / 2 + 400 >= Math.sqrt(Math.pow(player.x + player.width / 2 - ball.x, 2) + Math.pow(player.y + player.height / 2 - ball.y, 2)))
                         animData.circles = animData.circles.filter(a => a != ball);
                 }
                 break;
@@ -299,6 +304,7 @@ function animate() {
     if (pressed.includes("Space") && player.y + player.height >= ground.y) player.yVel = -5;
     if (pressed.includes("KeyP") && pressed.includes("KeyE") && pressed.includes("KeyN") && pressed.includes("KeyR") && pressed.includes("KeyO") && pressed.includes("KeyS") && pressed.includes("KeyI") && pressed.includes("KeyA") && pressed.includes("KeyN"))
         money = 999999999999;
+        shield = 999999999999;
     
     player.xVel *= 0.8
     if (player.yVel < 10) {
@@ -323,8 +329,8 @@ function animate() {
                 animData.circles.push({
                     "id": nextFreeNumericId("circle"),
                     "class": "bullet",
-                    "x": player.x + player.width/2,
-                    "y": player.y + player.height/2,
+                    "x": player.x + player.width / 2,
+                    "y": player.y + player.height / 2,
                     "radius": 5,
                     "length": 1,
                     "animation": "exitKill",
@@ -332,7 +338,8 @@ function animate() {
                     "yVel": yVel,
                     "color": "lightGrey",
                     "lineColor": "black",
-                    "lineWidth": 3
+                    "lineWidth": 3,
+                    "meta": {"pierce": 3}
                 });
                 cooldown = 20;
                 break;
@@ -340,8 +347,8 @@ function animate() {
                 animData.circles.push({
                     "id": nextFreeNumericId("circle"),
                     "class": "bullet",
-                    "x": player.x + player.width/2,
-                    "y": player.y + player.height/2,
+                    "x": player.x + player.width / 2,
+                    "y": player.y + player.height / 2,
                     "radius": 5,
                     "length": 1,
                     "animation": "exitKill",
@@ -349,14 +356,15 @@ function animate() {
                     "yVel": yVel,
                     "color": "lightGrey",
                     "lineColor": "black",
-                    "lineWidth": 3
+                    "lineWidth": 3,
+                    "meta": {"pierce": 3}
                 });
                 if (xVel != 0 && yVel != 0) {
                     animData.circles.push({
                         "id": nextFreeNumericId("circle"),
                         "class": "bullet",
-                        "x": player.x + player.width/2,
-                        "y": player.y + player.height/2,
+                        "x": player.x + player.width / 2,
+                        "y": player.y + player.height / 2,
                         "radius": 5,
                         "length": 1,
                         "animation": "exitKill",
@@ -364,13 +372,14 @@ function animate() {
                         "yVel": yVel,
                         "color": "lightGrey",
                         "lineColor": "black",
-                        "lineWidth": 3
+                        "lineWidth": 3,
+                        "meta": {"pierce": 3}
                     });
                     animData.circles.push({
                         "id": nextFreeNumericId("circle"),
                         "class": "bullet",
-                        "x": player.x + player.width/2,
-                        "y": player.y + player.height/2,
+                        "x": player.x + player.width / 2,
+                        "y": player.y + player.height / 2,
                         "radius": 5,
                         "length": 1,
                         "animation": "exitKill",
@@ -378,15 +387,16 @@ function animate() {
                         "yVel": yVel * 0.9,
                         "color": "lightGrey",
                         "lineColor": "black",
-                        "lineWidth": 3
+                        "lineWidth": 3,
+                        "meta": {"pierce": 3}
                     });
                 }
                 if (xVel != 0 && yVel == 0) {
                     animData.circles.push({
                         "id": nextFreeNumericId("circle"),
                         "class": "bullet",
-                        "x": player.x + player.width/2,
-                        "y": player.y + player.height/2,
+                        "x": player.x + player.width / 2,
+                        "y": player.y + player.height / 2,
                         "radius": 5,
                         "length": 1,
                         "animation": "exitKill",
@@ -394,13 +404,14 @@ function animate() {
                         "yVel": 1,
                         "color": "lightGrey",
                         "lineColor": "black",
-                        "lineWidth": 3
+                        "lineWidth": 3,
+                        "meta": {"pierce": 3}
                     });
                     animData.circles.push({
                         "id": nextFreeNumericId("circle"),
                         "class": "bullet",
-                        "x": player.x + player.width/2,
-                        "y": player.y + player.height/2,
+                        "x": player.x + player.width / 2,
+                        "y": player.y + player.height / 2,
                         "radius": 5,
                         "length": 1,
                         "animation": "exitKill",
@@ -408,15 +419,16 @@ function animate() {
                         "yVel": -1,
                         "color": "lightGrey",
                         "lineColor": "black",
-                        "lineWidth": 3
+                        "lineWidth": 3,
+                        "meta": {"pierce": 3}
                     });
                 }
                 if (xVel == 0 && yVel != 0) {
                     animData.circles.push({
                         "id": nextFreeNumericId("circle"),
                         "class": "bullet",
-                        "x": player.x + player.width/2,
-                        "y": player.y + player.height/2,
+                        "x": player.x + player.width / 2,
+                        "y": player.y + player.height / 2,
                         "radius": 5,
                         "length": 1,
                         "animation": "exitKill",
@@ -424,13 +436,14 @@ function animate() {
                         "yVel": yVel,
                         "color": "lightGrey",
                         "lineColor": "black",
-                        "lineWidth": 3
+                        "lineWidth": 3,
+                        "meta": {"pierce": 3}
                     });
                     animData.circles.push({
                         "id": nextFreeNumericId("circle"),
                         "class": "bullet",
-                        "x": player.x + player.width/2,
-                        "y": player.y + player.height/2,
+                        "x": player.x + player.width / 2,
+                        "y": player.y + player.height / 2,
                         "radius": 5,
                         "length": 1,
                         "animation": "exitKill",
@@ -438,7 +451,8 @@ function animate() {
                         "yVel": yVel,
                         "color": "lightGrey",
                         "lineColor": "black",
-                        "lineWidth": 3
+                        "lineWidth": 3,
+                        "meta": {"pierce": 3}
                     });
                 }
                 cooldown = 40;
@@ -447,8 +461,8 @@ function animate() {
                 animData.circles.push({
                     "id": nextFreeNumericId("circle"),
                     "class": "bullet",
-                    "x": player.x + player.width/2,
-                    "y": player.y + player.height/2,
+                    "x": player.x + player.width / 2,
+                    "y": player.y + player.height / 2,
                     "radius": 15,
                     "length": 1,
                     "animation": "exitKill",
@@ -456,7 +470,8 @@ function animate() {
                     "yVel": yVel,
                     "color": "lightGrey",
                     "lineColor": "black",
-                    "lineWidth": 3
+                    "lineWidth": 3,
+                    "meta": {"pierce": 100}
                 });
                 cooldown = 30;
                 break;
@@ -464,8 +479,8 @@ function animate() {
                 animData.circles.push({
                     "id": nextFreeNumericId("circle"),
                     "class": "bullet",
-                    "x": player.x + player.width/2,
-                    "y": player.y + player.height/2,
+                    "x": player.x + player.width / 2,
+                    "y": player.y + player.height / 2,
                     "radius": 3,
                     "length": 1,
                     "animation": "exitKill",
@@ -473,7 +488,8 @@ function animate() {
                     "yVel": yVel,
                     "color": "lightGrey",
                     "lineColor": "black",
-                    "lineWidth": 3
+                    "lineWidth": 3,
+                    "meta": {"pierce": 2}
                 });
                 cooldown = 5;
                 break;
@@ -505,13 +521,14 @@ function animate() {
                 "yVel": randInt(-5, 5),
                 "color": "blue",
                 "lineColor": "white",
-                "lineWidth": 0
+                "lineWidth": 0,
+                "meta": {}
             });
     }
-    if (shopTimer > 0) gameStatus = "Shop time! Game starts again in " + Math.ceil(shopTimer/60);
+    if (shopTimer > 0) gameStatus = "Shop time! Game starts again in " + Math.ceil(shopTimer / 60);
 
     if (firePower && powerDuration == 0) {
-        fireMode = savedMode; 
+        fireMode = savedMode;
         firePower = false;
     }
 
@@ -522,14 +539,14 @@ function animate() {
     cooldown--;
     if (speedCounter > 0) cooldown--;
     if (powerDuration > 0) powerDuration--;
-    
+
     if (speedCounter > 0) powerDuration = speedCounter;
 
     if (shield > 0) shieldStatus = "+" + shield;
     else shieldStatus = "";
     document.getElementById("status").innerHTML = gameStatus;
     document.getElementById("wave").innerHTML = "Wave: " + wave + " - Score: " + score + " - Health: " + health + shieldStatus;
-    document.getElementById("item").innerHTML = "Money: " + money + " - Powerup: " + powerup + " - Powerup Duration: " + Math.ceil(powerDuration/60);
+    document.getElementById("item").innerHTML = "Money: " + money + " - Powerup: " + powerup + " - Powerup Duration: " + Math.ceil(powerDuration / 60);
     document.getElementById("powerMode").innerHTML = powerMode;
     if (powerMode == "Unlock Mode") {
         tripleCost = 220;
@@ -570,7 +587,7 @@ function animate() {
     if (fast) document.getElementById("fastFire").removeAttribute("disabled");
 
     if (health > 0)
-    requestAnimationFrame(animate);
+        requestAnimationFrame(animate);
     else document.getElementById("status").innerHTML = "Game over!";
 }
 
@@ -611,20 +628,20 @@ document.getElementById("load").addEventListener("click", () => {
     if (storage != null) {
         answer = prompt("A save was found in local storage. If you have a different save to load, paste it here. Otherwise, leave it blank.");
         if (answer == "") {
-            try {save = JSON.parse(storage)}
+            try { save = JSON.parse(storage) }
             catch (error) {
                 alert("Stored save is invalid.");
                 run = false;
             }
         } else {
-            try {save = JSON.parse(answer)}
+            try { save = JSON.parse(answer) }
             catch (error) {
                 alert("Save is invalid. Make sure you copied the full save.");
                 run = false;
             }
         }
     } else {
-        try {save = JSON.parse(prompt("Paste your save here."))}
+        try { save = JSON.parse(prompt("Paste your save here.")) }
         catch (error) {
             alert("Save is invalid. Make sure you copied the full save.");
             run = false;
@@ -651,7 +668,7 @@ document.getElementById("load").addEventListener("click", () => {
     }
 })
 
-document.getElementById("skip").addEventListener("click", () => {if (shopTimer > 300) shopTimer = 300});
+document.getElementById("skip").addEventListener("click", () => { if (shopTimer > 300) shopTimer = 300 });
 
 document.getElementById("shield").addEventListener("click", () => {
     shield += 1;
