@@ -104,6 +104,8 @@ let triple = false;
 let big = false;
 let fast = false;
 let shieldStatus = "";
+let pierceMod = 1;
+let powerSave;
 
 function getAnimById(shape, id) {
     if (shape == "circle") {
@@ -250,7 +252,7 @@ function animate() {
             let bullet = bullets[x];
             if (bullet.radius + ball.radius >= Math.sqrt(Math.pow(bullet.x - ball.x, 2) + Math.pow(bullet.y - ball.y, 2))) {
                 animData.circles = animData.circles.filter(a => a != ball);
-                bullet.meta["pierce"]--;
+                bullet.meta["pierce"] -= pierceMod;
                 if (bullet.meta["pierce"] <= 0) animData.circles = animData.circles.filter(a => a != bullet);
                 score += 1;
                 money += 1;
@@ -258,12 +260,13 @@ function animate() {
         }
     }
 
-    if (pressed.includes("KeyQ") && powerup != "None" && powerDuration == 0) {
+    if (pressed.includes("KeyQ") && powerup != "None" && powerDuration < 0) {
         switch (powerup) {
             case "Teleport":
                 player.x = randInt(0, canvasWidth - player.width);
                 player.y = randInt(0, canvasHeight - player.height - ground.height);
                 immunity = 120;
+                powerup = "None";
                 break;
             case "Bomb":
                 balls = getAnimsByClass("circle", "ball");
@@ -272,40 +275,47 @@ function animate() {
                     if (player.width / 2 + 400 >= Math.sqrt(Math.pow(player.x + player.width / 2 - ball.x, 2) + Math.pow(player.y + player.height / 2 - ball.y, 2)))
                         animData.circles = animData.circles.filter(a => a != ball);
                 }
+                powerup = "None";
                 break;
             case "Speed Boost":
-                speedCounter = 600;
+                powerDuration = 600;
                 break;
             case "Triple Shot":
-                savedMode = fireMode;
+                powerSave = fireMode;
                 fireMode = "triple";
-                firePower = true;
                 powerDuration = 600;
                 break;
             case "Big Shot":
-                savedMode = fireMode;
+                powerSave = fireMode;
                 fireMode = "big";
-                firePower = true;
                 powerDuration = 600;
                 break;
             case "Fast Shot":
-                savedMode = fireMode;
+                powerSave = fireMode;
                 fireMode = "fast";
-                firePower = true;
                 powerDuration = 600;
                 break;
+            case "Pierce Boost":
+                powerSave = pierceMod;
+                pierceMod = pierceMod *= 0.5;
+                powerDuration = 600;
         }
-        powerup = "None";
     }
-    if (speedCounter > 0) speed = 4;
+    if (powerDuration > 0 && powerup == "Speed Boost") speed = 4;
     else speed = 2;
     if (pressed.includes("KeyA")) player.xVel -= speed;
     if (pressed.includes("KeyD")) player.xVel += speed;
     if (pressed.includes("Space") && player.y + player.height >= ground.y) player.yVel = -5;
-    if (pressed.includes("KeyP") && pressed.includes("KeyE") && pressed.includes("KeyN") && pressed.includes("KeyR") && pressed.includes("KeyO") && pressed.includes("KeyS") && pressed.includes("KeyI") && pressed.includes("KeyA") && pressed.includes("KeyN"))
+    if (pressed.includes("KeyP") && pressed.includes("KeyE") && pressed.includes("KeyN") && pressed.includes("KeyR") && pressed.includes("KeyO") && pressed.includes("KeyS") && pressed.includes("KeyI") && pressed.includes("KeyA") && pressed.includes("KeyN")) {
         money = 999999999999;
         shield = 999999999999;
+    }
     
+    if (pressed.includes("KeyZ")) fireMode = "single";
+    if (pressed.includes("KeyX") && triple) fireMode = "triple";
+    if (pressed.includes("KeyC") && big) fireMode = "big";
+    if (pressed.includes("KeyV") && fast) fireMode = "fast";
+
     player.xVel *= 0.8
     if (player.yVel < 10) {
         player.yVel += 0.2
@@ -527,26 +537,24 @@ function animate() {
     }
     if (shopTimer > 0) gameStatus = "Shop time! Game starts again in " + Math.ceil(shopTimer / 60);
 
-    if (firePower && powerDuration == 0) {
-        fireMode = savedMode;
-        firePower = false;
+    if (powerDuration == 0) {
+        if (powerup.includes("Shot")) fireMode = powerSave;
+        if (powerup == "Pierce Boost") pierceMod = powerSave;
+        powerup = "None";
     }
 
     shopTimer--;
     hurt--;
     immunity--;
-    speedCounter--;
     cooldown--;
-    if (speedCounter > 0) cooldown--;
-    if (powerDuration > 0) powerDuration--;
-
-    if (speedCounter > 0) powerDuration = speedCounter;
+    if (powerDuration > 0 && powerup == "Speed Boost") cooldown--;
+    if (powerDuration > -1) powerDuration--;
 
     if (shield > 0) shieldStatus = "+" + shield;
     else shieldStatus = "";
     document.getElementById("status").innerHTML = gameStatus;
     document.getElementById("wave").innerHTML = "Wave: " + wave + " - Score: " + score + " - Health: " + health + shieldStatus;
-    document.getElementById("item").innerHTML = "Money: " + money + " - Powerup: " + powerup + " - Powerup Duration: " + Math.ceil(powerDuration / 60);
+    document.getElementById("item").innerHTML = "Money: " + money + " - Powerup: " + powerup + " - Powerup Duration: " + Math.abs(Math.ceil(powerDuration / 60));
     document.getElementById("powerMode").innerHTML = powerMode;
     if (powerMode == "Unlock Mode") {
         tripleCost = 220;
