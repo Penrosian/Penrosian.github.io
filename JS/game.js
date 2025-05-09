@@ -1,3 +1,11 @@
+// TODO:
+/*
+    Boss health bar
+    Bosses
+    Better boss scoring system (currently just gives 50 score every time)
+    Tanky enemies
+*/
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -73,7 +81,10 @@ let animData = {
             "color": "blue",
             "lineColor": "black",
             "lineWidth": 0,
-            "meta": {}
+            "meta": {
+                "boss":true,
+                "health":1
+            }
         }
     ]
 };
@@ -107,6 +118,8 @@ let shieldStatus = "";
 let pierceMod = 1;
 let powerSave;
 
+// Pretty self explanatory
+// Shorthands for looping through animdata to find shape(s)
 function getAnimById(shape, id) {
     if (shape == "circle") {
         for (let i = 0; i < animData.circles.length; i++) {
@@ -141,6 +154,7 @@ function getAnimsByClass(shape, className) {
 }
 function nextFreeNumericId(shape) { for (let x = 0; ; x++) if (!getAnimById(shape, x)) return x; }
 
+// The main loop
 function animate() {
     fillPage("lightBlue");
     gameStatus = "Survive!";
@@ -225,15 +239,15 @@ function animate() {
         }
     }
 
-    // Custom/Advanced rules
+    // Custom/Advanced animation rules
     player = getAnimById("rect", "player");
     ground = getAnimById("rect", "ground");
 
-    // Custom ground collision
     if (player.y + player.height >= ground.y) {
         player.y = ground.y - player.height;
         if (player.yVel < 0) player.yVel = 0;
     }
+
     let balls = getAnimsByClass("circle", "ball");
     let bullets = getAnimsByClass("circle", "bullet");
     for (let i = 0; i < balls.length; i++) {
@@ -251,11 +265,47 @@ function animate() {
         for (let x = 0; x < bullets.length; x++) {
             let bullet = bullets[x];
             if (bullet.radius + ball.radius >= Math.sqrt(Math.pow(bullet.x - ball.x, 2) + Math.pow(bullet.y - ball.y, 2))) {
-                animData.circles = animData.circles.filter(a => a != ball);
-                bullet.meta["pierce"] -= pierceMod;
-                if (bullet.meta["pierce"] <= 0) animData.circles = animData.circles.filter(a => a != bullet);
-                score += 1;
-                money += 1;
+                if (ball.meta["health"]) {
+                    console.log("Hit healthy enemy");
+                    console.log(ball.meta["health"]);
+                    console.log(bullet.meta["pierce"]);
+                    while (bullet.meta["pierce"] > 0 && ball.meta["health"] > 0) {
+                        bullet.meta["pierce"] -= pierceMod;
+                        ball.meta["health"]--;
+                    }
+                    if (ball.meta["health"] <= 0) {
+                        if (ball.meta["boss"]) {
+                            animData.circles.push({
+                                "id": nextFreeNumericId(),
+                                "class": "explosion",
+                                "x": ball.x,
+                                "y": ball.y,
+                                "radius": 1,
+                                "length": 1,
+                                "animation": "static",
+                                "xVel": 0,
+                                "yVel": 0,
+                                "color": "red",
+                                "lineColor": "black",
+                                "lineWidth": 8,
+                                "meta": {"expanding":true}
+                            });
+                            animData.circles = animData.circles.filter(a => a != ball);
+                            score += 50;
+                            money += 50;
+                        } else {
+                            score += 5;
+                            money += 5;
+                        }
+                        animData.circles = animData.circles.filter(a => a != bullet);
+                    }
+                } else {
+                    animData.circles = animData.circles.filter(a => a != ball);
+                    bullet.meta["pierce"] -= pierceMod;
+                    if (bullet.meta["pierce"] <= 0) animData.circles = animData.circles.filter(a => a != bullet);
+                    score += 1;
+                    money += 1;
+                }
             }
         }
     }
@@ -509,8 +559,19 @@ function animate() {
     xVel = 0;
     yVel = 0;
 
+    let explosions = getAnimsByClass("circle", "explosion");
+    if (explosions) {
+            explosions.forEach(explosion => {
+            if (explosion.meta["expanding"]) {
+                explosion.radius += 1;
+                if (explosion.radius >= 30) explosion.meta["expanding"] = false;
+            }
+            else explosion.radius -= 1;
+            if (explosion.radius <= 0) animData.circles = animData.circles.filter(a => a != explosion);
+        });
+    }
+
     if (!getAnimsByClass("circle", "ball") && (wave + 1) % 5 == 0) {
-        console.log("Shop time!");
         wave += 1;
         shopTimer = 1800;
     }
