@@ -1,4 +1,4 @@
-name: Transpile TypeScript
+name: Transpile/Build TypeScript
 
 on:
   push:
