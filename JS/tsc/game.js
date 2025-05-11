@@ -278,7 +278,7 @@ function animate() {
             if (bullets) {
                 var _loop_5 = function (x) {
                     var bullet = bullets[x];
-                    if (!bullet.meta["pierce"])
+                    if (bullet.meta["pierce"] == undefined)
                         throw new Error("Bullet has no pierce. Something has gone horribly wrong.");
                     if (bullet.radius + ball.radius >= Math.sqrt(Math.pow(bullet.x - ball.x, 2) + Math.pow(bullet.y - ball.y, 2))) {
                         if (ball.meta["health"]) {
@@ -389,7 +389,7 @@ function animate() {
         player.xVel += speed;
     if (pressed.includes("Space") && player.y + player.height >= ground.y)
         player.yVel = -5;
-    if (pressed.includes("KeyP") && pressed.includes("KeyE") && pressed.includes("KeyN") && pressed.includes("KeyR") && pressed.includes("KeyO") && pressed.includes("KeyS") && pressed.includes("KeyI") && pressed.includes("KeyA") && pressed.includes("KeyN")) {
+    if (pressed.includes("KeyP") && pressed.includes("KeyE") && pressed.includes("KeyN") && pressed.includes("KeyR") && pressed.includes("KeyO") && pressed.includes("KeyS") && pressed.includes("KeyI") && pressed.includes("KeyA")) {
         money = 999999999999;
         shield = 999999999999;
     }
@@ -414,8 +414,6 @@ function animate() {
     else
         player.color = "black";
     // Firing
-    // Very cursed, don't @ me
-    // It works with the power of magic and if statements inside of switch case
     if (pressed.includes("ArrowLeft"))
         xVel -= 10;
     if (pressed.includes("ArrowRight"))
