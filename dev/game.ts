@@ -322,7 +322,7 @@ function animate() {
             if (bullets) {
                 for (let x = 0; x < bullets.length; x++) {
                     let bullet = bullets[x];
-                    if (!bullet.meta["pierce"]) throw new Error("Bullet has no pierce. Something has gone horribly wrong.");
+                    if (bullet.meta["pierce"] == undefined) throw new Error("Bullet has no pierce. Something has gone horribly wrong.");
                     if (bullet.radius + ball.radius >= Math.sqrt(Math.pow(bullet.x - ball.x, 2) + Math.pow(bullet.y - ball.y, 2))) {
                         if (ball.meta["health"]) {
                             while (bullet.meta["pierce"] > 0 && ball.meta["health"] > 0) {
