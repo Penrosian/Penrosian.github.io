@@ -1,0 +1,3 @@
+#!/bin/sh
+tsc game.ts
+mv game.js ../JS/tsc/game.js

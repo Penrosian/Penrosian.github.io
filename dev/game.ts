@@ -5,18 +5,19 @@
     Better boss scoring system (currently just gives 50 score every time)
     Tanky enemies
 */
-
 const canvas = document.getElementById("gameCanvas");
+if (canvas == null) throw new Error("No canvas found.");
+// @ts-expect-error: canvas has getContext
 const ctx = canvas.getContext("2d");
 
 const canvasWidth = Number(canvas.getAttribute("width"));
 const canvasHeight = Number(canvas.getAttribute("height"));
 
-function randInt(low, high) {
+function randInt(low: number, high: number) {
     return Math.floor(Math.random() * (1 + high - low)) + low;
 }
 
-function fillCircle(x, y, radius, fillColor, strokeColor, strokeWidth, arcLength) {
+function fillCircle(x: number, y: number, radius: number, fillColor: string, strokeColor: string, strokeWidth: number, arcLength: number) {
     ctx.fillStyle = fillColor;
     ctx.strokeStyle = strokeColor;
     ctx.lineWidth = strokeWidth;
@@ -26,19 +27,78 @@ function fillCircle(x, y, radius, fillColor, strokeColor, strokeWidth, arcLength
     ctx.fill();
 }
 
-function fillPage(fillColor) {
+function fillPage(fillColor: string) {
     ctx.fillStyle = fillColor;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 }
 
-function fillRect(x, y, width, height, fillColor) {
+function fillRect(x: number, y: number, width: number, height: number, fillColor: string) {
     ctx.fillStyle = fillColor;
     ctx.fillRect(x, y, width, height);
 }
 
 // Storing in an object instead of in a bunch of variables is
 // cleaner and means I can add more shapes using code
-let animData = {
+type ShapeAnimation = "bounce" | "static" | "exitKill" | "locked";
+
+type Meta = {
+    health?: number;
+    pierce?: number;
+    boss?: boolean;
+    expanding?: boolean;
+};
+
+type Rect = {
+    "id": any;
+    "class": any;
+    "x": number;
+    "y": number;
+    "width": number;
+    "height": number;
+    "color": string;
+    "animation": ShapeAnimation;
+    "xVel": number;
+    "yVel": number;
+    "meta": object;
+};
+
+type Circle = {
+    "id": any;
+    "class": any;
+    "x": number;
+    "y": number;
+    "radius": number;
+    "length": number;
+    "animation": ShapeAnimation;
+    "xVel": number;
+    "yVel": number;
+    "color": string;
+    "lineColor": string;
+    "lineWidth": number;
+    "meta": Meta;
+};
+
+type Save = {
+    fireMode: string;
+    score: number;
+    wave: number;
+    health: number;
+    shield: number;
+    money: number;
+    shopTimer: number;
+    powerup: string;
+    triple: boolean;
+    big: boolean;
+    fast: boolean;
+    animData: animData;
+};
+
+interface animData {
+    "rects": Rect[];
+    "circles": Circle[];
+}
+
+let animData: animData = {
     "rects": [
         {
             "id": "player",
@@ -82,14 +142,14 @@ let animData = {
             "lineColor": "black",
             "lineWidth": 0,
             "meta": {
-                "boss":true,
-                "health":1
+                "boss": true,
+                "health": 1
             }
         }
     ]
 };
 
-let pressed = [];
+let pressed: string[] = [];
 let cooldown = 0;
 let fireMode = "single";
 let xVel = 0;
@@ -116,43 +176,37 @@ let big = false;
 let fast = false;
 let shieldStatus = "";
 let pierceMod = 1;
-let powerSave;
+let powerSave: any;
+let speed = 2;
+let element: HTMLElement | null;
 
-// Pretty self explanatory
-// Shorthands for looping through animdata to find shape(s)
-function getAnimById(shape, id) {
-    if (shape == "circle") {
-        for (let i = 0; i < animData.circles.length; i++) {
-            if (animData.circles[i].id == id) {
-                return animData.circles[i];
-            }
-        }
-    }
-    if (shape == "rect") {
-        for (let i = 0; i < animData.rects.length; i++) {
-            if (animData.rects[i].id == id) {
-                return animData.rects[i];
-            }
-        }
-    }
+function getCircleById(id: any): Circle | false {
+    for (let i = 0; i < animData.circles.length; i++) if (animData.circles[i].id == id) return animData.circles[i];
     return false;
 }
-function getAnimsByClass(shape, className) {
-    let returns = [];
-    if (shape == "circle") {
-        for (let i = 0; i < animData.circles.length; i++) {
-            if (animData.circles[i].class == className) returns.push(animData.circles[i]);
-        }
-    }
-    if (shape == "rect") {
-        for (let i = 0; i < animData.rects.length; i++) {
-            if (animData.rects[i].class == className) returns.push(animData.rects[i]);
-        }
-    }
+function getRectById(id: any): Rect | false {
+    for (let i = 0; i < animData.rects.length; i++) if (animData.rects[i].id == id) return animData.rects[i];
+    return false;
+}
+function getCirclesByClass(className: any): Circle[] | false {
+    let returns: Circle[] = [];
+    for (let i = 0; i < animData.circles.length; i++) if (animData.circles[i].class == className) returns.push(animData.circles[i]);
     if (returns.length == 0) return false;
     return returns;
 }
-function nextFreeNumericId(shape) { for (let x = 0; ; x++) if (!getAnimById(shape, x)) return x; }
+function getRectsByClass(className: any): Rect[] | false {
+    let returns: Rect[] = [];
+    for (let i = 0; i < animData.rects.length; i++) if (animData.rects[i].class == className) returns.push(animData.rects[i]);
+    if (returns.length == 0) return false;
+    return returns;
+}
+
+function nextFreeNumericId(shape: "circle" | "rect") {
+    for (let x = 0; ; x++) {
+        if (shape == "circle" && !getCircleById(x)) return x;
+        if (shape == "rect" && !getRectById(x)) return x;
+    }
+}
 
 // The main loop
 function animate() {
@@ -160,7 +214,7 @@ function animate() {
     gameStatus = "Survive!";
 
     for (let i = 0; i < animData.rects.length; i++) {
-        rect = animData.rects[i];
+        let rect = animData.rects[i];
         fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
         // Different animation styles move in different ways
         // If you held both directions in bounce mode you could shimmy through the wall,
@@ -201,8 +255,8 @@ function animate() {
 
     // Rectangles and circles are drawn/stored seperately
     for (let i = 0; i < animData.circles.length; i++) {
-        circle = animData.circles[i];
-        fillCircle(circle.x, circle.y, circle.radius, circle.color, circle.lineColor, circle.lineWidth, circle.length)
+        let circle = animData.circles[i];
+        fillCircle(circle.x, circle.y, circle.radius, circle.color, circle.lineColor, circle.lineWidth, circle.length);
         // Different animation styles move in different ways
         // Same bounce collision is applied here, just in case
         if (circle.animation == "bounce") {
@@ -240,71 +294,75 @@ function animate() {
     }
 
     // Custom/Advanced animation rules
-    player = getAnimById("rect", "player");
-    ground = getAnimById("rect", "ground");
+    let player = getRectById("player");
+    if (!player) throw new Error("Player not found. Something has gone horribly wrong.");
+    let ground = getRectById("ground");
+    if (!ground) throw new Error("Ground not found. Something has gone horribly wrong.");
 
     if (player.y + player.height >= ground.y) {
         player.y = ground.y - player.height;
         if (player.yVel < 0) player.yVel = 0;
     }
 
-    let balls = getAnimsByClass("circle", "ball");
-    let bullets = getAnimsByClass("circle", "bullet");
-    for (let i = 0; i < balls.length; i++) {
-        let ball = balls[i];
-        if (ball.y + ball.radius >= ground.y) {
-            ball.y = ground.y - ball.radius;
-            ball.yVel *= -1;
-        }
-        if (player.width / 2 + ball.radius >= Math.sqrt(Math.pow(player.x + player.width / 2 - ball.x, 2) + Math.pow(player.y + player.height / 2 - ball.y, 2)) && immunity <= 0) {
-            immunity = 60;
-            if (shield > 0) shield -= 1;
-            else health -= 1;
-            hurt = 20;
-        }
-        for (let x = 0; x < bullets.length; x++) {
-            let bullet = bullets[x];
-            if (bullet.radius + ball.radius >= Math.sqrt(Math.pow(bullet.x - ball.x, 2) + Math.pow(bullet.y - ball.y, 2))) {
-                if (ball.meta["health"]) {
-                    console.log("Hit healthy enemy");
-                    console.log(ball.meta["health"]);
-                    console.log(bullet.meta["pierce"]);
-                    while (bullet.meta["pierce"] > 0 && ball.meta["health"] > 0) {
-                        bullet.meta["pierce"] -= pierceMod;
-                        ball.meta["health"]--;
-                    }
-                    if (ball.meta["health"] <= 0) {
-                        if (ball.meta["boss"]) {
-                            animData.circles.push({
-                                "id": nextFreeNumericId(),
-                                "class": "explosion",
-                                "x": ball.x,
-                                "y": ball.y,
-                                "radius": 1,
-                                "length": 1,
-                                "animation": "static",
-                                "xVel": 0,
-                                "yVel": 0,
-                                "color": "red",
-                                "lineColor": "black",
-                                "lineWidth": 8,
-                                "meta": {"expanding":true}
-                            });
-                            animData.circles = animData.circles.filter(a => a != ball);
-                            score += 50;
-                            money += 50;
+    let balls = getCirclesByClass("ball");
+    let bullets = getCirclesByClass("bullet");
+    if (balls) {
+        for (let i = 0; i < balls.length; i++) {
+            let ball = balls[i];
+            if (ball.y + ball.radius >= ground.y) {
+                ball.y = ground.y - ball.radius;
+                ball.yVel *= -1;
+            }
+            if (player.width / 2 + ball.radius >= Math.sqrt(Math.pow(player.x + player.width / 2 - ball.x, 2) + Math.pow(player.y + player.height / 2 - ball.y, 2)) && immunity <= 0) {
+                immunity = 60;
+                if (shield > 0) shield -= 1;
+                else health -= 1;
+                hurt = 20;
+            }
+            if (bullets) {
+                for (let x = 0; x < bullets.length; x++) {
+                    let bullet = bullets[x];
+                    if (!bullet.meta["pierce"]) throw new Error("Bullet has no pierce. Something has gone horribly wrong.");
+                    if (bullet.radius + ball.radius >= Math.sqrt(Math.pow(bullet.x - ball.x, 2) + Math.pow(bullet.y - ball.y, 2))) {
+                        if (ball.meta["health"]) {
+                            while (bullet.meta["pierce"] > 0 && ball.meta["health"] > 0) {
+                                bullet.meta["pierce"] -= pierceMod;
+                                ball.meta["health"]--;
+                            }
+                            if (ball.meta["health"] <= 0) {
+                                if (ball.meta["boss"]) {
+                                    animData.circles.push({
+                                        "id": nextFreeNumericId("circle"),
+                                        "class": "explosion",
+                                        "x": ball.x,
+                                        "y": ball.y,
+                                        "radius": 1,
+                                        "length": 1,
+                                        "animation": "static",
+                                        "xVel": 0,
+                                        "yVel": 0,
+                                        "color": "red",
+                                        "lineColor": "black",
+                                        "lineWidth": 8,
+                                        "meta": { "expanding": true }
+                                    });
+                                    animData.circles = animData.circles.filter(a => a != ball);
+                                    score += 50;
+                                    money += 50;
+                                } else {
+                                    score += 5;
+                                    money += 5;
+                                }
+                                animData.circles = animData.circles.filter(a => a != bullet);
+                            }
                         } else {
-                            score += 5;
-                            money += 5;
+                            animData.circles = animData.circles.filter(a => a != ball);
+                            bullet.meta["pierce"] -= pierceMod;
+                            if (bullet.meta["pierce"] <= 0) animData.circles = animData.circles.filter(a => a != bullet);
+                            score += 1;
+                            money += 1;
                         }
-                        animData.circles = animData.circles.filter(a => a != bullet);
                     }
-                } else {
-                    animData.circles = animData.circles.filter(a => a != ball);
-                    bullet.meta["pierce"] -= pierceMod;
-                    if (bullet.meta["pierce"] <= 0) animData.circles = animData.circles.filter(a => a != bullet);
-                    score += 1;
-                    money += 1;
                 }
             }
         }
@@ -319,11 +377,13 @@ function animate() {
                 powerup = "None";
                 break;
             case "Bomb":
-                balls = getAnimsByClass("circle", "ball");
-                for (let i = 0; i < balls.length; i++) {
-                    let ball = balls[i];
-                    if (player.width / 2 + 400 >= Math.sqrt(Math.pow(player.x + player.width / 2 - ball.x, 2) + Math.pow(player.y + player.height / 2 - ball.y, 2)))
-                        animData.circles = animData.circles.filter(a => a != ball);
+                balls = getCirclesByClass("ball");
+                if (balls) {
+                    for (let i = 0; i < balls.length; i++) {
+                        let ball = balls[i];
+                        if (player.width / 2 + 400 >= Math.sqrt(Math.pow(player.x + player.width / 2 - ball.x, 2) + Math.pow(player.y + player.height / 2 - ball.y, 2)))
+                            animData.circles = animData.circles.filter(a => a != ball);
+                    }
                 }
                 powerup = "None";
                 break;
@@ -356,19 +416,19 @@ function animate() {
     if (pressed.includes("KeyA")) player.xVel -= speed;
     if (pressed.includes("KeyD")) player.xVel += speed;
     if (pressed.includes("Space") && player.y + player.height >= ground.y) player.yVel = -5;
-    if (pressed.includes("KeyP") && pressed.includes("KeyE") && pressed.includes("KeyN") && pressed.includes("KeyR") && pressed.includes("KeyO") && pressed.includes("KeyS") && pressed.includes("KeyI") && pressed.includes("KeyA") && pressed.includes("KeyN")) {
+    if (pressed.includes("KeyP") && pressed.includes("KeyE") && pressed.includes("KeyN") && pressed.includes("KeyR") && pressed.includes("KeyO") && pressed.includes("KeyS") && pressed.includes("KeyI") && pressed.includes("KeyA")) {
         money = 999999999999;
         shield = 999999999999;
     }
-    
+
     if (pressed.includes("KeyZ")) fireMode = "single";
     if (pressed.includes("KeyX") && triple) fireMode = "triple";
     if (pressed.includes("KeyC") && big) fireMode = "big";
     if (pressed.includes("KeyV") && fast) fireMode = "fast";
 
-    player.xVel *= 0.8
+    player.xVel *= 0.8;
     if (player.yVel < 10) {
-        player.yVel += 0.2
+        player.yVel += 0.2;
     }
 
     if (hurt > 15) player.color = "red";
@@ -377,8 +437,6 @@ function animate() {
     else player.color = "black";
 
     // Firing
-    // Very cursed, don't @ me
-    // It works with the power of magic and if statements inside of switch case
     if (pressed.includes("ArrowLeft")) xVel -= 10;
     if (pressed.includes("ArrowRight")) xVel += 10;
     if (pressed.includes("ArrowUp")) yVel -= 10;
@@ -399,7 +457,7 @@ function animate() {
                     "color": "lightGrey",
                     "lineColor": "black",
                     "lineWidth": 3,
-                    "meta": {"pierce": 3}
+                    "meta": { "pierce": 3 }
                 });
                 cooldown = 20;
                 break;
@@ -417,7 +475,7 @@ function animate() {
                     "color": "lightGrey",
                     "lineColor": "black",
                     "lineWidth": 3,
-                    "meta": {"pierce": 3}
+                    "meta": { "pierce": 3 }
                 });
                 if (xVel != 0 && yVel != 0) {
                     animData.circles.push({
@@ -433,7 +491,7 @@ function animate() {
                         "color": "lightGrey",
                         "lineColor": "black",
                         "lineWidth": 3,
-                        "meta": {"pierce": 3}
+                        "meta": { "pierce": 3 }
                     });
                     animData.circles.push({
                         "id": nextFreeNumericId("circle"),
@@ -448,7 +506,7 @@ function animate() {
                         "color": "lightGrey",
                         "lineColor": "black",
                         "lineWidth": 3,
-                        "meta": {"pierce": 3}
+                        "meta": { "pierce": 3 }
                     });
                 }
                 if (xVel != 0 && yVel == 0) {
@@ -465,7 +523,7 @@ function animate() {
                         "color": "lightGrey",
                         "lineColor": "black",
                         "lineWidth": 3,
-                        "meta": {"pierce": 3}
+                        "meta": { "pierce": 3 }
                     });
                     animData.circles.push({
                         "id": nextFreeNumericId("circle"),
@@ -480,7 +538,7 @@ function animate() {
                         "color": "lightGrey",
                         "lineColor": "black",
                         "lineWidth": 3,
-                        "meta": {"pierce": 3}
+                        "meta": { "pierce": 3 }
                     });
                 }
                 if (xVel == 0 && yVel != 0) {
@@ -497,7 +555,7 @@ function animate() {
                         "color": "lightGrey",
                         "lineColor": "black",
                         "lineWidth": 3,
-                        "meta": {"pierce": 3}
+                        "meta": { "pierce": 3 }
                     });
                     animData.circles.push({
                         "id": nextFreeNumericId("circle"),
@@ -512,7 +570,7 @@ function animate() {
                         "color": "lightGrey",
                         "lineColor": "black",
                         "lineWidth": 3,
-                        "meta": {"pierce": 3}
+                        "meta": { "pierce": 3 }
                     });
                 }
                 cooldown = 40;
@@ -531,7 +589,7 @@ function animate() {
                     "color": "lightGrey",
                     "lineColor": "black",
                     "lineWidth": 3,
-                    "meta": {"pierce": 100}
+                    "meta": { "pierce": 100 }
                 });
                 cooldown = 30;
                 break;
@@ -549,7 +607,7 @@ function animate() {
                     "color": "lightGrey",
                     "lineColor": "black",
                     "lineWidth": 3,
-                    "meta": {"pierce": 2}
+                    "meta": { "pierce": 2 }
                 });
                 cooldown = 5;
                 break;
@@ -559,9 +617,9 @@ function animate() {
     xVel = 0;
     yVel = 0;
 
-    let explosions = getAnimsByClass("circle", "explosion");
+    let explosions = getCirclesByClass("explosion");
     if (explosions) {
-            explosions.forEach(explosion => {
+        explosions.forEach(explosion => {
             if (explosion.meta["expanding"]) {
                 explosion.radius += 1;
                 if (explosion.radius >= 30) explosion.meta["expanding"] = false;
@@ -571,20 +629,22 @@ function animate() {
         });
     }
 
-    if (!getAnimsByClass("circle", "ball") && (wave + 1) % 5 == 0) {
+    if (!getCirclesByClass("ball") && (wave + 1) % 5 == 0) {
         wave += 1;
         shopTimer = 1800;
     }
-    if (!getAnimsByClass("circle", "ball") && shopTimer < 0) {
+    if (!getCirclesByClass("ball") && shopTimer < 0) {
         wave += 1;
         immunity = 120;
         if (health < 5) health++;
+        ground = getRectById("ground");
+        if (!ground) throw new Error("Ground is missing. Something has gone horribly wrong.");
         for (let i = 0; i < wave * 2.5; i++)
             animData.circles.push({
-                "id": nextFreeNumericId("shape"),
+                "id": nextFreeNumericId("circle"),
                 "class": "ball",
                 "x": randInt(0, canvasWidth / 5) * 5,
-                "y": randInt(0, (canvasHeight - getAnimById("rect", "ground").height) / 5) * 5,
+                "y": randInt(0, (canvasHeight - ground.height) / 5) * 5,
                 "radius": 10,
                 "length": 1,
                 "animation": "bounce",
@@ -613,10 +673,10 @@ function animate() {
 
     if (shield > 0) shieldStatus = "+" + shield;
     else shieldStatus = "";
-    document.getElementById("status").innerHTML = gameStatus;
-    document.getElementById("wave").innerHTML = "Wave: " + wave + " - Score: " + score + " - Health: " + health + shieldStatus;
-    document.getElementById("item").innerHTML = "Money: " + money + " - Powerup: " + powerup + " - Powerup Duration: " + Math.abs(Math.ceil(powerDuration / 60));
-    document.getElementById("powerMode").innerHTML = powerMode;
+    element = document.getElementById("status"); if (element) element.innerHTML = gameStatus;
+    element = document.getElementById("wave"); if (element) element.innerHTML = "Wave: " + wave + " - Score: " + score + " - Health: " + health + shieldStatus;
+    element = document.getElementById("item"); if (element) element.innerHTML = "Money: " + money + " - Powerup: " + powerup + " - Powerup Duration: " + Math.abs(Math.ceil(powerDuration / 60));
+    element = document.getElementById("powerMode"); if (element) element.innerHTML = powerMode;
     if (powerMode == "Unlock Mode") {
         tripleCost = 220;
         bigCost = 340;
@@ -627,96 +687,98 @@ function animate() {
         bigCost = 70;
         fastCost = 100;
     }
-    document.getElementById("triple").innerHTML = "Triple Shot $" + tripleCost;
-    document.getElementById("big").innerHTML = "Big Shot $" + bigCost;
-    document.getElementById("fast").innerHTML = "Fast Shot $" + fastCost;
+    element = document.getElementById("triple"); if (element) element.innerHTML = "Triple Shot $" + tripleCost;
+    element = document.getElementById("big"); if (element) element.innerHTML = "Big Shot $" + bigCost;
+    element = document.getElementById("fast"); if (element) element.innerHTML = "Fast Shot $" + fastCost;
 
     // Sets and unsets disabled for the shop buttons if they aren't purchasable
-    document.getElementById("shield").setAttribute("disabled", "");
-    if (shield < 5 && money >= 50) document.getElementById("shield").removeAttribute("disabled");
-    document.getElementById("teleport").setAttribute("disabled", "");
-    if (powerup == "None" && money >= 30) document.getElementById("teleport").removeAttribute("disabled");
-    document.getElementById("bomb").setAttribute("disabled", "");
-    if (powerup == "None" && money >= 40) document.getElementById("bomb").removeAttribute("disabled");
-    document.getElementById("speed").setAttribute("disabled", "");
-    if (powerup == "None" && money >= 60) document.getElementById("speed").removeAttribute("disabled");
+    element = document.getElementById("shield"); if (element) element.setAttribute("disabled", "");
+    if (shield < 5 && money >= 50) { element = document.getElementById("shield"); if (element) element.removeAttribute("disabled"); }
+    element = document.getElementById("teleport"); if (element) element.setAttribute("disabled", "");
+    if (powerup == "None" && money >= 30) { element = document.getElementById("teleport"); if (element) element.removeAttribute("disabled"); }
+    element = document.getElementById("bomb"); if (element) element.setAttribute("disabled", "");
+    if (powerup == "None" && money >= 40) { element = document.getElementById("bomb"); if (element) element.removeAttribute("disabled"); }
+    element = document.getElementById("speed"); if (element) element.setAttribute("disabled", "");
+    if (powerup == "None" && money >= 60) { element = document.getElementById("speed"); if (element) element.removeAttribute("disabled"); }
 
-    document.getElementById("triple").setAttribute("disabled", "");
-    if (powerMode == "Unlock Mode" && !triple && money >= 220) document.getElementById("triple").removeAttribute("disabled");
-    if (powerMode == "Powerup Mode" && powerup == "None" && money >= 60) document.getElementById("triple").removeAttribute("disabled");
-    document.getElementById("big").setAttribute("disabled", "");
-    if (powerMode == "Unlock Mode" && !big && money >= 340) document.getElementById("big").removeAttribute("disabled");
-    if (powerMode == "Powerup Mode" && powerup == "None" && money >= 70) document.getElementById("big").removeAttribute("disabled");
-    document.getElementById("fast").setAttribute("disabled", "");
-    if (powerMode == "Unlock Mode" && !fast && money >= 600) document.getElementById("fast").removeAttribute("disabled");
-    if (powerMode == "Powerup Mode" && powerup == "None" && money >= 100) document.getElementById("fast").removeAttribute("disabled");
+    element = document.getElementById("triple"); if (element) element.setAttribute("disabled", "");
+    if (powerMode == "Unlock Mode" && !triple && money >= 220) { element = document.getElementById("triple"); if (element) element.removeAttribute("disabled"); }
+    if (powerMode == "Powerup Mode" && powerup == "None" && money >= 60) { element = document.getElementById("triple"); if (element) element.removeAttribute("disabled"); }
+    element = document.getElementById("big"); if (element) element.setAttribute("disabled", "");
+    if (powerMode == "Unlock Mode" && !big && money >= 340) { element = document.getElementById("big"); if (element) element.removeAttribute("disabled"); }
+    if (powerMode == "Powerup Mode" && powerup == "None" && money >= 70) { element = document.getElementById("big"); if (element) element.removeAttribute("disabled"); }
+    element = document.getElementById("fast"); if (element) element.setAttribute("disabled", "");
+    if (powerMode == "Unlock Mode" && !fast && money >= 600) { element = document.getElementById("fast"); if (element) element.removeAttribute("disabled"); }
+    if (powerMode == "Powerup Mode" && powerup == "None" && money >= 100) { element = document.getElementById("fast"); if (element) element.removeAttribute("disabled"); }
 
-    if (triple) document.getElementById("tripleFire").removeAttribute("disabled");
-    if (big) document.getElementById("bigFire").removeAttribute("disabled");
-    if (fast) document.getElementById("fastFire").removeAttribute("disabled");
+    if (triple) element = document.getElementById("tripleFire"); if (element) element.removeAttribute("disabled");
+    if (big) element = document.getElementById("bigFire"); if (element) element.removeAttribute("disabled");
+    if (fast) element = document.getElementById("fastFire"); if (element) element.removeAttribute("disabled");
 
     if (health > 0)
         requestAnimationFrame(animate);
-    else document.getElementById("status").innerHTML = "Game over!";
+    else element = document.getElementById("status"); if (element) element.innerHTML = "Game over!";
 }
 
 animate();
 
-document.getElementById("tripleFire").setAttribute("disabled", "");
-document.getElementById("bigFire").setAttribute("disabled", "");
-document.getElementById("fastFire").setAttribute("disabled", "");
+element = document.getElementById("tripleFire"); if (element) element.setAttribute("disabled", "");
+element = document.getElementById("bigFire"); if (element) element.setAttribute("disabled", "");
+element = document.getElementById("fastFire"); if (element) element.setAttribute("disabled", "");
 
-document.getElementById("singleFire").addEventListener("click", () => fireMode = "single");
-document.getElementById("tripleFire").addEventListener("click", () => fireMode = "triple");
-document.getElementById("bigFire").addEventListener("click", () => fireMode = "big");
-document.getElementById("fastFire").addEventListener("click", () => fireMode = "fast");
+element = document.getElementById("singleFire"); if (element) element.addEventListener("click", () => fireMode = "single");
+element = document.getElementById("tripleFire"); if (element) element.addEventListener("click", () => fireMode = "triple");
+element = document.getElementById("bigFire"); if (element) element.addEventListener("click", () => fireMode = "big");
+element = document.getElementById("fastFire"); if (element) element.addEventListener("click", () => fireMode = "fast");
 
-document.getElementById("save").addEventListener("click", () => {
+element = document.getElementById("save"); if (element) element.addEventListener("click", () => {
     let save = JSON.stringify({
-        "fireMode": fireMode,
-        "score": score,
-        "wave": wave,
-        "health": health,
-        "shield": shield,
-        "money": money,
-        "shopTimer": shopTimer,
-        "powerup": powerup,
-        "triple": triple,
-        "big": big,
-        "fast": fast,
-        "animData": animData
+        fireMode: fireMode,
+        score: score,
+        wave: wave,
+        health: health,
+        shield: shield,
+        money: money,
+        shopTimer: shopTimer,
+        powerup: powerup,
+        triple: triple,
+        big: big,
+        fast: fast,
+        animData: animData
     });
     localStorage.setItem("save", save);
     alert("Your save is now in local storage, but you can copy this and save it somewhere safe in case your local storage gets cleared: " + save);
 });
-document.getElementById("load").addEventListener("click", () => {
+element = document.getElementById("load"); if (element) element.addEventListener("click", () => {
     let storage = localStorage.getItem("save");
-    let save = {};
-    let answer = "";
+    let save: Save | false = false;
+    let answer: string | null;
     let run = true;
     if (storage != null) {
         answer = prompt("A save was found in local storage. If you have a different save to load, paste it here. Otherwise, leave it blank.");
         if (answer == "") {
-            try { save = JSON.parse(storage) }
+            try { save = JSON.parse(storage); }
             catch (error) {
                 alert("Stored save is invalid.");
                 run = false;
             }
         } else {
-            try { save = JSON.parse(answer) }
+            // @ts-expect-error
+            try { save = JSON.parse(answer); }
             catch (error) {
                 alert("Save is invalid. Make sure you copied the full save.");
                 run = false;
             }
         }
     } else {
-        try { save = JSON.parse(prompt("Paste your save here.")) }
+        // @ts-expect-error
+        try { save = JSON.parse(prompt("Paste your save here.")); }
         catch (error) {
             alert("Save is invalid. Make sure you copied the full save.");
             run = false;
         }
     }
-    if (run) {
+    if (run && save) {
         try {
             immunity = 300;
             fireMode = save.fireMode;
@@ -735,32 +797,32 @@ document.getElementById("load").addEventListener("click", () => {
             alert("Save is valid, but loading failed. The save may be from a different version. As much of the save as possible was loaded, but some parts may be missing.");
         }
     }
-})
+});
 
-document.getElementById("skip").addEventListener("click", () => { if (shopTimer > 300) shopTimer = 300 });
+element = document.getElementById("skip"); if (element) element.addEventListener("click", () => { if (shopTimer > 300) shopTimer = 300; });
 
-document.getElementById("shield").addEventListener("click", () => {
+element = document.getElementById("shield"); if (element) element.addEventListener("click", () => {
     shield += 1;
     money -= 50;
 });
-document.getElementById("teleport").addEventListener("click", () => {
+element = document.getElementById("teleport"); if (element) element.addEventListener("click", () => {
     powerup = "Teleport";
     money -= 30;
 });
-document.getElementById("bomb").addEventListener("click", () => {
+element = document.getElementById("bomb"); if (element) element.addEventListener("click", () => {
     powerup = "Bomb";
     money -= 40;
 });
-document.getElementById("speed").addEventListener("click", () => {
+element = document.getElementById("speed"); if (element) element.addEventListener("click", () => {
     powerup = "Speed Boost";
     money -= 60;
 });
 
-document.getElementById("powerMode").addEventListener("click", () => {
+element = document.getElementById("powerMode"); if (element) element.addEventListener("click", () => {
     if (powerMode == "Unlock Mode") powerMode = "Powerup Mode";
     else powerMode = "Unlock Mode";
 });
-document.getElementById("triple").addEventListener("click", () => {
+element = document.getElementById("triple"); if (element) element.addEventListener("click", () => {
     if (powerMode == "Unlock Mode") {
         triple = true;
         money -= 220;
@@ -770,7 +832,7 @@ document.getElementById("triple").addEventListener("click", () => {
         money -= 60;
     }
 });
-document.getElementById("big").addEventListener("click", () => {
+element = document.getElementById("big"); if (element) element.addEventListener("click", () => {
     if (powerMode == "Unlock Mode") {
         big = true;
         money -= 340;
@@ -780,7 +842,7 @@ document.getElementById("big").addEventListener("click", () => {
         money -= 70;
     }
 });
-document.getElementById("fast").addEventListener("click", () => {
+element = document.getElementById("fast"); if (element) element.addEventListener("click", () => {
     if (powerMode == "Unlock Mode" && !fast && money >= 600) {
         fast = true;
         money -= 600;
