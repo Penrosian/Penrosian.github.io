@@ -1,0 +1,29 @@
+name: Transpile TypeScript
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./dev
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+
+    - name: Transpile TypeScript
+      run: |
+        npm install typescript
+        npx tsc
+    
+    - name: Move JS Files
+      run: bash move
+        
