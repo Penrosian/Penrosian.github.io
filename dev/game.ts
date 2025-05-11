@@ -253,7 +253,7 @@ function animate() {
         }
     }
 
-    // Rectangles and circles are drawn/stored seperately
+    // Rectangles and circles are stored/drawn seperately
     for (let i = 0; i < animData.circles.length; i++) {
         let circle = animData.circles[i];
         fillCircle(circle.x, circle.y, circle.radius, circle.color, circle.lineColor, circle.lineWidth, circle.length);
