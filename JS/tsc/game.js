@@ -1,3 +1,4 @@
+"use strict";
 // TODO:
 /*
     Boss health bar
@@ -5,13 +6,13 @@
     Better boss scoring system (currently just gives 50 score every time)
     Tanky enemies
 */
-var canvas = document.getElementById("gameCanvas");
+const canvas = document.getElementById("gameCanvas");
 if (canvas == null)
     throw new Error("No canvas found.");
 // @ts-expect-error: canvas has getContext
-var ctx = canvas.getContext("2d");
-var canvasWidth = Number(canvas.getAttribute("width"));
-var canvasHeight = Number(canvas.getAttribute("height"));
+const ctx = canvas.getContext("2d");
+const canvasWidth = Number(canvas.getAttribute("width"));
+const canvasHeight = Number(canvas.getAttribute("height"));
 function randInt(low, high) {
     return Math.floor(Math.random() * (1 + high - low)) + low;
 }
@@ -32,7 +33,7 @@ function fillRect(x, y, width, height, fillColor) {
     ctx.fillStyle = fillColor;
     ctx.fillRect(x, y, width, height);
 }
-var animData = {
+let animData = {
     "rects": [
         {
             "id": "player",
@@ -82,51 +83,51 @@ var animData = {
         }
     ]
 };
-var pressed = [];
-var cooldown = 0;
-var fireMode = "single";
-var xVel = 0;
-var yVel = 0;
-var score = 0;
-var wave = 0;
-var health = 5;
-var shield = 0;
-var powerDuration = 0;
-var immunity = 60;
-var hurt = 0;
-var money = 0;
-var gameStatus = "Survive!";
-var shopTimer = -1;
-var powerup = "None";
-var speedCounter = -1;
-var firePower = false;
-var powerMode = "Unlock Mode";
-var tripleCost = 100;
-var bigCost = 130;
-var fastCost = 220;
-var triple = false;
-var big = false;
-var fast = false;
-var shieldStatus = "";
-var pierceMod = 1;
-var powerSave;
-var speed = 2;
-var element;
+let pressed = [];
+let cooldown = 0;
+let fireMode = "single";
+let xVel = 0;
+let yVel = 0;
+let score = 0;
+let wave = 0;
+let health = 5;
+let shield = 0;
+let powerDuration = 0;
+let immunity = 60;
+let hurt = 0;
+let money = 0;
+let gameStatus = "Survive!";
+let shopTimer = -1;
+let powerup = "None";
+let speedCounter = -1;
+let firePower = false;
+let powerMode = "Unlock Mode";
+let tripleCost = 100;
+let bigCost = 130;
+let fastCost = 220;
+let triple = false;
+let big = false;
+let fast = false;
+let shieldStatus = "";
+let pierceMod = 1;
+let powerSave;
+let speed = 2;
+let element;
 function getCircleById(id) {
-    for (var i = 0; i < animData.circles.length; i++)
+    for (let i = 0; i < animData.circles.length; i++)
         if (animData.circles[i].id == id)
             return animData.circles[i];
     return false;
 }
 function getRectById(id) {
-    for (var i = 0; i < animData.rects.length; i++)
+    for (let i = 0; i < animData.rects.length; i++)
         if (animData.rects[i].id == id)
             return animData.rects[i];
     return false;
 }
 function getCirclesByClass(className) {
-    var returns = [];
-    for (var i = 0; i < animData.circles.length; i++)
+    let returns = [];
+    for (let i = 0; i < animData.circles.length; i++)
         if (animData.circles[i].class == className)
             returns.push(animData.circles[i]);
     if (returns.length == 0)
@@ -134,8 +135,8 @@ function getCirclesByClass(className) {
     return returns;
 }
 function getRectsByClass(className) {
-    var returns = [];
-    for (var i = 0; i < animData.rects.length; i++)
+    let returns = [];
+    for (let i = 0; i < animData.rects.length; i++)
         if (animData.rects[i].class == className)
             returns.push(animData.rects[i]);
     if (returns.length == 0)
@@ -143,7 +144,7 @@ function getRectsByClass(className) {
     return returns;
 }
 function nextFreeNumericId(shape) {
-    for (var x = 0;; x++) {
+    for (let x = 0;; x++) {
         if (shape == "circle" && !getCircleById(x))
             return x;
         if (shape == "rect" && !getRectById(x))
@@ -154,8 +155,8 @@ function nextFreeNumericId(shape) {
 function animate() {
     fillPage("lightBlue");
     gameStatus = "Survive!";
-    var _loop_1 = function (i) {
-        var rect = animData.rects[i];
+    for (let i = 0; i < animData.rects.length; i++) {
+        let rect = animData.rects[i];
         fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
         // Different animation styles move in different ways
         // If you held both directions in bounce mode you could shimmy through the wall,
@@ -190,18 +191,16 @@ function animate() {
         }
         if (rect.animation == "exitKill") {
             if (rect.x > canvasWidth || rect.x + rect.width < 0 || rect.y > canvasHeight || rect.y + rect.height < 0)
-                animData.rects = animData.rects.filter(function (i) { return i != rect; });
+                animData.rects = animData.rects.filter(i => i != rect);
         }
         if (rect.animation != "static") {
             rect.x += rect.xVel;
             rect.y += rect.yVel;
         }
-    };
-    for (var i = 0; i < animData.rects.length; i++) {
-        _loop_1(i);
     }
-    var _loop_2 = function (i) {
-        var circle = animData.circles[i];
+    // Rectangles and circles are stored/drawn seperately
+    for (let i = 0; i < animData.circles.length; i++) {
+        let circle = animData.circles[i];
         fillCircle(circle.x, circle.y, circle.radius, circle.color, circle.lineColor, circle.lineWidth, circle.length);
         // Different animation styles move in different ways
         // Same bounce collision is applied here, just in case
@@ -235,22 +234,18 @@ function animate() {
         }
         if (circle.animation == "exitKill") {
             if (circle.x - circle.radius > canvasWidth || circle.x + circle.radius < 0 || circle.y - circle.radius > canvasHeight || circle.y + circle.radius < 0)
-                animData.circles = animData.circles.filter(function (i) { return i != circle; });
+                animData.circles = animData.circles.filter(i => i != circle);
         }
         if (circle.animation != "static") {
             circle.x += circle.xVel;
             circle.y += circle.yVel;
         }
-    };
-    // Rectangles and circles are drawn/stored seperately
-    for (var i = 0; i < animData.circles.length; i++) {
-        _loop_2(i);
     }
     // Custom/Advanced animation rules
-    var player = getRectById("player");
+    let player = getRectById("player");
     if (!player)
         throw new Error("Player not found. Something has gone horribly wrong.");
-    var ground = getRectById("ground");
+    let ground = getRectById("ground");
     if (!ground)
         throw new Error("Ground not found. Something has gone horribly wrong.");
     if (player.y + player.height >= ground.y) {
@@ -258,11 +253,11 @@ function animate() {
         if (player.yVel < 0)
             player.yVel = 0;
     }
-    var balls = getCirclesByClass("ball");
-    var bullets = getCirclesByClass("bullet");
+    let balls = getCirclesByClass("ball");
+    let bullets = getCirclesByClass("bullet");
     if (balls) {
-        var _loop_3 = function (i) {
-            var ball = balls[i];
+        for (let i = 0; i < balls.length; i++) {
+            let ball = balls[i];
             if (ball.y + ball.radius >= ground.y) {
                 ball.y = ground.y - ball.radius;
                 ball.yVel *= -1;
@@ -276,8 +271,8 @@ function animate() {
                 hurt = 20;
             }
             if (bullets) {
-                var _loop_5 = function (x) {
-                    var bullet = bullets[x];
+                for (let x = 0; x < bullets.length; x++) {
+                    let bullet = bullets[x];
                     if (bullet.meta["pierce"] == undefined)
                         throw new Error("Bullet has no pierce. Something has gone horribly wrong.");
                     if (bullet.radius + ball.radius >= Math.sqrt(Math.pow(bullet.x - ball.x, 2) + Math.pow(bullet.y - ball.y, 2))) {
@@ -303,7 +298,7 @@ function animate() {
                                         "lineWidth": 8,
                                         "meta": { "expanding": true }
                                     });
-                                    animData.circles = animData.circles.filter(function (a) { return a != ball; });
+                                    animData.circles = animData.circles.filter(a => a != ball);
                                     score += 50;
                                     money += 50;
                                 }
@@ -311,26 +306,20 @@ function animate() {
                                     score += 5;
                                     money += 5;
                                 }
-                                animData.circles = animData.circles.filter(function (a) { return a != bullet; });
+                                animData.circles = animData.circles.filter(a => a != bullet);
                             }
                         }
                         else {
-                            animData.circles = animData.circles.filter(function (a) { return a != ball; });
+                            animData.circles = animData.circles.filter(a => a != ball);
                             bullet.meta["pierce"] -= pierceMod;
                             if (bullet.meta["pierce"] <= 0)
-                                animData.circles = animData.circles.filter(function (a) { return a != bullet; });
+                                animData.circles = animData.circles.filter(a => a != bullet);
                             score += 1;
                             money += 1;
                         }
                     }
-                };
-                for (var x = 0; x < bullets.length; x++) {
-                    _loop_5(x);
                 }
             }
-        };
-        for (var i = 0; i < balls.length; i++) {
-            _loop_3(i);
         }
     }
     if (pressed.includes("KeyQ") && powerup != "None" && powerDuration < 0) {
@@ -344,13 +333,10 @@ function animate() {
             case "Bomb":
                 balls = getCirclesByClass("ball");
                 if (balls) {
-                    var _loop_4 = function (i) {
-                        var ball = balls[i];
+                    for (let i = 0; i < balls.length; i++) {
+                        let ball = balls[i];
                         if (player.width / 2 + 400 >= Math.sqrt(Math.pow(player.x + player.width / 2 - ball.x, 2) + Math.pow(player.y + player.height / 2 - ball.y, 2)))
-                            animData.circles = animData.circles.filter(function (a) { return a != ball; });
-                    };
-                    for (var i = 0; i < balls.length; i++) {
-                        _loop_4(i);
+                            animData.circles = animData.circles.filter(a => a != ball);
                     }
                 }
                 powerup = "None";
@@ -596,9 +582,9 @@ function animate() {
     }
     xVel = 0;
     yVel = 0;
-    var explosions = getCirclesByClass("explosion");
+    let explosions = getCirclesByClass("explosion");
     if (explosions) {
-        explosions.forEach(function (explosion) {
+        explosions.forEach(explosion => {
             if (explosion.meta["expanding"]) {
                 explosion.radius += 1;
                 if (explosion.radius >= 30)
@@ -607,7 +593,7 @@ function animate() {
             else
                 explosion.radius -= 1;
             if (explosion.radius <= 0)
-                animData.circles = animData.circles.filter(function (a) { return a != explosion; });
+                animData.circles = animData.circles.filter(a => a != explosion);
         });
     }
     if (!getCirclesByClass("ball") && (wave + 1) % 5 == 0) {
@@ -622,7 +608,7 @@ function animate() {
         ground = getRectById("ground");
         if (!ground)
             throw new Error("Ground is missing. Something has gone horribly wrong.");
-        for (var i = 0; i < wave * 2.5; i++)
+        for (let i = 0; i < wave * 2.5; i++)
             animData.circles.push({
                 "id": nextFreeNumericId("circle"),
                 "class": "ball",
@@ -794,20 +780,20 @@ if (element)
     element.setAttribute("disabled", "");
 element = document.getElementById("singleFire");
 if (element)
-    element.addEventListener("click", function () { return fireMode = "single"; });
+    element.addEventListener("click", () => fireMode = "single");
 element = document.getElementById("tripleFire");
 if (element)
-    element.addEventListener("click", function () { return fireMode = "triple"; });
+    element.addEventListener("click", () => fireMode = "triple");
 element = document.getElementById("bigFire");
 if (element)
-    element.addEventListener("click", function () { return fireMode = "big"; });
+    element.addEventListener("click", () => fireMode = "big");
 element = document.getElementById("fastFire");
 if (element)
-    element.addEventListener("click", function () { return fireMode = "fast"; });
+    element.addEventListener("click", () => fireMode = "fast");
 element = document.getElementById("save");
 if (element)
-    element.addEventListener("click", function () {
-        var save = JSON.stringify({
+    element.addEventListener("click", () => {
+        let save = JSON.stringify({
             fireMode: fireMode,
             score: score,
             wave: wave,
@@ -826,11 +812,11 @@ if (element)
     });
 element = document.getElementById("load");
 if (element)
-    element.addEventListener("click", function () {
-        var storage = localStorage.getItem("save");
-        var save = false;
-        var answer;
-        var run = true;
+    element.addEventListener("click", () => {
+        let storage = localStorage.getItem("save");
+        let save = false;
+        let answer;
+        let run = true;
         if (storage != null) {
             answer = prompt("A save was found in local storage. If you have a different save to load, paste it here. Otherwise, leave it blank.");
             if (answer == "") {
@@ -886,35 +872,35 @@ if (element)
     });
 element = document.getElementById("skip");
 if (element)
-    element.addEventListener("click", function () { if (shopTimer > 300)
+    element.addEventListener("click", () => { if (shopTimer > 300)
         shopTimer = 300; });
 element = document.getElementById("shield");
 if (element)
-    element.addEventListener("click", function () {
+    element.addEventListener("click", () => {
         shield += 1;
         money -= 50;
     });
 element = document.getElementById("teleport");
 if (element)
-    element.addEventListener("click", function () {
+    element.addEventListener("click", () => {
         powerup = "Teleport";
         money -= 30;
     });
 element = document.getElementById("bomb");
 if (element)
-    element.addEventListener("click", function () {
+    element.addEventListener("click", () => {
         powerup = "Bomb";
         money -= 40;
     });
 element = document.getElementById("speed");
 if (element)
-    element.addEventListener("click", function () {
+    element.addEventListener("click", () => {
         powerup = "Speed Boost";
         money -= 60;
     });
 element = document.getElementById("powerMode");
 if (element)
-    element.addEventListener("click", function () {
+    element.addEventListener("click", () => {
         if (powerMode == "Unlock Mode")
             powerMode = "Powerup Mode";
         else
@@ -922,7 +908,7 @@ if (element)
     });
 element = document.getElementById("triple");
 if (element)
-    element.addEventListener("click", function () {
+    element.addEventListener("click", () => {
         if (powerMode == "Unlock Mode") {
             triple = true;
             money -= 220;
@@ -934,7 +920,7 @@ if (element)
     });
 element = document.getElementById("big");
 if (element)
-    element.addEventListener("click", function () {
+    element.addEventListener("click", () => {
         if (powerMode == "Unlock Mode") {
             big = true;
             money -= 340;
@@ -946,7 +932,7 @@ if (element)
     });
 element = document.getElementById("fast");
 if (element)
-    element.addEventListener("click", function () {
+    element.addEventListener("click", () => {
         if (powerMode == "Unlock Mode" && !fast && money >= 600) {
             fast = true;
             money -= 600;
@@ -958,13 +944,13 @@ if (element)
     });
 // Keys need to be tracked in a list to allow for key holding,
 // and so that multiple keys can be pressed at once
-document.addEventListener("keydown", function (event) {
+document.addEventListener("keydown", event => {
     event.preventDefault();
     pressed.push(event.code);
 });
-document.addEventListener("keyup", function (event) {
+document.addEventListener("keyup", event => {
     event.preventDefault();
-    pressed = pressed.filter(function (i) { return i != event.code; });
+    pressed = pressed.filter(i => i != event.code);
 });
 // pressed = pressed.filter(filterFunction);
 /* function filterFunction(input) {

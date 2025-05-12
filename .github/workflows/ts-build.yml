@@ -11,6 +11,12 @@ jobs:
         shell: bash
         working-directory: ./dev
 
+    strategy:
+      matrix:
+        var:
+          - input: game.ts
+            output: ../JS/tsc/game.js
+
     steps:
     - uses: actions/checkout@v4
 
@@ -18,12 +24,10 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20.x'
+    
+    - name: Install TypeScript
+      run: npm install typescript
 
     - name: Transpile TypeScript
-      run: |
-        npm install typescript
-        npx tsc
-    
-    - name: Move JS Files
-      run: bash move
+      run: npx tsc ${{ matrix.var.input }} --outFile ${{ matrix.var.output }}
         

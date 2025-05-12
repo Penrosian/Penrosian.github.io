@@ -1,3 +1,3 @@
 #!/bin/sh
-tsc
-./move
+# Run to transpile to JS before committing
+tsc game.js ../JS/tsc/game.js
