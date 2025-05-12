@@ -756,26 +756,29 @@ element = document.getElementById("load"); if (element) element.addEventListener
     let run = true;
     if (storage != null) {
         answer = prompt("A save was found in local storage. If you have a different save to load, paste it here. Otherwise, leave it blank.");
-        if (answer == "") {
-            try { save = JSON.parse(storage); }
-            catch (error) {
-                alert("Stored save is invalid.");
-                run = false;
+        if (answer != null) {
+            if (answer == "") {
+                try { save = JSON.parse(storage); }
+                catch (error) {
+                    alert("Stored save is invalid.");
+                    run = false;
+                }
+            } else {
+                try { save = JSON.parse(answer); }
+                catch (error) {
+                    alert("Save is invalid. Make sure you copied the full save.");
+                    run = false;
+                }
             }
-        } else {
-            // @ts-ignore
+        }
+    } else {
+        answer = prompt("Paste your save here.");
+        if (answer != null && answer != "") {
             try { save = JSON.parse(answer); }
             catch (error) {
                 alert("Save is invalid. Make sure you copied the full save.");
                 run = false;
             }
-        }
-    } else {
-        // @ts-ignore
-        try { save = JSON.parse(prompt("Paste your save here.")); }
-        catch (error) {
-            alert("Save is invalid. Make sure you copied the full save.");
-            run = false;
         }
     }
     if (run && save) {
