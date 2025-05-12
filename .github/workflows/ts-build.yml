@@ -29,5 +29,5 @@ jobs:
       run: npm install typescript
 
     - name: Transpile TypeScript
-      run: npx tsc ${{ matrix.var.input }} --outFile ${{ matrix.var.output }}
+      run: npx tsc ${{ matrix.var.input }} --outFile ${{ matrix.var.output }} --lib dom,es2024
         

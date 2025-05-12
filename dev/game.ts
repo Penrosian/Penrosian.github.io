@@ -763,7 +763,7 @@ element = document.getElementById("load"); if (element) element.addEventListener
                 run = false;
             }
         } else {
-            // @ts-expect-error
+            // @ts-ignore
             try { save = JSON.parse(answer); }
             catch (error) {
                 alert("Save is invalid. Make sure you copied the full save.");
@@ -771,7 +771,7 @@ element = document.getElementById("load"); if (element) element.addEventListener
             }
         }
     } else {
-        // @ts-expect-error
+        // @ts-ignore
         try { save = JSON.parse(prompt("Paste your save here.")); }
         catch (error) {
             alert("Save is invalid. Make sure you copied the full save.");
