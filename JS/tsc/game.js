@@ -858,12 +858,12 @@ function animate() {
         element.removeAttribute("disabled");
     if (health > 0)
         requestAnimationFrame(animate);
-    else
+    else {
         element = document.getElementById("status");
-    if (element)
-        element.innerHTML = "Game over!";
+        if (element)
+            element.innerHTML = "Game over!";
+    }
 }
-animate();
 element = document.getElementById("tripleFire");
 if (element)
     element.setAttribute("disabled", "");
@@ -1050,3 +1050,4 @@ document.addEventListener("keyup", function (event) {
     event.preventDefault();
     pressed = pressed.filter(function (i) { return i != event.code; });
 });
+animate();

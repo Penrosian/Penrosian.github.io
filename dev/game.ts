@@ -793,10 +793,8 @@ function animate() {
 
     if (health > 0)
         requestAnimationFrame(animate);
-    else element = document.getElementById("status"); if (element) element.innerHTML = "Game over!";
+    else { element = document.getElementById("status"); if (element) element.innerHTML = "Game over!"; }
 }
-
-animate();
 
 element = document.getElementById("tripleFire"); if (element) element.setAttribute("disabled", "");
 element = document.getElementById("bigFire"); if (element) element.setAttribute("disabled", "");
@@ -942,3 +940,5 @@ document.addEventListener("keyup", event => {
     event.preventDefault();
     pressed = pressed.filter(i => i != event.code);
 });
+
+animate();
