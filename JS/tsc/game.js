@@ -331,9 +331,6 @@ function animate() {
                                         "lineWidth": 8,
                                         "meta": { "expanding": true }
                                     });
-                                    var bar_1 = getRectById(ball.id);
-                                    if (bar_1 != null)
-                                        animData.rects = animData.rects.filter(function (a) { return a != bar_1; });
                                     animData.circles = animData.circles.filter(function (a) { return a != ball; });
                                     score += 50;
                                     money += 50;
@@ -740,7 +737,6 @@ function animate() {
             }
             bar.y = index * 30 + 20;
             var barBoss = getCircleById(bar.id);
-            console.log(String(barBoss));
             if (barBoss) {
                 if (barBoss.meta["maxHealth"] == undefined)
                     throw new Error("Boss max health not found. Something has gone horribly wrong.");

@@ -374,8 +374,6 @@ function animate() {
                                         "lineWidth": 8,
                                         "meta": { "expanding": true }
                                     });
-                                    let bar = getRectById(ball.id);
-                                    if (bar != null) animData.rects = animData.rects.filter(a => a != bar);
                                     animData.circles = animData.circles.filter(a => a != ball);
                                     score += 50;
                                     money += 50;
