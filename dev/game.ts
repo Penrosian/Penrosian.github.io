@@ -186,22 +186,22 @@ let element: HTMLElement | null;
 let debug = false;
 
 function getCircleById(id: any): Circle | false {
-    for (let i = 0; i < animData.circles.length; i++) if (animData.circles[i].id == id) return animData.circles[i];
+    animData.circles.forEach(circle => {if (circle.id = id) return circle})
     return false;
 }
 function getRectById(id: any): Rect | false {
-    for (let i = 0; i < animData.rects.length; i++) if (animData.rects[i].id == id) return animData.rects[i];
+    animData.rects.forEach(rect => {if (rect.id = id) return rect})
     return false;
 }
 function getCirclesByClass(className: any): Circle[] | false {
     let returns: Circle[] = [];
-    for (let i = 0; i < animData.circles.length; i++) if (animData.circles[i].class == className) returns.push(animData.circles[i]);
+    animData.circles.forEach(circle => {if (circle.class == className) returns.push(circle)})
     if (returns.length == 0) return false;
     return returns;
 }
 function getRectsByClass(className: any): Rect[] | false {
     let returns: Rect[] = [];
-    for (let i = 0; i < animData.rects.length; i++) if (animData.rects[i].class == className) returns.push(animData.rects[i]);
+    animData.rects.forEach(rect => {if (rect.class == className) returns.push(rect)})
     if (returns.length == 0) return false;
     return returns;
 }
