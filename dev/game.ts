@@ -1,20 +1,5 @@
 // TODO:
 /*
-    Boss health bar
-    /
-        When spawning a boss, make the boss bar
-        Match IDs
-        Update width each frame, based on health
-        Save max health in boss meta
-            Helps fix scoring too
-        Multiple boss bars will detect other boss bars, and move down accordingly
-        Detection will happen when rendering, so if a boss bar at the top goes down
-        the lower boss bars will move up in the list and on the screen
-        Background can be drawn directly off of the boss bar, without needing to be
-        in animData
-    /
-    Bosses
-    Better boss scoring system (currently just gives 50 score every time)
     Tanky enemies
     Shop revamp
 */
@@ -139,19 +124,6 @@ let animData: animData = {
             "xVel": 0,
             "yVel": 0,
             "meta": {}
-        },
-        {
-            id: "ball",
-            class: "bossbar",
-            x: 20,
-            y: 20,
-            width: canvasWidth - 40,
-            height: 30,
-            color: "red",
-            animation: "static",
-            xVel: 0,
-            yVel: 0,
-            meta: {}
         }
     ],
     "circles": [
@@ -168,11 +140,7 @@ let animData: animData = {
             "color": "blue",
             "lineColor": "black",
             "lineWidth": 0,
-            "meta": {
-                "boss": true,
-                "health": 1,
-                "maxHealth": 1
-            }
+            "meta": {}
         }
     ]
 };
@@ -352,7 +320,7 @@ function animate() {
                     let bullet = bullets[x];
                     if (bullet.meta["pierce"] == undefined) throw new Error("Bullet has no pierce. Something has gone horribly wrong.");
                     if (bullet.radius + ball.radius >= Math.sqrt(Math.pow(bullet.x - ball.x, 2) + Math.pow(bullet.y - ball.y, 2))) {
-                        if (ball.meta["health"]) {
+                        if (ball.meta["health"] && ball.meta["maxHealth"]) {
                             while (bullet.meta["pierce"] > 0 && ball.meta["health"] > 0) {
                                 bullet.meta["pierce"] -= pierceMod;
                                 ball.meta["health"]--;
@@ -374,13 +342,12 @@ function animate() {
                                         "lineWidth": 8,
                                         "meta": { "expanding": true }
                                     });
-                                    animData.circles = animData.circles.filter(a => a != ball);
-                                    score += 50;
-                                    money += 50;
-                                } else {
-                                    score += 5;
-                                    money += 5;
+                                    score += Math.ceil(ball.meta["maxHealth"] / 2);
+                                    money += Math.ceil(ball.meta["maxHealth"] / 2);
                                 }
+                                score += ball.meta["maxHealth"];
+                                money += ball.meta["maxHealth"];
+                                animData.circles = animData.circles.filter(a => a != ball);
                                 animData.circles = animData.circles.filter(a => a != bullet);
                             }
                         } else {
@@ -692,8 +659,9 @@ function animate() {
                 lineColor: "black",
                 lineWidth: 2,
                 meta: {
-                    health: wave * 2,
-                    maxHealth: wave * 2
+                    health: (wave + 1) * 2,
+                    maxHealth: (wave + 1) * 2,
+                    boss: true
                 }
             });
             animData.rects.push({
@@ -974,14 +942,3 @@ document.addEventListener("keyup", event => {
     event.preventDefault();
     pressed = pressed.filter(i => i != event.code);
 });
-
-// pressed = pressed.filter(filterFunction);
-
-/* function filterFunction(input) {
-    result = input != event.code;
-    return result;
-} */
-
-// Filter filters through all items in the list, and puts that item into the function
-// If the returned value is true it adds it to the output list, if it is false it does not
-// It then returns the new list, so I have to put it back in as the list's new value
