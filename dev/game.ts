@@ -35,6 +35,14 @@ function fillRect(x: number, y: number, width: number, height: number, fillColor
     ctx.fillRect(x, y, width, height);
 }
 
+function multiPressed(keys: string[]) {
+    let returnVal = true;
+    keys.forEach(key => {
+        if (!pressed.includes(key)) returnVal = false;
+    });
+    return returnVal;
+}
+
 // Storing in an object instead of in a bunch of variables is
 // cleaner and means I can add more shapes using code
 type ShapeAnimation = "bounce" | "static" | "exitKill" | "locked";
@@ -175,6 +183,7 @@ let pierceMod = 1;
 let powerSave: any;
 let speed = 2;
 let element: HTMLElement | null;
+let debug = false;
 
 function getCircleById(id: any): Circle | false {
     for (let i = 0; i < animData.circles.length; i++) if (animData.circles[i].id == id) return animData.circles[i];
@@ -411,9 +420,34 @@ function animate() {
     if (pressed.includes("KeyA")) player.xVel -= speed;
     if (pressed.includes("KeyD")) player.xVel += speed;
     if (pressed.includes("Space") && player.y + player.height >= ground.y) player.yVel = -5;
-    if (pressed.includes("KeyP") && pressed.includes("KeyE") && pressed.includes("KeyN") && pressed.includes("KeyR") && pressed.includes("KeyO") && pressed.includes("KeyS") && pressed.includes("KeyI") && pressed.includes("KeyA")) {
-        money = 999999999999;
-        shield = 999999999999;
+    if (multiPressed(["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"])) {
+        pressed = pressed.filter(a => !["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"].includes(a));
+        alert("Debug ON");
+        debug = true;
+    }
+    if (multiPressed(["KeyW", "KeyA", "KeyV", "KeyE"]) && debug) {
+        pressed = pressed.filter(a => !["KeyW", "KeyA", "KeyV", "KeyE"].includes(a));
+        let ans = prompt("Wave:");
+        if (ans != null) {
+            if (Number.isNaN(Number(ans))) alert("Not a number.");
+            else wave = Number(ans);
+        }
+    }
+    if (multiPressed(["KeyM", "KeyO", "KeyN", "KeyE", "KeyY"]) && debug) {
+        pressed = pressed.filter(a => !["KeyM", "KeyO", "KeyN", "KeyE", "KeyY"].includes(a));
+        let ans = prompt("Money:");
+        if (ans != null) {
+            if (Number.isNaN(Number(ans))) alert("Not a number.");
+            else money = Number(ans);
+        }
+    }
+    if (multiPressed(["KeyS", "KeyH", "KeyI", "KeyE", "KeyL", "KeyD"]) && debug) {
+        pressed = pressed.filter(a => !["KeyS", "KeyH", "KeyI", "KeyE", "KeyL", "KeyD"].includes(a));
+        let ans = prompt("Shield:");
+        if (ans != null) {
+            if (Number.isNaN(Number(ans))) alert("Not a number.");
+            else shield = Number(ans);
+        }
     }
 
     if (pressed.includes("KeyZ")) fireMode = "single";

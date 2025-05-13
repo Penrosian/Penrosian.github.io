@@ -30,6 +30,14 @@ function fillRect(x, y, width, height, fillColor) {
     ctx.fillStyle = fillColor;
     ctx.fillRect(x, y, width, height);
 }
+function multiPressed(keys) {
+    var returnVal = true;
+    keys.forEach(function (key) {
+        if (!pressed.includes(key))
+            returnVal = false;
+    });
+    return returnVal;
+}
 ;
 var animData = {
     "rects": [
@@ -108,6 +116,7 @@ var pierceMod = 1;
 var powerSave;
 var speed = 2;
 var element;
+var debug = false;
 function getCircleById(id) {
     for (var i = 0; i < animData.circles.length; i++)
         if (animData.circles[i].id == id)
@@ -383,9 +392,40 @@ function animate() {
         player.xVel += speed;
     if (pressed.includes("Space") && player.y + player.height >= ground.y)
         player.yVel = -5;
-    if (pressed.includes("KeyP") && pressed.includes("KeyE") && pressed.includes("KeyN") && pressed.includes("KeyR") && pressed.includes("KeyO") && pressed.includes("KeyS") && pressed.includes("KeyI") && pressed.includes("KeyA")) {
-        money = 999999999999;
-        shield = 999999999999;
+    if (multiPressed(["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"])) {
+        pressed = pressed.filter(function (a) { return !["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"].includes(a); });
+        alert("Debug ON");
+        debug = true;
+    }
+    if (multiPressed(["KeyW", "KeyA", "KeyV", "KeyE"]) && debug) {
+        pressed = pressed.filter(function (a) { return !["KeyW", "KeyA", "KeyV", "KeyE"].includes(a); });
+        var ans = prompt("Wave:");
+        if (ans != null) {
+            if (Number.isNaN(Number(ans)))
+                alert("Not a number.");
+            else
+                wave = Number(ans);
+        }
+    }
+    if (multiPressed(["KeyM", "KeyO", "KeyN", "KeyE", "KeyY"]) && debug) {
+        pressed = pressed.filter(function (a) { return !["KeyM", "KeyO", "KeyN", "KeyE", "KeyY"].includes(a); });
+        var ans = prompt("Money:");
+        if (ans != null) {
+            if (Number.isNaN(Number(ans)))
+                alert("Not a number.");
+            else
+                money = Number(ans);
+        }
+    }
+    if (multiPressed(["KeyS", "KeyH", "KeyI", "KeyE", "KeyL", "KeyD"]) && debug) {
+        pressed = pressed.filter(function (a) { return !["KeyS", "KeyH", "KeyI", "KeyE", "KeyL", "KeyD"].includes(a); });
+        var ans = prompt("Shield:");
+        if (ans != null) {
+            if (Number.isNaN(Number(ans)))
+                alert("Not a number.");
+            else
+                wave = Number(ans);
+        }
     }
     if (pressed.includes("KeyZ"))
         fireMode = "single";
