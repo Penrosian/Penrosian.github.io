@@ -1,9 +1,22 @@
 // TODO:
 /*
     Boss health bar
+    /
+        When spawning a boss, make the boss bar
+        Match IDs
+        Update width each frame, based on health
+        Save max health in boss meta
+            Helps fix scoring too
+        Multiple boss bars will detect other boss bars, and move down accordingly
+        Detection will happen when rendering, so if a boss bar at the top goes down
+        the lower boss bars will move up in the list and on the screen
+        Background can be drawn directly off of the boss bar, without needing to be
+        in animData
+    /
     Bosses
     Better boss scoring system (currently just gives 50 score every time)
     Tanky enemies
+    Shop revamp
 */
 const canvas = document.getElementById("gameCanvas");
 if (canvas == null) throw new Error("No canvas found.");
@@ -41,11 +54,12 @@ function fillRect(x: number, y: number, width: number, height: number, fillColor
 // cleaner and means I can add more shapes using code
 type ShapeAnimation = "bounce" | "static" | "exitKill" | "locked";
 
-type Meta = {
+interface Meta {
     health?: number;
     pierce?: number;
     boss?: boolean;
     expanding?: boolean;
+    maxHealth?: number;
 };
 
 type Rect = {
@@ -125,6 +139,19 @@ let animData: animData = {
             "xVel": 0,
             "yVel": 0,
             "meta": {}
+        },
+        {
+            id: "ball",
+            class: "bossbar",
+            x: 20,
+            y: 20,
+            width: canvasWidth - 40,
+            height: 30,
+            color: "red",
+            animation: "static",
+            xVel: 0,
+            yVel: 0,
+            meta: {}
         }
     ],
     "circles": [
@@ -143,7 +170,8 @@ let animData: animData = {
             "lineWidth": 0,
             "meta": {
                 "boss": true,
-                "health": 1
+                "health": 1,
+                "maxHealth": 1
             }
         }
     ]
@@ -638,7 +666,50 @@ function animate() {
         immunity = 120;
         if (health < 5) health++;
         ground = getRectById("ground");
-        if (!ground) throw new Error("Ground is missing. Something has gone horribly wrong.");
+        if (!ground) throw new Error("Ground not found. Something has gone horribly wrong.");
+        if ((wave + 1) % 20 == 0) {
+            let id = nextFreeNumericId("circle");
+            while (getRectById(id)) id = nextFreeNumericId("circle");
+            animData.circles.push({
+                id: id,
+                class: "ball",
+                x: randInt(0, canvasWidth / 5) * 5,
+                y: randInt(0, (canvasHeight - ground.height) / 5) * 5,
+                radius: 10 + (wave / 20) / 2,
+                length: 1,
+                animation: "bounce",
+                xVel: (() => {
+                    let vel = randInt(-4, 5);
+                    if (vel < 1) vel -= 1;
+                    return vel;
+                })(),
+                yVel: (() => {
+                    let vel = randInt(-4, 5);
+                    if (vel < 1) vel -= 1;
+                    return vel;
+                })(),
+                color: "orange",
+                lineColor: "black",
+                lineWidth: 2,
+                meta: {
+                    health: wave * 2,
+                    maxHealth: wave * 2
+                }
+            });
+            animData.rects.push({
+                id: id,
+                class: "bossbar",
+                x: 20,
+                y: 20,
+                width: canvasWidth - 40,
+                height: 30,
+                color: "red",
+                animation: "static",
+                xVel: 0,
+                yVel: 0,
+                meta: {}
+            });
+        }
         for (let i = 0; i < wave * 2.5; i++)
             animData.circles.push({
                 "id": nextFreeNumericId("circle"),
@@ -656,6 +727,43 @@ function animate() {
                 "meta": {}
             });
     }
+
+    let bars = getRectsByClass("bossbar");
+    if (bars) bars.forEach((bar, index) => {
+        let backBar = getRectById(bar.id + "back");
+        if (!backBar) {
+            animData.rects.splice(animData.rects.indexOf(bar), 0, {
+                id: bar.id + "back",
+                class: "bossbarBack",
+                x: bar.x,
+                y: bar.y,
+                width: canvasWidth - 40,
+                height: bar.height,
+                color: "lightGrey",
+                animation: "static",
+                xVel: 0,
+                yVel: 0,
+                meta: {}
+            });
+            backBar = getRectById(bar.id + "back");
+            if (!backBar) throw new Error("Bossbar background not found after generation.");
+        }
+        bar.y = index * 30 + 20;
+        let barBoss = getCircleById(bar.id);
+        if (barBoss) {
+            if (barBoss.meta["maxHealth"] == undefined) throw new Error("Boss max health not found. Something has gone horribly wrong.");
+            if (barBoss.meta["health"] == undefined) throw new Error("Boss health not found. Something has gone horribly wrong.");
+            bar.width = (canvasWidth - 40) * (barBoss.meta["health"] / barBoss.meta["maxHealth"]);
+        } else {
+            console.log("Boss dead. Removing boss bar.");
+            console.log(animData.rects);
+            console.log(backBar);
+            animData.rects = animData.rects.filter(a => a != bar && a != backBar);
+            console.log("Removal complete.");
+            console.log(animData.rects);
+        }
+    });
+
     if (shopTimer > 0) gameStatus = "Shop time! Game starts again in " + Math.ceil(shopTimer / 60);
 
     if (powerDuration == 0) {
