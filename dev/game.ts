@@ -815,11 +815,23 @@ function animate() {
     if (powerMode == "Unlock Mode" && !triple && money >= 220) { element = document.getElementById("triple"); if (element) element.removeAttribute("disabled"); }
     if (powerMode == "Powerup Mode" && powerup == "None" && money >= 60) { element = document.getElementById("triple"); if (element) element.removeAttribute("disabled"); }
     element = document.getElementById("big"); if (element) element.setAttribute("disabled", "");
-    if (powerMode == "Unlock Mode" && !big && money >= 340) { element = document.getElementById("big"); if (element) element.removeAttribute("disabled"); }
-    if (powerMode == "Powerup Mode" && powerup == "None" && money >= 70) { element = document.getElementById("big"); if (element) element.removeAttribute("disabled"); }
+    if (powerMode == "Unlock Mode" && !big && money >= 340) {
+        element = document.getElementById("big");
+        if (element) element.removeAttribute("disabled");
+    }
+    if (powerMode == "Powerup Mode" && powerup == "None" && money >= 70) {
+        element = document.getElementById("big");
+        if (element) element.removeAttribute("disabled");
+    }
     element = document.getElementById("fast"); if (element) element.setAttribute("disabled", "");
-    if (powerMode == "Unlock Mode" && !fast && money >= 600) { element = document.getElementById("fast"); if (element) element.removeAttribute("disabled"); }
-    if (powerMode == "Powerup Mode" && powerup == "None" && money >= 100) { element = document.getElementById("fast"); if (element) element.removeAttribute("disabled"); }
+    if (powerMode == "Unlock Mode" && !fast && money >= 600) {
+        element = document.getElementById("fast");
+        if (element) element.removeAttribute("disabled");
+    }
+    if (powerMode == "Powerup Mode" && powerup == "None" && money >= 100) {
+        element = document.getElementById("fast");
+        if (element) element.removeAttribute("disabled");
+    }
 
     if (triple) element = document.getElementById("tripleFire"); if (element) element.removeAttribute("disabled");
     if (big) element = document.getElementById("bigFire"); if (element) element.removeAttribute("disabled");
