@@ -1,0 +1,1 @@
+npx tsc game.ts --outFile ../JS/tsc/game.js --lib dom,es2024
