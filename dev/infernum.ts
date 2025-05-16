@@ -43,11 +43,7 @@ function multiPressed(keys: string[]) {
 type ShapeAnimation = "bounce" | "static" | "exitKill" | "locked";
 
 interface Meta {
-    health?: number;
-    pierce?: number;
-    boss?: boolean;
-    expanding?: boolean;
-    maxHealth?: number;
+    damage?: number;
 };
 
 type Rect = {
