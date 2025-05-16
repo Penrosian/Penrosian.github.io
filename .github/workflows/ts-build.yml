@@ -16,6 +16,8 @@ jobs:
         var:
           - input: game.ts
             output: ../JS/tsc/game.js
+          - input: infernum.ts
+            output: ../JS/tsc/infernum.js
 
     steps:
     - uses: actions/checkout@v4
