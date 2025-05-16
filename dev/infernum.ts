@@ -114,23 +114,7 @@ let animData: animData = {
             "meta": {}
         }
     ],
-    "circles": [
-        {
-            "id": "ball",
-            "class": "ball",
-            "x": 55,
-            "y": 80,
-            "radius": 10,
-            "length": 1,
-            "animation": "bounce",
-            "xVel": 5,
-            "yVel": -5,
-            "color": "blue",
-            "lineColor": "black",
-            "lineWidth": 0,
-            "meta": {}
-        }
-    ]
+    "circles": []
 };
 
 let pressed : string[] = [];
@@ -142,6 +126,7 @@ let gameStatus = ".........";
 let element : HTMLElement | null;
 let debug = false;
 let fighting = false;
+let flightTime = 396;
 
 function getCircleById(id: any): Circle | false {
     animData.circles.forEach(circle => {if (circle.id = id) return circle})
@@ -269,8 +254,8 @@ function animate() {
 
     let projectiles = getCirclesByClass("projectile");
     if (projectiles) {
-        for (let i = 0; i < balls.length; i++) {
-            let ball = balls[i];
+        for (let i = 0; i < projectiles.length; i++) {
+            let projectile = projectiles[i];
             if (player.width / 2 + projectile.radius >= Math.sqrt(Math.pow(player.x + player.width / 2 - projectile.x, 2) + Math.pow(player.y + player.height / 2 - projectile.y, 2)) && immunity <= 0) {
                 immunity = 30;
                 health -= projectile.meta.damage;
@@ -279,11 +264,14 @@ function animate() {
     }
 
     
-    if (pressed.includes("KeyA")) player.xVel -= speed;
-    if (pressed.includes("KeyD")) player.xVel += speed;
+    if (pressed.includes("KeyA")) player.xVel -= 2;
+    if (pressed.includes("KeyD")) player.xVel += 2;
     if (pressed.includes("Space")) {
         if (player.y + player.height >= ground.y) player.yVel = -5;
-        else if (flightTime > 0) player.yVel -= 0.5;
+        else if (flightTime > 0) {
+            player.yVel -= 0.5;
+            flightTime -= 1;
+        }
     }
     if (multiPressed(["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"])) {
         pressed = pressed.filter(a => !["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"].includes(a));
