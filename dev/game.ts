@@ -190,6 +190,10 @@ namespace Game {
     (window as any).pressed = pressed;
     (window as any).gameStatus = gameStatus;
     (window as any).getRectById = getRectById;
+    (window as any).getCircleById = getCircleById;
+    (window as any).getCirclesByClass = getCirclesByClass;
+    (window as any).getRectsByClass = getRectsByClass;
+    (window as any).debug = debug;
 
     function getCircleById(id: any): Circle | false {
         let returns: Circle | false = false;

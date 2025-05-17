@@ -123,6 +123,10 @@ var Game;
     window.pressed = pressed;
     window.gameStatus = gameStatus;
     window.getRectById = getRectById;
+    window.getCircleById = getCircleById;
+    window.getCirclesByClass = getCirclesByClass;
+    window.getRectsByClass = getRectsByClass;
+    window.debug = debug;
     function getCircleById(id) {
         var returns = false;
         animData.circles.forEach(function (circle) { if (circle.id == id)
@@ -161,6 +165,7 @@ var Game;
     }
     // The main loop
     function animate() {
+        console.log(pressed);
         fillPage("lightBlue");
         gameStatus = "Survive!";
         var _loop_1 = function (i) {

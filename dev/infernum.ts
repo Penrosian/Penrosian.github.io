@@ -82,6 +82,13 @@ namespace Infernum {
         "circles": Circle[];
     }
 
+    interface Binds {
+        left: string | number;
+        right: string | number;
+        jump: string | number;
+        dash: string | number;
+    }
+
     let animData: animData = {
         "rects": [
             {
@@ -114,7 +121,14 @@ namespace Infernum {
         "circles": []
     };
 
-    let pressed: string[] = [];
+    let binds: Binds = {
+        left: "KeyA",
+        right: "KeyD",
+        jump: "Space",
+        dash: "Shift"
+    };
+
+    let pressed: (string | number)[] = [];
     let score = 0;
     let health = 5;
     let immunity = 0;
@@ -124,6 +138,8 @@ namespace Infernum {
     let fighting = 600;
     let flightTime = 396;
     let lastFrameTime = 0;
+    let swapBind = "left";
+    let capturing = false;
 
     (window as any).animData = animData;
     (window as any).debug = debug;
@@ -144,27 +160,26 @@ namespace Infernum {
     (window as any).getCirclesByClass = getCirclesByClass;
     (window as any).getRectsByClass = getRectsByClass;
     (window as any).nextFreeNumericId = nextFreeNumericId;
-    (window as any).lastFrameTime = lastFrameTime;
 
     function getCircleById(id: any): Circle | false {
         let returns: Circle | false = false;
-        animData.circles.forEach(circle => { if (circle.id == id) returns = circle });
+        animData.circles.forEach(circle => { if (circle.id == id) returns = circle; });
         return returns;
     }
     function getRectById(id: any): Rect | false {
         let returns: Rect | false = false;
-        animData.rects.forEach(rect => { if (rect.id == id) returns = rect });
+        animData.rects.forEach(rect => { if (rect.id == id) returns = rect; });
         return returns;
     }
     function getCirclesByClass(className: any): Circle[] | false {
         let returns: Circle[] = [];
-        animData.circles.forEach(circle => { if (circle.class == className) returns.push(circle) });
+        animData.circles.forEach(circle => { if (circle.class == className) returns.push(circle); });
         if (returns.length == 0) return false;
         return returns;
     }
     function getRectsByClass(className: any): Rect[] | false {
         let returns: Rect[] = [];
-        animData.rects.forEach(rect => { if (rect.class == className) returns.push(rect) });
+        animData.rects.forEach(rect => { if (rect.class == className) returns.push(rect); });
         if (returns.length == 0) return false;
         return returns;
     }
@@ -181,14 +196,11 @@ namespace Infernum {
         Start of game loop
         Start of game loop
     */
-    function animate(delta: number) {
-        if (delta - lastFrameTime < 1000 / 60) {
-            console.log("skipFrame");
-            requestAnimationFrame(animate);
-            return;
-        }
-        console.log("animFrame");
-        lastFrameTime = delta;
+    function animate(timestamp: number) {
+        console.log(timestamp);
+        let delta = (timestamp - lastFrameTime) / 15;
+        lastFrameTime = timestamp;
+        console.log(delta);
         fillPage("lightBlue");
         if (fighting < 0) gameStatus = "Survive";
 
@@ -196,8 +208,6 @@ namespace Infernum {
             let rect = animData.rects[i];
             fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
             // Different animation styles move in different ways
-            // If you held both directions in bounce mode you could shimmy through the wall,
-            // moving the player out of the wall fixes that and prevents future issues
             if (rect.animation == "bounce") {
                 if (rect.x + rect.width > canvasWidth) {
                     rect.xVel *= -1;
@@ -227,8 +237,8 @@ namespace Infernum {
                     animData.rects = animData.rects.filter(i => i != rect);
             }
             if (rect.animation != "static") {
-                rect.x += rect.xVel;
-                rect.y += rect.yVel;
+                rect.x += rect.xVel * delta;
+                rect.y += rect.yVel * delta;
             }
         }
 
@@ -237,7 +247,6 @@ namespace Infernum {
             let circle = animData.circles[i];
             fillCircle(circle.x, circle.y, circle.radius, circle.color, circle.lineColor, circle.lineWidth, circle.length);
             // Different animation styles move in different ways
-            // Same bounce collision is applied here, just in case
             if (circle.animation == "bounce") {
                 if (circle.x + circle.radius > canvasWidth) {
                     circle.xVel *= -1;
@@ -267,8 +276,8 @@ namespace Infernum {
                     animData.circles = animData.circles.filter(i => i != circle);
             }
             if (circle.animation != "static") {
-                circle.x += circle.xVel;
-                circle.y += circle.yVel;
+                circle.x += circle.xVel * delta;
+                circle.y += circle.yVel * delta;
             }
         }
 
@@ -297,23 +306,38 @@ namespace Infernum {
         }
 
 
-        if (pressed.includes("KeyA")) player.xVel -= 2;
-        if (pressed.includes("KeyD")) player.xVel += 2;
-        if (pressed.includes("Space")) {
+        if (pressed.includes(binds.left)) player.xVel -= 2 * delta;
+        if (pressed.includes(binds.right)) player.xVel += 2 * delta;
+        if (pressed.includes(binds.jump)) {
             if (player.y + player.height >= ground.y) player.yVel = -5;
             else if (flightTime > 0) {
-                player.yVel -= 0.5;
-                flightTime -= 1;
+                player.yVel -= 0.5 * delta;
+                flightTime -= delta;
             }
         }
         if (multiPressed(["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"])) {
-            pressed = pressed.filter(a => !["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"].includes(a));
+            pressed = pressed.filter(a => ![-1, "KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"].includes(a));
             if (debug) debug = false;
             else debug = true;
             alert("Debug mode: " + debug);
         }
 
-        player.xVel *= 0.8;
+        element = document.getElementById("swapBind");
+        if (element) element.innerHTML = "Current bind: " + swapBind;
+        element = document.getElementById("currentBind");
+        if (element) {
+            if (capturing) element.innerHTML = "Press a key or mouse button to bind.";
+            else element.innerHTML = "Current key: " + binds[swapBind as keyof Binds];
+        }
+
+        if (capturing) {
+            if (pressed.length > 0) {
+                binds[swapBind as keyof Binds] = pressed[0];
+                capturing = false;
+                pressed = [];
+            }
+        }
+        player.xVel -= (player.xVel / 6) * delta;
         if (player.yVel < 10) player.yVel += 0.2;
         if (player.yVel < -5) player.yVel = -5;
         immunity--;
@@ -325,6 +349,28 @@ namespace Infernum {
     ^^^^ End of game loop ^^^^
     */
 
+    element = document.getElementById("swapBind");
+    if (element) element.addEventListener("click", () => {
+        switch (swapBind) {
+            case "left":
+                swapBind = "right";
+                break;
+            case "right":
+                swapBind = "jump";
+                break;
+            case "jump":
+                swapBind = "dash";
+                break;
+            case "dash":
+                swapBind = "left";
+                break;
+        }
+    });
+    element = document.getElementById("captureBind");
+    if (element) element.addEventListener("click", () => {
+        capturing = true;
+        pressed = [];
+    });
     // Keys need to be tracked in a list to allow for key holding,
     // and so that multiple keys can be pressed at once
     document.addEventListener("keydown", event => {
@@ -334,6 +380,14 @@ namespace Infernum {
     document.addEventListener("keyup", event => {
         event.preventDefault();
         pressed = pressed.filter(i => i != event.code);
+    });
+    document.addEventListener("mousedown", event => {
+        event.preventDefault();
+        pressed.push(event.button);
+    });
+    document.addEventListener("mouseup", event => {
+        event.preventDefault();
+        pressed = pressed.filter(i => i != event.button);
     });
 
     requestAnimationFrame(animate);
