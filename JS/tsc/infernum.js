@@ -76,15 +76,38 @@ var Infernum;
     var debug = false;
     var fighting = 600;
     var flightTime = 396;
+    var lastFrameTime = 0;
+    window.animData = animData;
+    window.debug = debug;
+    window.gameStatus = gameStatus;
+    window.health = health;
+    window.immunity = immunity;
+    window.score = score;
+    window.fighting = fighting;
+    window.pressed = pressed;
+    window.flightTime = flightTime;
+    window.randInt = randInt;
+    window.fillCircle = fillCircle;
+    window.fillPage = fillPage;
+    window.fillRect = fillRect;
+    window.multiPressed = multiPressed;
+    window.getCircleById = getCircleById;
+    window.getRectById = getRectById;
+    window.getCirclesByClass = getCirclesByClass;
+    window.getRectsByClass = getRectsByClass;
+    window.nextFreeNumericId = nextFreeNumericId;
+    window.lastFrameTime = lastFrameTime;
     function getCircleById(id) {
-        animData.circles.forEach(function (circle) { if (circle.id = id)
-            return circle; });
-        return false;
+        var returns = false;
+        animData.circles.forEach(function (circle) { if (circle.id == id)
+            returns = circle; });
+        return returns;
     }
     function getRectById(id) {
-        animData.rects.forEach(function (rect) { if (rect.id = id)
-            return rect; });
-        return false;
+        var returns = false;
+        animData.rects.forEach(function (rect) { if (rect.id == id)
+            returns = rect; });
+        return returns;
     }
     function getCirclesByClass(className) {
         var returns = [];
@@ -110,8 +133,19 @@ var Infernum;
                 return x;
         }
     }
-    // The main loop
-    function animate() {
+    /*
+        Start of game loop
+        Start of game loop
+        Start of game loop
+    */
+    function animate(delta) {
+        if (delta - lastFrameTime < 1000 / 60) {
+            console.log("skipFrame");
+            requestAnimationFrame(animate);
+            return;
+        }
+        console.log("animFrame");
+        lastFrameTime = delta;
         fillPage("lightBlue");
         if (fighting < 0)
             gameStatus = "Survive";
@@ -216,6 +250,7 @@ var Infernum;
             throw new Error("Ground not found. Something has gone horribly wrong.");
         if (player.y + player.height >= ground.y) {
             player.y = ground.y - player.height;
+            flightTime = 396;
             if (player.yVel < 0)
                 player.yVel = 0;
         }
@@ -245,8 +280,11 @@ var Infernum;
         }
         if (multiPressed(["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"])) {
             pressed = pressed.filter(function (a) { return !["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"].includes(a); });
-            alert("Debug ON");
-            debug = true;
+            if (debug)
+                debug = false;
+            else
+                debug = true;
+            alert("Debug mode: " + debug);
         }
         player.xVel *= 0.8;
         if (player.yVel < 10)
@@ -254,7 +292,13 @@ var Infernum;
         if (player.yVel < -5)
             player.yVel = -5;
         immunity--;
+        requestAnimationFrame(animate);
     }
+    /*
+    ^^^^ End of game loop ^^^^
+    ^^^^ End of game loop ^^^^
+    ^^^^ End of game loop ^^^^
+    */
     // Keys need to be tracked in a list to allow for key holding,
     // and so that multiple keys can be pressed at once
     document.addEventListener("keydown", function (event) {
@@ -265,5 +309,5 @@ var Infernum;
         event.preventDefault();
         pressed = pressed.filter(function (i) { return i != event.code; });
     });
-    animate();
+    requestAnimationFrame(animate);
 })(Infernum || (Infernum = {}));

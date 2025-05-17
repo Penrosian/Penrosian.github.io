@@ -114,33 +114,57 @@ namespace Infernum {
         "circles": []
     };
 
-    let pressed : string[] = [];
+    let pressed: string[] = [];
     let score = 0;
     let health = 5;
     let immunity = 0;
     let gameStatus = ".........";
-    let element : HTMLElement | null;
+    let element: HTMLElement | null;
     let debug = false;
     let fighting = 600;
     let flightTime = 396;
+    let lastFrameTime = 0;
+
+    (window as any).animData = animData;
+    (window as any).debug = debug;
+    (window as any).gameStatus = gameStatus;
+    (window as any).health = health;
+    (window as any).immunity = immunity;
+    (window as any).score = score;
+    (window as any).fighting = fighting;
+    (window as any).pressed = pressed;
+    (window as any).flightTime = flightTime;
+    (window as any).randInt = randInt;
+    (window as any).fillCircle = fillCircle;
+    (window as any).fillPage = fillPage;
+    (window as any).fillRect = fillRect;
+    (window as any).multiPressed = multiPressed;
+    (window as any).getCircleById = getCircleById;
+    (window as any).getRectById = getRectById;
+    (window as any).getCirclesByClass = getCirclesByClass;
+    (window as any).getRectsByClass = getRectsByClass;
+    (window as any).nextFreeNumericId = nextFreeNumericId;
+    (window as any).lastFrameTime = lastFrameTime;
 
     function getCircleById(id: any): Circle | false {
-        animData.circles.forEach(circle => {if (circle.id = id) return circle})
-        return false;
+        let returns: Circle | false = false;
+        animData.circles.forEach(circle => { if (circle.id == id) returns = circle });
+        return returns;
     }
     function getRectById(id: any): Rect | false {
-        animData.rects.forEach(rect => {if (rect.id = id) return rect})
-        return false;
+        let returns: Rect | false = false;
+        animData.rects.forEach(rect => { if (rect.id == id) returns = rect });
+        return returns;
     }
     function getCirclesByClass(className: any): Circle[] | false {
         let returns: Circle[] = [];
-        animData.circles.forEach(circle => {if (circle.class == className) returns.push(circle)})
+        animData.circles.forEach(circle => { if (circle.class == className) returns.push(circle) });
         if (returns.length == 0) return false;
         return returns;
     }
     function getRectsByClass(className: any): Rect[] | false {
         let returns: Rect[] = [];
-        animData.rects.forEach(rect => {if (rect.class == className) returns.push(rect)})
+        animData.rects.forEach(rect => { if (rect.class == className) returns.push(rect) });
         if (returns.length == 0) return false;
         return returns;
     }
@@ -152,11 +176,22 @@ namespace Infernum {
         }
     }
 
-    // The main loop
-    function animate() {
+    /*
+        Start of game loop
+        Start of game loop
+        Start of game loop
+    */
+    function animate(delta: number) {
+        if (delta - lastFrameTime < 1000 / 60) {
+            console.log("skipFrame");
+            requestAnimationFrame(animate);
+            return;
+        }
+        console.log("animFrame");
+        lastFrameTime = delta;
         fillPage("lightBlue");
         if (fighting < 0) gameStatus = "Survive";
-        
+
         for (let i = 0; i < animData.rects.length; i++) {
             let rect = animData.rects[i];
             fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
@@ -245,6 +280,7 @@ namespace Infernum {
 
         if (player.y + player.height >= ground.y) {
             player.y = ground.y - player.height;
+            flightTime = 396;
             if (player.yVel < 0) player.yVel = 0;
         }
 
@@ -260,7 +296,7 @@ namespace Infernum {
             }
         }
 
-        
+
         if (pressed.includes("KeyA")) player.xVel -= 2;
         if (pressed.includes("KeyD")) player.xVel += 2;
         if (pressed.includes("Space")) {
@@ -272,15 +308,23 @@ namespace Infernum {
         }
         if (multiPressed(["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"])) {
             pressed = pressed.filter(a => !["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"].includes(a));
-            alert("Debug ON");
-            debug = true;
+            if (debug) debug = false;
+            else debug = true;
+            alert("Debug mode: " + debug);
         }
 
         player.xVel *= 0.8;
         if (player.yVel < 10) player.yVel += 0.2;
         if (player.yVel < -5) player.yVel = -5;
         immunity--;
+        requestAnimationFrame(animate);
     }
+    /* 
+    ^^^^ End of game loop ^^^^
+    ^^^^ End of game loop ^^^^
+    ^^^^ End of game loop ^^^^
+    */
+
     // Keys need to be tracked in a list to allow for key holding,
     // and so that multiple keys can be pressed at once
     document.addEventListener("keydown", event => {
@@ -292,5 +336,5 @@ namespace Infernum {
         pressed = pressed.filter(i => i != event.code);
     });
 
-    animate();
+    requestAnimationFrame(animate);
 }
