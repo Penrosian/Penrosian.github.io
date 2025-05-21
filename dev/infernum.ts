@@ -333,6 +333,11 @@ namespace Infernum {
             else element.innerHTML = "Current key: " + binds[swapBind as keyof Binds];
         }
 
+        element = document.getElementById("status");
+        if (element) element.innerHTML = gameStatus;
+        element = document.getElementById("fps");
+        if (element) element.innerHTML = Math.floor(framerate) + " fps";
+
         if (capturing) {
             if (pressed.length > 0) {
                 binds[swapBind as keyof Binds] = pressed[0];
