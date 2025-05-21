@@ -71,7 +71,7 @@ var Infernum;
         left: "KeyA",
         right: "KeyD",
         jump: "Space",
-        dash: "Shift"
+        dash: "ShiftLeft"
     };
     var pressed = [];
     var score = 0;
@@ -85,6 +85,7 @@ var Infernum;
     var lastFrameTime = 0;
     var swapBind = "left";
     var capturing = false;
+    var framerate = 0;
     window.animData = animData;
     window.debug = debug;
     window.gameStatus = gameStatus;
@@ -104,6 +105,7 @@ var Infernum;
     window.getCirclesByClass = getCirclesByClass;
     window.getRectsByClass = getRectsByClass;
     window.nextFreeNumericId = nextFreeNumericId;
+    window.framerate = framerate;
     function getCircleById(id) {
         var returns = false;
         animData.circles.forEach(function (circle) { if (circle.id == id)
@@ -149,6 +151,7 @@ var Infernum;
         console.log(timestamp);
         var delta = (timestamp - lastFrameTime) / 15;
         lastFrameTime = timestamp;
+        framerate = 1000 / ((lastFrameTime / 15) * (3 / 50));
         console.log(delta);
         fillPage("lightBlue");
         if (fighting < 0)
@@ -297,6 +300,12 @@ var Infernum;
             else
                 element.innerHTML = "Current key: " + binds[swapBind];
         }
+        element = document.getElementById("status");
+        if (element)
+            element.innerHTML = gameStatus;
+        element = document.getElementById("fps");
+        if (element)
+            element.innerHTML = Math.floor(framerate) + " fps";
         if (capturing) {
             if (pressed.length > 0) {
                 binds[swapBind] = pressed[0];
