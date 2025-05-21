@@ -151,7 +151,7 @@ var Infernum;
         console.log(timestamp);
         var delta = (timestamp - lastFrameTime) / 15;
         lastFrameTime = timestamp;
-        framerate = 1000 / ((lastFrameTime / 15) * (3 / 50));
+        framerate = 1000 / (((timestamp - lastFrameTime) / 15) * (3 / 50));
         console.log(delta);
         fillPage("lightBlue");
         if (fighting < 0)
@@ -318,7 +318,8 @@ var Infernum;
             player.yVel += 0.2;
         if (player.yVel < -5)
             player.yVel = -5;
-        immunity--;
+        immunity -= delta;
+        fighting -= delta;
         requestAnimationFrame(animate);
     }
     /*
