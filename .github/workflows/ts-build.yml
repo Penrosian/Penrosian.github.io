@@ -21,6 +21,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with: 
+        persist-credentials: false
+        fetch-depth: 0
 
     - name: Setup Node
       uses: actions/setup-node@v4
@@ -32,3 +35,16 @@ jobs:
 
     - name: Transpile TypeScript
       run: npx tsc ${{ matrix.var.input }} --outFile ${{ matrix.var.output }} --lib dom,es2024
+
+    - name: Commit files
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add ${{ matrix.var.output }}
+        git commit -m "${{ github.event.head_commit.message }}"
+    
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
