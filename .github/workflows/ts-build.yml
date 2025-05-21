@@ -9,15 +9,14 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ./dev
 
     strategy:
       matrix:
         var:
-          - input: game.ts
-            output: ../JS/tsc/game.js
-          - input: infernum.ts
-            output: ../JS/tsc/infernum.js
+          - input: dev/game.ts
+            output: JS/tsc/game.js
+          - input: dev/infernum.ts
+            output: JS/tsc/infernum.js
 
     steps:
     - uses: actions/checkout@v4
@@ -30,7 +29,7 @@ jobs:
       with:
         filters: |
           match:
-            - ${{ matrix.var.input }}
+            - '${{ matrix.var.input }}'
 
     - name: Setup Node
       if: steps.changes.outputs.match == 'true'
