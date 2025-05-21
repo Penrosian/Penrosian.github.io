@@ -67,6 +67,12 @@ var Infernum;
         ],
         "circles": []
     };
+    var binds = {
+        left: "KeyA",
+        right: "KeyD",
+        jump: "Space",
+        dash: "Shift"
+    };
     var pressed = [];
     var score = 0;
     var health = 5;
@@ -76,15 +82,39 @@ var Infernum;
     var debug = false;
     var fighting = 600;
     var flightTime = 396;
+    var lastFrameTime = 0;
+    var swapBind = "left";
+    var capturing = false;
+    window.animData = animData;
+    window.debug = debug;
+    window.gameStatus = gameStatus;
+    window.health = health;
+    window.immunity = immunity;
+    window.score = score;
+    window.fighting = fighting;
+    window.pressed = pressed;
+    window.flightTime = flightTime;
+    window.randInt = randInt;
+    window.fillCircle = fillCircle;
+    window.fillPage = fillPage;
+    window.fillRect = fillRect;
+    window.multiPressed = multiPressed;
+    window.getCircleById = getCircleById;
+    window.getRectById = getRectById;
+    window.getCirclesByClass = getCirclesByClass;
+    window.getRectsByClass = getRectsByClass;
+    window.nextFreeNumericId = nextFreeNumericId;
     function getCircleById(id) {
-        animData.circles.forEach(function (circle) { if (circle.id = id)
-            return circle; });
-        return false;
+        var returns = false;
+        animData.circles.forEach(function (circle) { if (circle.id == id)
+            returns = circle; });
+        return returns;
     }
     function getRectById(id) {
-        animData.rects.forEach(function (rect) { if (rect.id = id)
-            return rect; });
-        return false;
+        var returns = false;
+        animData.rects.forEach(function (rect) { if (rect.id == id)
+            returns = rect; });
+        return returns;
     }
     function getCirclesByClass(className) {
         var returns = [];
@@ -110,8 +140,16 @@ var Infernum;
                 return x;
         }
     }
-    // The main loop
-    function animate() {
+    /*
+        Start of game loop
+        Start of game loop
+        Start of game loop
+    */
+    function animate(timestamp) {
+        console.log(timestamp);
+        var delta = (timestamp - lastFrameTime) / 15;
+        lastFrameTime = timestamp;
+        console.log(delta);
         fillPage("lightBlue");
         if (fighting < 0)
             gameStatus = "Survive";
@@ -119,8 +157,6 @@ var Infernum;
             var rect = animData.rects[i];
             fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
             // Different animation styles move in different ways
-            // If you held both directions in bounce mode you could shimmy through the wall,
-            // moving the player out of the wall fixes that and prevents future issues
             if (rect.animation == "bounce") {
                 if (rect.x + rect.width > canvasWidth) {
                     rect.xVel *= -1;
@@ -154,8 +190,8 @@ var Infernum;
                     animData.rects = animData.rects.filter(function (i) { return i != rect; });
             }
             if (rect.animation != "static") {
-                rect.x += rect.xVel;
-                rect.y += rect.yVel;
+                rect.x += rect.xVel * delta;
+                rect.y += rect.yVel * delta;
             }
         };
         for (var i = 0; i < animData.rects.length; i++) {
@@ -165,7 +201,6 @@ var Infernum;
             var circle = animData.circles[i];
             fillCircle(circle.x, circle.y, circle.radius, circle.color, circle.lineColor, circle.lineWidth, circle.length);
             // Different animation styles move in different ways
-            // Same bounce collision is applied here, just in case
             if (circle.animation == "bounce") {
                 if (circle.x + circle.radius > canvasWidth) {
                     circle.xVel *= -1;
@@ -199,8 +234,8 @@ var Infernum;
                     animData.circles = animData.circles.filter(function (i) { return i != circle; });
             }
             if (circle.animation != "static") {
-                circle.x += circle.xVel;
-                circle.y += circle.yVel;
+                circle.x += circle.xVel * delta;
+                circle.y += circle.yVel * delta;
             }
         };
         // Rectangles and circles are stored/drawn seperately
@@ -216,6 +251,7 @@ var Infernum;
             throw new Error("Ground not found. Something has gone horribly wrong.");
         if (player.y + player.height >= ground.y) {
             player.y = ground.y - player.height;
+            flightTime = 396;
             if (player.yVel < 0)
                 player.yVel = 0;
         }
@@ -231,30 +267,80 @@ var Infernum;
                 }
             }
         }
-        if (pressed.includes("KeyA"))
-            player.xVel -= 2;
-        if (pressed.includes("KeyD"))
-            player.xVel += 2;
-        if (pressed.includes("Space")) {
+        if (pressed.includes(binds.left))
+            player.xVel -= 2 * delta;
+        if (pressed.includes(binds.right))
+            player.xVel += 2 * delta;
+        if (pressed.includes(binds.jump)) {
             if (player.y + player.height >= ground.y)
                 player.yVel = -5;
             else if (flightTime > 0) {
-                player.yVel -= 0.5;
-                flightTime -= 1;
+                player.yVel -= 0.5 * delta;
+                flightTime -= delta;
             }
         }
         if (multiPressed(["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"])) {
-            pressed = pressed.filter(function (a) { return !["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"].includes(a); });
-            alert("Debug ON");
-            debug = true;
+            pressed = pressed.filter(function (a) { return ![-1, "KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"].includes(a); });
+            if (debug)
+                debug = false;
+            else
+                debug = true;
+            alert("Debug mode: " + debug);
         }
-        player.xVel *= 0.8;
+        element = document.getElementById("swapBind");
+        if (element)
+            element.innerHTML = "Current bind: " + swapBind;
+        element = document.getElementById("currentBind");
+        if (element) {
+            if (capturing)
+                element.innerHTML = "Press a key or mouse button to bind.";
+            else
+                element.innerHTML = "Current key: " + binds[swapBind];
+        }
+        if (capturing) {
+            if (pressed.length > 0) {
+                binds[swapBind] = pressed[0];
+                capturing = false;
+                pressed = [];
+            }
+        }
+        player.xVel -= (player.xVel / 6) * delta;
         if (player.yVel < 10)
             player.yVel += 0.2;
         if (player.yVel < -5)
             player.yVel = -5;
         immunity--;
+        requestAnimationFrame(animate);
     }
+    /*
+    ^^^^ End of game loop ^^^^
+    ^^^^ End of game loop ^^^^
+    ^^^^ End of game loop ^^^^
+    */
+    element = document.getElementById("swapBind");
+    if (element)
+        element.addEventListener("click", function () {
+            switch (swapBind) {
+                case "left":
+                    swapBind = "right";
+                    break;
+                case "right":
+                    swapBind = "jump";
+                    break;
+                case "jump":
+                    swapBind = "dash";
+                    break;
+                case "dash":
+                    swapBind = "left";
+                    break;
+            }
+        });
+    element = document.getElementById("captureBind");
+    if (element)
+        element.addEventListener("click", function () {
+            capturing = true;
+            pressed = [];
+        });
     // Keys need to be tracked in a list to allow for key holding,
     // and so that multiple keys can be pressed at once
     document.addEventListener("keydown", function (event) {
@@ -265,5 +351,13 @@ var Infernum;
         event.preventDefault();
         pressed = pressed.filter(function (i) { return i != event.code; });
     });
-    animate();
+    document.addEventListener("mousedown", function (event) {
+        event.preventDefault();
+        pressed.push(event.button);
+    });
+    document.addEventListener("mouseup", function (event) {
+        event.preventDefault();
+        pressed = pressed.filter(function (i) { return i != event.button; });
+    });
+    requestAnimationFrame(animate);
 })(Infernum || (Infernum = {}));

@@ -186,23 +186,34 @@ namespace Game {
     let element: HTMLElement | null;
     let debug = false;
 
+    (window as any).animData = animData;
+    (window as any).pressed = pressed;
+    (window as any).gameStatus = gameStatus;
+    (window as any).getRectById = getRectById;
+    (window as any).getCircleById = getCircleById;
+    (window as any).getCirclesByClass = getCirclesByClass;
+    (window as any).getRectsByClass = getRectsByClass;
+    (window as any).debug = debug;
+
     function getCircleById(id: any): Circle | false {
-        animData.circles.forEach(circle => {if (circle.id = id) return circle})
-        return false;
+        let returns: Circle | false = false;
+        animData.circles.forEach(circle => { if (circle.id == id) returns = circle; });
+        return returns;
     }
     function getRectById(id: any): Rect | false {
-        animData.rects.forEach(rect => {if (rect.id = id) return rect})
-        return false;
+        let returns: Rect | false = false;
+        animData.rects.forEach(rect => { if (rect.id == id) returns = rect; });
+        return returns;
     }
     function getCirclesByClass(className: any): Circle[] | false {
         let returns: Circle[] = [];
-        animData.circles.forEach(circle => {if (circle.class == className) returns.push(circle)})
+        animData.circles.forEach(circle => { if (circle.class == className) returns.push(circle); });
         if (returns.length == 0) return false;
         return returns;
     }
     function getRectsByClass(className: any): Rect[] | false {
         let returns: Rect[] = [];
-        animData.rects.forEach(rect => {if (rect.class == className) returns.push(rect)})
+        animData.rects.forEach(rect => { if (rect.class == className) returns.push(rect); });
         if (returns.length == 0) return false;
         return returns;
     }
@@ -834,9 +845,9 @@ namespace Game {
             if (element) element.removeAttribute("disabled");
         }
 
-        if (triple) element = document.getElementById("tripleFire"); if (element) element.removeAttribute("disabled");
-        if (big) element = document.getElementById("bigFire"); if (element) element.removeAttribute("disabled");
-        if (fast) element = document.getElementById("fastFire"); if (element) element.removeAttribute("disabled");
+        if (triple) { element = document.getElementById("tripleFire"); if (element) element.removeAttribute("disabled"); }
+        if (big) { element = document.getElementById("bigFire"); if (element) element.removeAttribute("disabled"); }
+        if (fast) { element = document.getElementById("fastFire"); if (element) element.removeAttribute("disabled"); }
 
         if (health > 0)
             requestAnimationFrame(animate);
