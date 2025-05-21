@@ -50,14 +50,10 @@ jobs:
       run: |
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        echo "fetch"
         git fetch
-        echo "pull"
         git pull
-        echo "add"
         git add ${{ matrix.var.output }}
-        echo "commit"
-        git commit -m "${{ github.event.head_commit.message }}"
+        git commit -m "${{ github.event.head_commit.message }}" --allow-empty
     
     - name: Push changes
       if: steps.changes.outputs.match == 'true'
