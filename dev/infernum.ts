@@ -133,7 +133,7 @@ namespace Infernum {
     let health = 5;
     let immunity = 0;
     let gameStatus = ".........";
-    let element : HTMLElement | null;
+    let element: HTMLElement | null;
     let debug = false;
     let fighting = 600;
     let flightTime = 396;
