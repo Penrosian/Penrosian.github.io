@@ -125,7 +125,7 @@ namespace Infernum {
         left: "KeyA",
         right: "KeyD",
         jump: "Space",
-        dash: "Shift"
+        dash: "ShiftLeft"
     };
 
     let pressed: (string | number)[] = [];
