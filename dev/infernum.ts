@@ -140,6 +140,7 @@ namespace Infernum {
     let lastFrameTime = 0;
     let swapBind = "left";
     let capturing = false;
+    let framerate = 0;
 
     (window as any).animData = animData;
     (window as any).debug = debug;
@@ -160,6 +161,7 @@ namespace Infernum {
     (window as any).getCirclesByClass = getCirclesByClass;
     (window as any).getRectsByClass = getRectsByClass;
     (window as any).nextFreeNumericId = nextFreeNumericId;
+    (window as any).framerate = framerate;
 
     function getCircleById(id: any): Circle | false {
         let returns: Circle | false = false;
@@ -200,6 +202,7 @@ namespace Infernum {
         console.log(timestamp);
         let delta = (timestamp - lastFrameTime) / 15;
         lastFrameTime = timestamp;
+        framerate = 1000/((lastFrameTime / 15) * (3/50));
         console.log(delta);
         fillPage("lightBlue");
         if (fighting < 0) gameStatus = "Survive";
