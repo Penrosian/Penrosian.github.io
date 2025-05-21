@@ -25,18 +25,29 @@ jobs:
         persist-credentials: false
         fetch-depth: 0
 
+    - uses: dorny/paths-filter@v3
+      id: changes
+      with:
+        filters: |
+          match:
+            - ${{ matrix.var.input }}
+
     - name: Setup Node
+      if: steps.changes.outputs.match == 'true'
       uses: actions/setup-node@v4
       with:
         node-version: '20.x'
     
     - name: Install TypeScript
+      if: steps.changes.outputs.match == 'true'
       run: npm install typescript
 
     - name: Transpile TypeScript
+      if: steps.changes.outputs.match == 'true'
       run: npx tsc ${{ matrix.var.input }} --outFile ${{ matrix.var.output }} --lib dom,es2024
 
     - name: Commit files
+      if: steps.changes.outputs.match == 'true'
       run: |
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
@@ -46,6 +57,7 @@ jobs:
         git commit -m "${{ github.event.head_commit.message }}"
     
     - name: Push changes
+      if: steps.changes.outputs.match == 'true'
       uses: ad-m/github-push-action@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
