@@ -202,7 +202,7 @@ namespace Infernum {
         console.log(timestamp);
         let delta = (timestamp - lastFrameTime) / 15;
         lastFrameTime = timestamp;
-        framerate = 1000/((lastFrameTime / 15) * (3/50));
+        framerate = 1000/(((timestamp - lastFrameTime) / 15) * (3/50));
         console.log(delta);
         fillPage("lightBlue");
         if (fighting < 0) gameStatus = "Survive";
@@ -308,7 +308,6 @@ namespace Infernum {
             }
         }
 
-
         if (pressed.includes(binds.left)) player.xVel -= 2 * delta;
         if (pressed.includes(binds.right)) player.xVel += 2 * delta;
         if (pressed.includes(binds.jump)) {
@@ -348,7 +347,8 @@ namespace Infernum {
         player.xVel -= (player.xVel / 6) * delta;
         if (player.yVel < 10) player.yVel += 0.2;
         if (player.yVel < -5) player.yVel = -5;
-        immunity--;
+        immunity -= delta;
+        fighting -= delta;
         requestAnimationFrame(animate);
     }
     /* 
