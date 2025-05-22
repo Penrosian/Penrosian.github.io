@@ -86,6 +86,7 @@ var Infernum;
     var swapBind = "left";
     var capturing = false;
     var framerate = 0;
+    var frame = 0;
     window.animData = animData;
     window.debug = debug;
     window.gameStatus = gameStatus;
@@ -106,6 +107,7 @@ var Infernum;
     window.getRectsByClass = getRectsByClass;
     window.nextFreeNumericId = nextFreeNumericId;
     window.framerate = framerate;
+    window.frame = frame;
     function getCircleById(id) {
         var returns = false;
         animData.circles.forEach(function (circle) { if (circle.id == id)
@@ -148,7 +150,8 @@ var Infernum;
         Start of game loop
     */
     function animate(timestamp) {
-        var delta = Math.round(10 * ((timestamp - lastFrameTime) / 16)) / 10;
+        frame++;
+        var delta = (timestamp - lastFrameTime) / 16;
         lastFrameTime = timestamp;
         framerate = 1000 / (delta * (50 / 3));
         fillPage("lightBlue");
@@ -302,8 +305,8 @@ var Infernum;
         if (element)
             element.innerHTML = gameStatus;
         element = document.getElementById("fps");
-        if (element)
-            element.innerHTML = Math.floor(framerate) + " fps " + delta;
+        if (frame % 10 == 0 && element)
+            element.innerHTML = Math.floor(framerate) + " fps";
         if (capturing) {
             if (pressed.length > 0) {
                 binds[swapBind] = pressed[0];
