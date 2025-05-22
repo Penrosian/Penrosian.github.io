@@ -202,7 +202,7 @@ namespace Infernum {
         console.log(timestamp);
         let delta = (timestamp - lastFrameTime) / 15;
         lastFrameTime = timestamp;
-        framerate = 1000/(((timestamp - lastFrameTime) / 15) * (3/50));
+        framerate = 1000/(delta * (50/3));
         console.log(delta);
         fillPage("lightBlue");
         if (fighting < 0) gameStatus = "Survive";
