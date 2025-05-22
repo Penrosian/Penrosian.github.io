@@ -149,10 +149,9 @@ var Infernum;
     */
     function animate(timestamp) {
         console.log(timestamp);
-        var delta = (timestamp - lastFrameTime) / 15;
+        var delta = (timestamp - lastFrameTime) / 16;
         lastFrameTime = timestamp;
         framerate = 1000 / (delta * (50 / 3));
-        console.log(delta);
         fillPage("lightBlue");
         if (fighting < 0)
             gameStatus = "Survive";
@@ -305,7 +304,7 @@ var Infernum;
             element.innerHTML = gameStatus;
         element = document.getElementById("fps");
         if (element)
-            element.innerHTML = Math.floor(framerate) + " " + framerate;
+            element.innerHTML = Math.floor(framerate) + " fps " + delta;
         if (capturing) {
             if (pressed.length > 0) {
                 binds[swapBind] = pressed[0];
