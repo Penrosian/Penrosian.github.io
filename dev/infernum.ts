@@ -200,10 +200,9 @@ namespace Infernum {
     */
     function animate(timestamp: number) {
         console.log(timestamp);
-        let delta = (timestamp - lastFrameTime) / 15;
+        let delta = (timestamp - lastFrameTime) / 16;
         lastFrameTime = timestamp;
         framerate = 1000/(delta * (50/3));
-        console.log(delta);
         fillPage("lightBlue");
         if (fighting < 0) gameStatus = "Survive";
 
@@ -335,7 +334,7 @@ namespace Infernum {
         element = document.getElementById("status");
         if (element) element.innerHTML = gameStatus;
         element = document.getElementById("fps");
-        if (element) element.innerHTML = Math.floor(framerate) + " " + framerate;
+        if (element) element.innerHTML = Math.floor(framerate) + " fps " + delta;
 
         if (capturing) {
             if (pressed.length > 0) {
