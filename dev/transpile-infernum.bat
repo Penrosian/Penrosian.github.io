@@ -1,1 +1,1 @@
-npx tsc infernum.ts --outFile ../JS/tsc/infernum.js --lib dom,es2024
+npx tsc infernum.ts --outFile ../school/JS/tsc/infernum.js --lib dom,es2024

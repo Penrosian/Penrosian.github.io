@@ -1,3 +1,3 @@
 #!/bin/sh
 # Run to transpile to JS before committing
-tsc game.ts --outFile ../JS/tsc/game.js --lib dom,es2024
+tsc game.ts --outFile ../school/JS/tsc/game.js --lib dom,es2024
