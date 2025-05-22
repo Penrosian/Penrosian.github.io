@@ -141,6 +141,7 @@ namespace Infernum {
     let swapBind = "left";
     let capturing = false;
     let framerate = 0;
+    let frame = 0;
 
     (window as any).animData = animData;
     (window as any).debug = debug;
@@ -162,6 +163,7 @@ namespace Infernum {
     (window as any).getRectsByClass = getRectsByClass;
     (window as any).nextFreeNumericId = nextFreeNumericId;
     (window as any).framerate = framerate;
+    (window as any).frame = frame;
 
     function getCircleById(id: any): Circle | false {
         let returns: Circle | false = false;
@@ -199,7 +201,8 @@ namespace Infernum {
         Start of game loop
     */
     function animate(timestamp: number) {
-        let delta = Math.round(10 * ((timestamp - lastFrameTime) / 16)) / 10;
+        frame++;
+        let delta = (timestamp - lastFrameTime) / 16;
         lastFrameTime = timestamp;
         framerate = 1000/(delta * (50/3));
         fillPage("lightBlue");
@@ -333,7 +336,7 @@ namespace Infernum {
         element = document.getElementById("status");
         if (element) element.innerHTML = gameStatus;
         element = document.getElementById("fps");
-        if (element) element.innerHTML = Math.floor(framerate) + " fps " + delta;
+        if (frame % 10 == 0 && element) element.innerHTML = Math.floor(framerate) + " fps";
 
         if (capturing) {
             if (pressed.length > 0) {
