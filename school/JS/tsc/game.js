@@ -40,6 +40,60 @@ var Game;
         });
         return returnVal;
     }
+    function bulletCheck(bullet, ball) {
+        if (bullet.meta["pierce"] == undefined)
+            throw new Error("Bullet has no pierce. Something has gone horribly wrong.");
+        if (bullet.radius + ball.radius >= Math.sqrt(Math.pow(bullet.x - ball.x, 2) + Math.pow(bullet.y - ball.y, 2))) {
+            if (ball.meta["health"] && ball.meta["maxHealth"]) {
+                var pierceCap = 0;
+                while (bullet.meta["pierce"] > 0 && ball.meta["health"] > 0 && pierceCap < 5) {
+                    bullet.meta["pierce"] -= pierceMod;
+                    ball.meta["health"]--;
+                    pierceCap++;
+                }
+                if (bullet.meta["pierce"] <= 0)
+                    animData.circles = animData.circles.filter(function (a) { return a != bullet; });
+                if (pierceCap >= 5) {
+                    if (bullet.meta["intangible"] == undefined)
+                        bullet.meta["intangible"] = [];
+                    bullet.meta["intangible"].push(ball.id);
+                }
+                if (ball.meta["health"] <= 0) {
+                    if (ball.meta["boss"]) {
+                        animData.circles.push({
+                            "id": nextFreeNumericId("circle"),
+                            "class": "explosion",
+                            "x": ball.x,
+                            "y": ball.y,
+                            "radius": 1,
+                            "length": 1,
+                            "animation": "static",
+                            "xVel": 0,
+                            "yVel": 0,
+                            "color": "red",
+                            "lineColor": "black",
+                            "lineWidth": 8,
+                            "meta": { "expanding": true }
+                        });
+                        score += Math.ceil(ball.meta["maxHealth"] / 2);
+                        money += Math.ceil(ball.meta["maxHealth"] / 2);
+                    }
+                    score += ball.meta["maxHealth"];
+                    money += ball.meta["maxHealth"];
+                    animData.circles = animData.circles.filter(function (a) { return a != ball; });
+                    animData.circles = animData.circles.filter(function (a) { return a != bullet; });
+                }
+            }
+            else {
+                animData.circles = animData.circles.filter(function (a) { return a != ball; });
+                bullet.meta["pierce"] -= pierceMod;
+                if (bullet.meta["pierce"] <= 0)
+                    animData.circles = animData.circles.filter(function (a) { return a != bullet; });
+                score += 1;
+                money += 1;
+            }
+        }
+    }
     ;
     var animData = {
         "rects": [
@@ -104,8 +158,6 @@ var Game;
     var gameStatus = "Survive!";
     var shopTimer = -1;
     var powerup = "None";
-    var speedCounter = -1;
-    var firePower = false;
     var powerMode = "Unlock Mode";
     var tripleCost = 100;
     var bigCost = 130;
@@ -165,7 +217,6 @@ var Game;
     }
     // The main loop
     function animate() {
-        console.log(pressed);
         fillPage("lightBlue");
         gameStatus = "Survive!";
         var _loop_1 = function (i) {
@@ -275,7 +326,7 @@ var Game;
         var balls = getCirclesByClass("ball");
         var bullets = getCirclesByClass("bullet");
         if (balls) {
-            var _loop_3 = function (i) {
+            for (var i = 0; i < balls.length; i++) {
                 var ball = balls[i];
                 if (ball.y + ball.radius >= ground.y) {
                     ball.y = ground.y - ball.radius;
@@ -290,59 +341,16 @@ var Game;
                     hurt = 20;
                 }
                 if (bullets) {
-                    var _loop_5 = function (x) {
-                        var bullet = bullets[x];
-                        if (bullet.meta["pierce"] == undefined)
-                            throw new Error("Bullet has no pierce. Something has gone horribly wrong.");
-                        if (bullet.radius + ball.radius >= Math.sqrt(Math.pow(bullet.x - ball.x, 2) + Math.pow(bullet.y - ball.y, 2))) {
-                            if (ball.meta["health"] && ball.meta["maxHealth"]) {
-                                while (bullet.meta["pierce"] > 0 && ball.meta["health"] > 0) {
-                                    bullet.meta["pierce"] -= pierceMod;
-                                    ball.meta["health"]--;
-                                }
-                                if (ball.meta["health"] <= 0) {
-                                    if (ball.meta["boss"]) {
-                                        animData.circles.push({
-                                            "id": nextFreeNumericId("circle"),
-                                            "class": "explosion",
-                                            "x": ball.x,
-                                            "y": ball.y,
-                                            "radius": 1,
-                                            "length": 1,
-                                            "animation": "static",
-                                            "xVel": 0,
-                                            "yVel": 0,
-                                            "color": "red",
-                                            "lineColor": "black",
-                                            "lineWidth": 8,
-                                            "meta": { "expanding": true }
-                                        });
-                                        score += Math.ceil(ball.meta["maxHealth"] / 2);
-                                        money += Math.ceil(ball.meta["maxHealth"] / 2);
-                                    }
-                                    score += ball.meta["maxHealth"];
-                                    money += ball.meta["maxHealth"];
-                                    animData.circles = animData.circles.filter(function (a) { return a != ball; });
-                                    animData.circles = animData.circles.filter(function (a) { return a != bullet; });
-                                }
-                            }
-                            else {
-                                animData.circles = animData.circles.filter(function (a) { return a != ball; });
-                                bullet.meta["pierce"] -= pierceMod;
-                                if (bullet.meta["pierce"] <= 0)
-                                    animData.circles = animData.circles.filter(function (a) { return a != bullet; });
-                                score += 1;
-                                money += 1;
-                            }
-                        }
-                    };
                     for (var x = 0; x < bullets.length; x++) {
-                        _loop_5(x);
+                        var bullet = bullets[x];
+                        if (bullet.meta["intangible"] != undefined) {
+                            if (!bullet.meta["intangible"].includes(ball.id))
+                                bulletCheck(bullet, ball);
+                        }
+                        else
+                            bulletCheck(bullet, ball);
                     }
                 }
-            };
-            for (var i = 0; i < balls.length; i++) {
-                _loop_3(i);
             }
         }
         if (pressed.includes("KeyQ") && powerup != "None" && powerDuration < 0) {
@@ -356,13 +364,17 @@ var Game;
                 case "Bomb":
                     balls = getCirclesByClass("ball");
                     if (balls) {
-                        var _loop_4 = function (i) {
+                        var _loop_3 = function (i) {
                             var ball = balls[i];
-                            if (player.width / 2 + 400 >= Math.sqrt(Math.pow(player.x + player.width / 2 - ball.x, 2) + Math.pow(player.y + player.height / 2 - ball.y, 2)))
-                                animData.circles = animData.circles.filter(function (a) { return a != ball; });
+                            if (player.width / 2 + 400 >= Math.sqrt(Math.pow(player.x + player.width / 2 - ball.x, 2) + Math.pow(player.y + player.height / 2 - ball.y, 2))) {
+                                if (ball.meta["health"])
+                                    ball.meta["health"] -= 10;
+                                else
+                                    animData.circles = animData.circles.filter(function (a) { return a != ball; });
+                            }
                         };
                         for (var i = 0; i < balls.length; i++) {
-                            _loop_4(i);
+                            _loop_3(i);
                         }
                     }
                     powerup = "None";
@@ -761,12 +773,7 @@ var Game;
                     bar.width = (canvasWidth - 40) * (barBoss.meta["health"] / barBoss.meta["maxHealth"]);
                 }
                 else {
-                    console.log("Boss dead. Removing boss bar.");
-                    console.log(animData.rects);
-                    console.log(backBar);
                     animData.rects = animData.rects.filter(function (a) { return a != bar && a != backBar; });
-                    console.log("Removal complete.");
-                    console.log(animData.rects);
                 }
             });
         if (shopTimer > 0)
@@ -910,11 +917,10 @@ var Game;
         }
         if (health > 0)
             requestAnimationFrame(animate);
-        else {
+        else
             element = document.getElementById("status");
-            if (element)
-                element.innerHTML = "Game over!";
-        }
+        if (element)
+            element.innerHTML = "Game over!";
     }
     element = document.getElementById("tripleFire");
     if (element)
