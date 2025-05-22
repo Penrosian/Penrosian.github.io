@@ -14,9 +14,9 @@ jobs:
       matrix:
         var:
           - input: dev/game.ts
-            output: JS/tsc/game.js
+            output: school/JS/tsc/game.js
           - input: dev/infernum.ts
-            output: JS/tsc/infernum.js
+            output: school/JS/tsc/infernum.js
 
     steps:
     - uses: actions/checkout@v4
