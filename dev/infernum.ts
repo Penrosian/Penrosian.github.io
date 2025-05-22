@@ -311,9 +311,9 @@ namespace Infernum {
         if (pressed.includes(binds.left)) player.xVel -= 2 * delta;
         if (pressed.includes(binds.right)) player.xVel += 2 * delta;
         if (pressed.includes(binds.jump)) {
-            if (player.y + player.height >= ground.y) player.yVel = -5;
+            if (player.y + player.height >= ground.y) player.yVel = -7;
             else if (flightTime > 0) {
-                player.yVel -= 0.5 * delta;
+                player.yVel -= 0.7 * delta;
                 flightTime -= delta;
             }
         }
@@ -346,7 +346,7 @@ namespace Infernum {
         }
         player.xVel -= (player.xVel / 6) * delta;
         if (player.yVel < 10) player.yVel += 0.2;
-        if (player.yVel < -5) player.yVel = -5;
+        if (player.yVel < -7) player.yVel = -7;
         immunity -= delta;
         fighting -= delta;
         requestAnimationFrame(animate);
