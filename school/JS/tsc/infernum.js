@@ -87,6 +87,7 @@ var Infernum;
     var capturing = false;
     var framerate = 0;
     var frame = 0;
+    var frameSum = 0;
     window.animData = animData;
     window.debug = debug;
     window.gameStatus = gameStatus;
@@ -108,6 +109,7 @@ var Infernum;
     window.nextFreeNumericId = nextFreeNumericId;
     window.framerate = framerate;
     window.frame = frame;
+    window.frameSum = frameSum;
     function getCircleById(id) {
         var returns = false;
         animData.circles.forEach(function (circle) { if (circle.id == id)
@@ -305,8 +307,11 @@ var Infernum;
         if (element)
             element.innerHTML = gameStatus;
         element = document.getElementById("fps");
-        if (frame % 10 == 0 && element)
-            element.innerHTML = Math.floor(framerate) + " fps";
+        if (frame % 10 == 0 && element) {
+            element.innerHTML = Math.floor(frameSum / 10) + " fps";
+            frameSum = 0;
+        }
+        frameSum += framerate;
         if (capturing) {
             if (pressed.length > 0) {
                 binds[swapBind] = pressed[0];
