@@ -151,7 +151,7 @@ var Infernum;
         console.log(timestamp);
         var delta = (timestamp - lastFrameTime) / 15;
         lastFrameTime = timestamp;
-        framerate = 1000 / (((timestamp - lastFrameTime) / 15) * (3 / 50));
+        framerate = 1000 / (delta * (50 / 3));
         console.log(delta);
         fillPage("lightBlue");
         if (fighting < 0)
@@ -276,9 +276,9 @@ var Infernum;
             player.xVel += 2 * delta;
         if (pressed.includes(binds.jump)) {
             if (player.y + player.height >= ground.y)
-                player.yVel = -5;
+                player.yVel = -7;
             else if (flightTime > 0) {
-                player.yVel -= 0.5 * delta;
+                player.yVel -= 0.7 * delta;
                 flightTime -= delta;
             }
         }
@@ -316,8 +316,8 @@ var Infernum;
         player.xVel -= (player.xVel / 6) * delta;
         if (player.yVel < 10)
             player.yVel += 0.2;
-        if (player.yVel < -5)
-            player.yVel = -5;
+        if (player.yVel < -7)
+            player.yVel = -7;
         immunity -= delta;
         fighting -= delta;
         requestAnimationFrame(animate);
