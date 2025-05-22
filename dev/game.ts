@@ -44,6 +44,56 @@ namespace Game {
         return returnVal;
     }
 
+    function bulletCheck(bullet : Circle, ball : Circle) {
+        if (bullet.meta["pierce"] == undefined) throw new Error("Bullet has no pierce. Something has gone horribly wrong.");
+        if (bullet.radius + ball.radius >= Math.sqrt(Math.pow(bullet.x - ball.x, 2) + Math.pow(bullet.y - ball.y, 2))) {
+            if (ball.meta["health"] && ball.meta["maxHealth"]) {
+                let pierceCap = 0;
+                while (bullet.meta["pierce"] > 0 && ball.meta["health"] > 0 && pierceCap < 5) {
+                    bullet.meta["pierce"] -= pierceMod;
+                    ball.meta["health"]--;
+                    pierceCap++;
+                }
+                if (bullet.meta["pierce"] <= 0) animData.circles = animData.circles.filter(a => a != bullet);
+                if (pierceCap >= 5) {
+                    if (bullet.meta["intangible"] == undefined) bullet.meta["intangible"] = [];
+                    bullet.meta["intangible"].push(ball.id);
+                }
+                if (ball.meta["health"] <= 0) {
+                    if (ball.meta["boss"]) {
+                        animData.circles.push({
+                            "id": nextFreeNumericId("circle"),
+                            "class": "explosion",
+                            "x": ball.x,
+                            "y": ball.y,
+                            "radius": 1,
+                            "length": 1,
+                            "animation": "static",
+                            "xVel": 0,
+                            "yVel": 0,
+                            "color": "red",
+                            "lineColor": "black",
+                            "lineWidth": 8,
+                            "meta": { "expanding": true }
+                        });
+                        score += Math.ceil(ball.meta["maxHealth"] / 2);
+                        money += Math.ceil(ball.meta["maxHealth"] / 2);
+                    }
+                    score += ball.meta["maxHealth"];
+                    money += ball.meta["maxHealth"];
+                    animData.circles = animData.circles.filter(a => a != ball);
+                    animData.circles = animData.circles.filter(a => a != bullet);
+                }
+            } else {
+                animData.circles = animData.circles.filter(a => a != ball);
+                bullet.meta["pierce"] -= pierceMod;
+                if (bullet.meta["pierce"] <= 0) animData.circles = animData.circles.filter(a => a != bullet);
+                score += 1;
+                money += 1;
+            }
+        }
+    }
+
     // Storing in an object instead of in a bunch of variables is
     // cleaner and means I can add more shapes using code
     type ShapeAnimation = "bounce" | "static" | "exitKill" | "locked";
@@ -54,6 +104,7 @@ namespace Game {
         boss?: boolean;
         expanding?: boolean;
         maxHealth?: number;
+        intangible?: any[];
     };
 
     type Rect = {
@@ -170,8 +221,6 @@ namespace Game {
     let gameStatus = "Survive!";
     let shopTimer = -1;
     let powerup = "None";
-    let speedCounter = -1;
-    let firePower = false;
     let powerMode = "Unlock Mode";
     let tripleCost = 100;
     let bigCost = 130;
@@ -339,46 +388,10 @@ namespace Game {
                 if (bullets) {
                     for (let x = 0; x < bullets.length; x++) {
                         let bullet = bullets[x];
-                        if (bullet.meta["pierce"] == undefined) throw new Error("Bullet has no pierce. Something has gone horribly wrong.");
-                        if (bullet.radius + ball.radius >= Math.sqrt(Math.pow(bullet.x - ball.x, 2) + Math.pow(bullet.y - ball.y, 2))) {
-                            if (ball.meta["health"] && ball.meta["maxHealth"]) {
-                                while (bullet.meta["pierce"] > 0 && ball.meta["health"] > 0) {
-                                    bullet.meta["pierce"] -= pierceMod;
-                                    ball.meta["health"]--;
-                                }
-                                if (ball.meta["health"] <= 0) {
-                                    if (ball.meta["boss"]) {
-                                        animData.circles.push({
-                                            "id": nextFreeNumericId("circle"),
-                                            "class": "explosion",
-                                            "x": ball.x,
-                                            "y": ball.y,
-                                            "radius": 1,
-                                            "length": 1,
-                                            "animation": "static",
-                                            "xVel": 0,
-                                            "yVel": 0,
-                                            "color": "red",
-                                            "lineColor": "black",
-                                            "lineWidth": 8,
-                                            "meta": { "expanding": true }
-                                        });
-                                        score += Math.ceil(ball.meta["maxHealth"] / 2);
-                                        money += Math.ceil(ball.meta["maxHealth"] / 2);
-                                    }
-                                    score += ball.meta["maxHealth"];
-                                    money += ball.meta["maxHealth"];
-                                    animData.circles = animData.circles.filter(a => a != ball);
-                                    animData.circles = animData.circles.filter(a => a != bullet);
-                                }
-                            } else {
-                                animData.circles = animData.circles.filter(a => a != ball);
-                                bullet.meta["pierce"] -= pierceMod;
-                                if (bullet.meta["pierce"] <= 0) animData.circles = animData.circles.filter(a => a != bullet);
-                                score += 1;
-                                money += 1;
-                            }
+                        if (bullet.meta["intangible"] != undefined) {
+                            if (!bullet.meta["intangible"].includes(ball.id)) bulletCheck(bullet, ball);
                         }
+                        else bulletCheck(bullet, ball);
                     }
                 }
             }
@@ -397,8 +410,10 @@ namespace Game {
                     if (balls) {
                         for (let i = 0; i < balls.length; i++) {
                             let ball = balls[i];
-                            if (player.width / 2 + 400 >= Math.sqrt(Math.pow(player.x + player.width / 2 - ball.x, 2) + Math.pow(player.y + player.height / 2 - ball.y, 2)))
-                                animData.circles = animData.circles.filter(a => a != ball);
+                            if (player.width / 2 + 400 >= Math.sqrt(Math.pow(player.x + player.width / 2 - ball.x, 2) + Math.pow(player.y + player.height / 2 - ball.y, 2))) {
+                                if (ball.meta["health"]) ball.meta["health"] -= 10;
+                                else animData.circles = animData.circles.filter(a => a != ball);
+                            }
                         }
                     }
                     powerup = "None";
@@ -769,12 +784,7 @@ namespace Game {
                 if (barBoss.meta["health"] == undefined) throw new Error("Boss health not found. Something has gone horribly wrong.");
                 bar.width = (canvasWidth - 40) * (barBoss.meta["health"] / barBoss.meta["maxHealth"]);
             } else {
-                console.log("Boss dead. Removing boss bar.");
-                console.log(animData.rects);
-                console.log(backBar);
                 animData.rects = animData.rects.filter(a => a != bar && a != backBar);
-                console.log("Removal complete.");
-                console.log(animData.rects);
             }
         });
 
@@ -851,7 +861,7 @@ namespace Game {
 
         if (health > 0)
             requestAnimationFrame(animate);
-        else { element = document.getElementById("status"); if (element) element.innerHTML = "Game over!"; }
+        else element = document.getElementById("status"); if (element) element.innerHTML = "Game over!";
     }
 
     element = document.getElementById("tripleFire"); if (element) element.setAttribute("disabled", "");
