@@ -148,8 +148,7 @@ var Infernum;
         Start of game loop
     */
     function animate(timestamp) {
-        console.log(timestamp);
-        var delta = (timestamp - lastFrameTime) / 16;
+        var delta = Math.round(10 * ((timestamp - lastFrameTime) / 16)) / 10;
         lastFrameTime = timestamp;
         framerate = 1000 / (delta * (50 / 3));
         fillPage("lightBlue");
