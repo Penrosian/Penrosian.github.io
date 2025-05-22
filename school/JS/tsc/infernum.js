@@ -305,7 +305,7 @@ var Infernum;
             element.innerHTML = gameStatus;
         element = document.getElementById("fps");
         if (element)
-            element.innerHTML = Math.floor(framerate) + " fps";
+            element.innerHTML = Math.floor(framerate) + " " + framerate;
         if (capturing) {
             if (pressed.length > 0) {
                 binds[swapBind] = pressed[0];
