@@ -142,6 +142,7 @@ namespace Infernum {
     let capturing = false;
     let framerate = 0;
     let frame = 0;
+    let frameSum = 0;
 
     (window as any).animData = animData;
     (window as any).debug = debug;
@@ -164,6 +165,7 @@ namespace Infernum {
     (window as any).nextFreeNumericId = nextFreeNumericId;
     (window as any).framerate = framerate;
     (window as any).frame = frame;
+    (window as any).frameSum = frameSum;
 
     function getCircleById(id: any): Circle | false {
         let returns: Circle | false = false;
@@ -336,7 +338,11 @@ namespace Infernum {
         element = document.getElementById("status");
         if (element) element.innerHTML = gameStatus;
         element = document.getElementById("fps");
-        if (frame % 10 == 0 && element) element.innerHTML = Math.floor(framerate) + " fps";
+        if (frame % 10 == 0 && element) {
+            element.innerHTML = Math.floor(frameSum/10) + " fps";
+            frameSum = 0;
+        }
+        frameSum += framerate;
 
         if (capturing) {
             if (pressed.length > 0) {
