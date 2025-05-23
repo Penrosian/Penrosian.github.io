@@ -80,7 +80,7 @@ var Infernum;
     var gameStatus = ".........";
     var element;
     var debug = false;
-    var fighting = 3000;
+    var fighting = 3030;
     var flightTime = 396;
     var lastFrameTime = 0;
     var swapBind = "left";
@@ -88,6 +88,7 @@ var Infernum;
     var framerate = 0;
     var frame = 0;
     var frameSum = 0;
+    var dashCooldown = 0;
     window.animData = animData;
     window.debug = debug;
     window.gameStatus = gameStatus;
@@ -291,6 +292,12 @@ var Infernum;
                 flightTime -= delta;
             }
         }
+        if (pressed.includes(binds.dash) && dashCooldown <= 0) {
+            if (pressed.includes(binds.left))
+                player.xVel = -10;
+            if (pressed.includes(binds.right))
+                player.xVel = 10;
+        }
         if (multiPressed(["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"])) {
             pressed = pressed.filter(function (a) { return ![-1, "KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"].includes(a); });
             if (debug)
@@ -332,6 +339,7 @@ var Infernum;
             player.yVel = -7;
         immunity -= delta;
         fighting -= delta;
+        dashCooldown -= delta;
         requestAnimationFrame(animate);
     }
     /*
