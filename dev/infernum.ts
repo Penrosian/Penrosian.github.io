@@ -135,7 +135,7 @@ namespace Infernum {
     let gameStatus = ".........";
     let element: HTMLElement | null;
     let debug = false;
-    let fighting = 600;
+    let fighting = 3000;
     let flightTime = 396;
     let lastFrameTime = 0;
     let swapBind = "left";
@@ -203,6 +203,11 @@ namespace Infernum {
         Start of game loop
     */
     function animate(timestamp: number) {
+        if (frame == 0) {
+            element = document.getElementById("bgm");
+            // @ts-ignore: I think this should work.
+            if (element) element.play();
+        }
         frame++;
         let delta = (timestamp - lastFrameTime) / 16;
         lastFrameTime = timestamp;
