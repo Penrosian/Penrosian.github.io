@@ -92,13 +92,104 @@ namespace Infernum {
     let animData: animData = {
         "rects": [
             {
+                "id": "star1",
+                "class": "star",
+                "x": 100,
+                "y": 100,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star2",
+                "class": "star",
+                "x": 130,
+                "y": 215,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star3",
+                "class": "star",
+                "x": 40,
+                "y": 110,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star4",
+                "class": "star",
+                "x": 255,
+                "y": 300,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star5",
+                "class": "star",
+                "x": 900,
+                "y": 400,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star1",
+                "class": "star",
+                "x": 840,
+                "y": 100,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star1",
+                "class": "star",
+                "x": 870,
+                "y": 80,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
                 "id": "player",
                 "class": null,
                 "x": 55,
                 "y": 80,
                 "width": 20,
                 "height": 20,
-                "color": "black",
+                "color": "white",
                 "animation": "locked",
                 "xVel": 5,
                 "yVel": -5,
@@ -214,7 +305,7 @@ namespace Infernum {
         let delta = (timestamp - lastFrameTime) / 16.75;
         lastFrameTime = timestamp;
         framerate = 1000/(delta * (50/3));
-        fillPage("lightBlue");
+        fillPage("black");
         if (fighting < 0) gameStatus = "Survive";
 
         for (let i = 0; i < animData.rects.length; i++) {
