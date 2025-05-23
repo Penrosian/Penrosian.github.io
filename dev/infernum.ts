@@ -135,7 +135,7 @@ namespace Infernum {
     let gameStatus = ".........";
     let element: HTMLElement | null;
     let debug = false;
-    let fighting = 3000;
+    let fighting = 3030;
     let flightTime = 396;
     let lastFrameTime = 0;
     let swapBind = "left";
@@ -143,6 +143,7 @@ namespace Infernum {
     let framerate = 0;
     let frame = 0;
     let frameSum = 0;
+    let dashCooldown = 0;
 
     (window as any).animData = animData;
     (window as any).debug = debug;
@@ -325,6 +326,10 @@ namespace Infernum {
                 flightTime -= delta;
             }
         }
+        if (pressed.includes(binds.dash) && dashCooldown <= 0) {
+            if (pressed.includes(binds.left)) player.xVel = -10;
+            if (pressed.includes(binds.right)) player.xVel = 10;
+        }
         if (multiPressed(["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"])) {
             pressed = pressed.filter(a => ![-1, "KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"].includes(a));
             if (debug) debug = false;
@@ -361,6 +366,7 @@ namespace Infernum {
         if (player.yVel < -7) player.yVel = -7;
         immunity -= delta;
         fighting -= delta;
+        dashCooldown -= delta;
         requestAnimationFrame(animate);
     }
     /* 
