@@ -209,7 +209,7 @@ namespace Infernum {
             if (element) element.play();
         }
         frame++;
-        let delta = (timestamp - lastFrameTime) / 17;
+        let delta = (timestamp - lastFrameTime) / 16.7;
         lastFrameTime = timestamp;
         framerate = 1000/(delta * (50/3));
         fillPage("lightBlue");
