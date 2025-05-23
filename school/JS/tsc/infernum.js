@@ -159,7 +159,7 @@ var Infernum;
                 element.play();
         }
         frame++;
-        var delta = (timestamp - lastFrameTime) / 17;
+        var delta = (timestamp - lastFrameTime) / 16.7;
         lastFrameTime = timestamp;
         framerate = 1000 / (delta * (50 / 3));
         fillPage("lightBlue");
