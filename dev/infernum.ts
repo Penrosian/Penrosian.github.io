@@ -205,11 +205,11 @@ namespace Infernum {
     function animate(timestamp: number) {
         if (frame == 0) {
             element = document.getElementById("bgm");
-            // @ts-ignore: I think this should work.
+            // @ts-expect-error: bgm is an audio element, which has play
             if (element) element.play();
         }
         frame++;
-        let delta = (timestamp - lastFrameTime) / 16;
+        let delta = (timestamp - lastFrameTime) / 17;
         lastFrameTime = timestamp;
         framerate = 1000/(delta * (50/3));
         fillPage("lightBlue");
