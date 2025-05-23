@@ -209,7 +209,7 @@ namespace Infernum {
             if (element) element.play();
         }
         frame++;
-        let delta = (timestamp - lastFrameTime) / 16.7;
+        let delta = (timestamp - lastFrameTime) / 16.75;
         lastFrameTime = timestamp;
         framerate = 1000/(delta * (50/3));
         fillPage("lightBlue");
@@ -343,7 +343,7 @@ namespace Infernum {
         element = document.getElementById("status");
         if (element) element.innerHTML = gameStatus;
         element = document.getElementById("fps");
-        if (frame % 10 == 0 && element) {
+        if (frame % 30 == 0 && element) {
             element.innerHTML = Math.floor(frameSum/10) + " fps";
             frameSum = 0;
         }
