@@ -144,6 +144,7 @@ namespace Infernum {
     let frame = 0;
     let frameSum = 0;
     let dashCooldown = 0;
+    let dashDir = 0;
 
     (window as any).animData = animData;
     (window as any).debug = debug;
@@ -327,9 +328,17 @@ namespace Infernum {
             }
         }
         if (pressed.includes(binds.dash) && dashCooldown <= 0) {
-            if (pressed.includes(binds.left)) player.xVel = -10;
-            if (pressed.includes(binds.right)) player.xVel = 10;
+            if (pressed.includes(binds.left)) {
+                dashDir = -1;
+                dashCooldown = 45;
+            }
+            if (pressed.includes(binds.right)) {
+                dashDir = 1;
+                dashCooldown = 45;
+            }
         }
+        if (dashCooldown > 30) player.xVel = 15 * dashDir;
+
         if (multiPressed(["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"])) {
             pressed = pressed.filter(a => ![-1, "KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"].includes(a));
             if (debug) debug = false;
