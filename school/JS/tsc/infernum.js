@@ -159,7 +159,7 @@ var Infernum;
                 element.play();
         }
         frame++;
-        var delta = (timestamp - lastFrameTime) / 16.7;
+        var delta = (timestamp - lastFrameTime) / 16.75;
         lastFrameTime = timestamp;
         framerate = 1000 / (delta * (50 / 3));
         fillPage("lightBlue");
@@ -313,7 +313,7 @@ var Infernum;
         if (element)
             element.innerHTML = gameStatus;
         element = document.getElementById("fps");
-        if (frame % 10 == 0 && element) {
+        if (frame % 30 == 0 && element) {
             element.innerHTML = Math.floor(frameSum / 10) + " fps";
             frameSum = 0;
         }
