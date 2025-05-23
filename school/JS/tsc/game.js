@@ -413,7 +413,7 @@ var Game;
             player.xVel += speed;
         if (pressed.includes("Space") && player.y + player.height >= ground.y)
             player.yVel = -5;
-        if (multiPressed(["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"])) {
+        if (multiPressed(["KeyP", "KeyE", "KeyN"])) {
             pressed = pressed.filter(function (a) { return !["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"].includes(a); });
             alert("Debug ON");
             debug = true;
