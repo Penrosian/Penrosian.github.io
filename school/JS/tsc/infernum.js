@@ -80,7 +80,7 @@ var Infernum;
     var gameStatus = ".........";
     var element;
     var debug = false;
-    var fighting = 600;
+    var fighting = 3000;
     var flightTime = 396;
     var lastFrameTime = 0;
     var swapBind = "left";
@@ -152,6 +152,12 @@ var Infernum;
         Start of game loop
     */
     function animate(timestamp) {
+        if (frame == 0) {
+            element = document.getElementById("bgm");
+            // @ts-ignore: I think this should work.
+            if (element)
+                element.play();
+        }
         frame++;
         var delta = (timestamp - lastFrameTime) / 16;
         lastFrameTime = timestamp;
