@@ -447,7 +447,7 @@ namespace Game {
         if (pressed.includes("KeyA")) player.xVel -= speed;
         if (pressed.includes("KeyD")) player.xVel += speed;
         if (pressed.includes("Space") && player.y + player.height >= ground.y) player.yVel = -5;
-        if (multiPressed(["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"])) {
+        if (multiPressed(["KeyP", "KeyE", "KeyN"])) {
             pressed = pressed.filter(a => !["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"].includes(a));
             alert("Debug ON");
             debug = true;
