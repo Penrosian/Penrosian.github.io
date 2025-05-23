@@ -220,6 +220,8 @@ var Infernum;
     var frameSum = 0;
     var dashCooldown = 0;
     var dashDir = 0;
+    var cursorX = 0;
+    var cursorY = 0;
     window.animData = animData;
     window.debug = debug;
     window.gameStatus = gameStatus;
@@ -242,6 +244,10 @@ var Infernum;
     window.framerate = framerate;
     window.frame = frame;
     window.frameSum = frameSum;
+    window.dashCooldown = dashCooldown;
+    window.dashDir = dashDir;
+    window.cursorX = cursorX;
+    window.cursorY = cursorY;
     function getCircleById(id) {
         var returns = false;
         animData.circles.forEach(function (circle) { if (circle.id == id)
@@ -462,6 +468,11 @@ var Infernum;
             frameSum = 0;
         }
         frameSum += framerate;
+        if (debug) {
+            element = document.getElementById("cursor");
+            if (element)
+                element.innerHTML = "Cursor: " + cursorX + ", " + cursorY;
+        }
         if (capturing) {
             if (pressed.length > 0) {
                 binds[swapBind] = pressed[0];
@@ -519,6 +530,8 @@ var Infernum;
         pressed = pressed.filter(function (i) { return i != event.code; });
     });
     document.addEventListener("mousedown", function (event) {
+        cursorX = event.clientX;
+        cursorY = event.clientY;
         event.preventDefault();
         pressed.push(event.button);
     });
