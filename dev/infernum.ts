@@ -344,7 +344,7 @@ namespace Infernum {
         if (element) element.innerHTML = gameStatus;
         element = document.getElementById("fps");
         if (frame % 30 == 0 && element) {
-            element.innerHTML = Math.floor(frameSum/10) + " fps";
+            element.innerHTML = Math.floor(frameSum/30) + " fps";
             frameSum = 0;
         }
         frameSum += framerate;
