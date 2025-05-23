@@ -347,9 +347,10 @@ namespace Infernum {
             if (element) element.play();
         }
         frame++;
-        let delta = (timestamp - lastFrameTime) / 16.75;
+        let thisTime = (timestamp - lastFrameTime) / 16.75;
         lastFrameTime = timestamp;
-        framerate = 1000/(delta * (50/3));
+        framerate = 1000/(thisTime * (50/3));
+        let delta = 1/thisTime;
         fillPage("black");
         if (fighting < 0) gameStatus = "Survive";
 
