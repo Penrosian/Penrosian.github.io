@@ -499,10 +499,9 @@ namespace Infernum {
         }
         frameSum += framerate;
 
-        if (debug) {
-            element = document.getElementById("cursor");
-            if (element) element.innerHTML = "Cursor: " + cursorX + ", " + cursorY;
-        }
+        element = document.getElementById("cursor");
+            if (element && debug) element.innerHTML = "Cursor: " + cursorX + ", " + cursorY;
+            else if (element) element.innerHTML = String(pressed);
 
         if (capturing) {
             if (pressed.length > 0) {
