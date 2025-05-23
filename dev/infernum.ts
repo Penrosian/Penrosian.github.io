@@ -157,7 +157,7 @@ namespace Infernum {
                 "meta": {}
             },
             {
-                "id": "star1",
+                "id": "star6",
                 "class": "star",
                 "x": 840,
                 "y": 100,
@@ -170,10 +170,49 @@ namespace Infernum {
                 "meta": {}
             },
             {
-                "id": "star1",
+                "id": "star7",
                 "class": "star",
                 "x": 870,
                 "y": 80,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star8",
+                "class": "star",
+                "x": 590,
+                "y": 340,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star9",
+                "class": "star",
+                "x": 450,
+                "y": 370,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star10",
+                "class": "star",
+                "x": 370,
+                "y": 210,
                 "width": 2,
                 "height": 2,
                 "color": "yellow",
