@@ -275,6 +275,8 @@ namespace Infernum {
     let frameSum = 0;
     let dashCooldown = 0;
     let dashDir = 0;
+    let cursorX = 0;
+    let cursorY = 0;
 
     (window as any).animData = animData;
     (window as any).debug = debug;
@@ -298,6 +300,10 @@ namespace Infernum {
     (window as any).framerate = framerate;
     (window as any).frame = frame;
     (window as any).frameSum = frameSum;
+    (window as any).dashCooldown = dashCooldown;
+    (window as any).dashDir = dashDir;
+    (window as any).cursorX = cursorX;
+    (window as any).cursorY = cursorY;
 
     function getCircleById(id: any): Circle | false {
         let returns: Circle | false = false;
@@ -493,6 +499,11 @@ namespace Infernum {
         }
         frameSum += framerate;
 
+        if (debug) {
+            element = document.getElementById("cursor");
+            if (element) element.innerHTML = "Cursor: " + cursorX + ", " + cursorY;
+        }
+
         if (capturing) {
             if (pressed.length > 0) {
                 binds[swapBind as keyof Binds] = pressed[0];
@@ -547,6 +558,8 @@ namespace Infernum {
         pressed = pressed.filter(i => i != event.code);
     });
     document.addEventListener("mousedown", event => {
+        cursorX = event.clientX;
+        cursorY = event.clientY;
         event.preventDefault();
         pressed.push(event.button);
     });
