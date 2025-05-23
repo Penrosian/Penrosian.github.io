@@ -441,7 +441,7 @@ var Infernum;
         }
         if (dashCooldown > 30)
             player.xVel = 15 * dashDir;
-        if (multiPressed(["KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"])) {
+        if (multiPressed(["KeyP", "KeyE", "KeyN"])) {
             pressed = pressed.filter(function (a) { return ![-1, "KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"].includes(a); });
             if (debug)
                 debug = false;
