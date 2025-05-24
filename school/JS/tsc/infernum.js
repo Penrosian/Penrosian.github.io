@@ -35,6 +35,10 @@ var Infernum;
         });
         return returnVal;
     }
+    // Maps a value from one range to another
+    function map(value, x1, y1, x2, y2) {
+        return (value - x1) * (y2 - x2) / (y1 - x1) + x2;
+    }
     ;
     var animData = {
         "rects": [
@@ -222,6 +226,9 @@ var Infernum;
     var dashDir = 0;
     var cursorX = 0;
     var cursorY = 0;
+    var maxX = window.innerWidth;
+    var maxY = window.innerHeight;
+    // Expose variables to the global scope for debugging
     window.animData = animData;
     window.debug = debug;
     window.gameStatus = gameStatus;
@@ -248,6 +255,8 @@ var Infernum;
     window.dashDir = dashDir;
     window.cursorX = cursorX;
     window.cursorY = cursorY;
+    window.maxX = maxX;
+    window.maxY = maxY;
     function getCircleById(id) {
         var returns = false;
         animData.circles.forEach(function (circle) { if (circle.id == id)
@@ -449,6 +458,34 @@ var Infernum;
                 debug = true;
             alert("Debug mode: " + debug);
         }
+        if (multiPressed(["KeyM", "KeyA", "KeyP"]) && debug) {
+            pressed = pressed.filter(function (a) { return ![-1, "KeyM", "KeyA", "KeyP"].includes(a); });
+            var ans = prompt("MaxX:");
+            var maxTmp = void 0;
+            if (ans == null || ans == "") {
+                alert("Cancelled.");
+                return;
+            }
+            else {
+                maxTmp = Number(ans);
+                if (isNaN(maxTmp))
+                    alert("Invalid number.");
+                else
+                    maxX = maxTmp;
+            }
+            ans = prompt("MaxY:");
+            if (ans == null || ans == "") {
+                alert("Cancelled.");
+                return;
+            }
+            else {
+                maxTmp = Number(ans);
+                if (isNaN(maxTmp))
+                    alert("Invalid number.");
+                else
+                    maxY = maxTmp;
+            }
+        }
         element = document.getElementById("swapBind");
         if (element)
             element.innerHTML = "Current bind: " + swapBind;
@@ -470,9 +507,7 @@ var Infernum;
         frameSum += framerate;
         element = document.getElementById("cursor");
         if (element && debug)
-            element.innerHTML = "Cursor: " + cursorX + ", " + cursorY;
-        else if (element)
-            element.innerHTML = String(pressed);
+            element.innerHTML = "Cursor: " + map(cursorX, 0, 0, maxX, 960) + ", " + map(cursorY, 0, 0, maxY, 540);
         if (capturing) {
             if (pressed.length > 0) {
                 binds[swapBind] = pressed[0];
@@ -482,7 +517,7 @@ var Infernum;
         }
         player.xVel -= (player.xVel / 6) * delta;
         if (player.yVel < 10)
-            player.yVel += 0.2;
+            player.yVel += 0.2 * delta;
         if (player.yVel < -7)
             player.yVel = -7;
         immunity -= delta;

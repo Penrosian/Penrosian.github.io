@@ -39,6 +39,11 @@ namespace Infernum {
         return returnVal;
     }
 
+    // Maps a value from one range to another
+    function map (value: number, x1: number, y1: number, x2: number, y2: number): number {
+        return (value - x1) * (y2 - x2) / (y1 - x1) + x2;
+    }
+
     // Storing in an object instead of in a bunch of variables is
     // cleaner and means I can add more shapes using code
     type ShapeAnimation = "bounce" | "static" | "exitKill" | "locked";
@@ -277,7 +282,10 @@ namespace Infernum {
     let dashDir = 0;
     let cursorX = 0;
     let cursorY = 0;
+    let maxX = window.innerWidth;
+    let maxY = window.innerHeight;
 
+    // Expose variables to the global scope for debugging
     (window as any).animData = animData;
     (window as any).debug = debug;
     (window as any).gameStatus = gameStatus;
@@ -304,6 +312,8 @@ namespace Infernum {
     (window as any).dashDir = dashDir;
     (window as any).cursorX = cursorX;
     (window as any).cursorY = cursorY;
+    (window as any).maxX = maxX;
+    (window as any).maxY = maxY;
 
     function getCircleById(id: any): Circle | false {
         let returns: Circle | false = false;
@@ -482,6 +492,31 @@ namespace Infernum {
             alert("Debug mode: " + debug);
         }
 
+        if (multiPressed(["KeyM", "KeyA", "KeyP"]) && debug) {
+            pressed = pressed.filter(a => ![-1, "KeyM", "KeyA", "KeyP"].includes(a));
+            let ans = prompt("MaxX:");
+            let maxTmp: number;
+            if (ans == null || ans == "") {
+                alert("Cancelled.");
+                return;
+            }
+            else {
+                maxTmp = Number(ans);
+                if (isNaN(maxTmp)) alert("Invalid number.");
+                else maxX = maxTmp;
+            }
+            ans = prompt("MaxY:");
+            if (ans == null || ans == "") {
+                alert("Cancelled.");
+                return;
+            }
+            else {
+                maxTmp = Number(ans);
+                if (isNaN(maxTmp)) alert("Invalid number.");
+                else maxY = maxTmp;
+            }
+        }
+
         element = document.getElementById("swapBind");
         if (element) element.innerHTML = "Current bind: " + swapBind;
         element = document.getElementById("currentBind");
@@ -500,8 +535,7 @@ namespace Infernum {
         frameSum += framerate;
 
         element = document.getElementById("cursor");
-            if (element && debug) element.innerHTML = "Cursor: " + cursorX + ", " + cursorY;
-            else if (element) element.innerHTML = String(pressed);
+        if (element && debug) element.innerHTML = "Cursor: " + map(cursorX, 0, 0, maxX, 960) + ", " + map(cursorY, 0, 0, maxY, 540);
 
         if (capturing) {
             if (pressed.length > 0) {
@@ -511,7 +545,7 @@ namespace Infernum {
             }
         }
         player.xVel -= (player.xVel / 6) * delta;
-        if (player.yVel < 10) player.yVel += 0.2;
+        if (player.yVel < 10) player.yVel += 0.2 * delta;
         if (player.yVel < -7) player.yVel = -7;
         immunity -= delta;
         fighting -= delta;
