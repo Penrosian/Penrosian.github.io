@@ -301,9 +301,15 @@ var Infernum;
     function animate(timestamp) {
         if (frame == 0) {
             element = document.getElementById("bgm");
-            // @ts-expect-error: bgm is an audio element, which has play
-            if (element)
-                element.play();
+            if (element) {
+                try {
+                    // @ts-expect-error: bgm is an audio element, which has play
+                    element.play();
+                }
+                catch (error) {
+                    alert("Please enable autoplay for this site. This game features music-synced attacks, so precise audio timing is required.");
+                }
+            }
         }
         frame++;
         var delta = (timestamp - lastFrameTime) / 16.75;
