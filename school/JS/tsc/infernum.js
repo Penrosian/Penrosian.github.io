@@ -514,6 +514,8 @@ var Infernum;
         element = document.getElementById("cursor");
         if (element && debug)
             element.innerHTML = "Mapped: " + Math.round(map(cursorX, 0, maxX, 0, 960)) + ", " + Math.round(map(cursorY, 0, maxY, 0, 540)) + " - Cursor: " + cursorX + ", " + cursorY;
+        else if (element)
+            element.innerHTML = "";
         if (capturing) {
             if (pressed.length > 0) {
                 binds[swapBind] = pressed[0];
