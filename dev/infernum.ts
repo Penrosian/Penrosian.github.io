@@ -541,7 +541,8 @@ namespace Infernum {
         frameSum += framerate;
 
         element = document.getElementById("cursor");
-        if (element && debug) element.innerHTML = "Cursor: " + map(cursorX, 0, 0, maxX, 960) + ", " + map(cursorY, 0, 0, maxY, 540);
+        if (element && debug) element.innerHTML = "Mapped: " + Math.round(map(cursorX, 0, maxX, 0, 960)) + ", " + Math.round(map(cursorY, 0, maxY, 0, 540)) + " - Cursor: " + cursorX + ", " + cursorY;
+        else if (element) element.innerHTML = "";
 
         if (capturing) {
             if (pressed.length > 0) {
