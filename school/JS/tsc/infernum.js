@@ -536,6 +536,9 @@ var Infernum;
     window.maxX = maxX;
     window.maxY = maxY;
     window.detectRectangleCollision = detectRectangleCollision;
+    window.detectCircleCollision = detectCircleCollision;
+    window.detectCollision = detectCollision;
+    window.detectCircleRectCollision = detectCircleRectCollision;
     function getCircleById(id) {
         var returns = false;
         animData.circles.forEach(function (circle) { if (circle.id == id)
