@@ -227,6 +227,137 @@ namespace Infernum {
                 "meta": {}
             },
             {
+                "id": "star11",
+                "class": "star",
+                "x": 671,
+                "y": 147,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star12",
+                "class": "star",
+                "x": 161,
+                "y": 528,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star13",
+                "class": "star",
+                "x": 59,
+                "y": 444,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star14",
+                "class": "star",
+                "x": 395,
+                "y": 128,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star15",
+                "class": "star",
+                "x": 640,
+                "y": 342,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star16",
+                "class": "star",
+                "x": 409,
+                "y": 573,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+
+            {
+                "id": "star17",
+                "class": "star",
+                "x": 521,
+                "y": 229,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star18",
+                "class": "star",
+                "x": 762,
+                "y": 467,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star19",
+                "class": "star",
+                "x": 323,
+                "y": 440,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "star20",
+                "class": "star",
+                "x": 214,
+                "y": 60,
+                "width": 2,
+                "height": 2,
+                "color": "yellow",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
                 "id": "player",
                 "class": null,
                 "x": 55,
@@ -553,6 +684,7 @@ namespace Infernum {
         immunity -= delta;
         fighting -= delta;
         dashCooldown -= delta;
+
         requestAnimationFrame(animate);
     }
     /* 
