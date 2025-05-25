@@ -302,14 +302,10 @@ var Infernum;
         if (frame == 0) {
             element = document.getElementById("bgm");
             if (element) {
-                try {
-                    // @ts-expect-error: bgm is an audio element, which has play
-                    element.play();
-                }
-                catch (error) {
-                    alert("Please enable autoplay for this site. This game features music-synced attacks, so precise audio timing is required.");
-                }
+                // @ts-expect-error: bgm is an audio element, which has play
+                element.play().then(function () { }, function () { return alert("Please enable autoplay for this site. This game features music-synced attacks, so precise audio timing is required."); });
             }
+            ;
         }
         frame++;
         var delta = (timestamp - lastFrameTime) / 16.75;
@@ -514,6 +510,8 @@ var Infernum;
         element = document.getElementById("cursor");
         if (element && debug)
             element.innerHTML = "Mapped: " + Math.round(map(cursorX, 0, maxX, 0, 960)) + ", " + Math.round(map(cursorY, 0, maxY, 0, 540)) + " - Cursor: " + cursorX + ", " + cursorY;
+        else if (element)
+            element.innerHTML = "";
         if (capturing) {
             if (pressed.length > 0) {
                 binds[swapBind] = pressed[0];
