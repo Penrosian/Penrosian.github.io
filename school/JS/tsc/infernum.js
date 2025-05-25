@@ -210,7 +210,7 @@ var Infernum;
             id: nextFreeNumericId("advancedPolygon"),
             class: "projectileHitbox",
             vertexes: [
-                { x: x, y: y }, // Base
+                { x: x, y: y }, // Up-Right
                 { x: x + 2.5, y: y + 2.5 }, // Down-right
                 { x: x + 2.5, y: y + 10 }, // Down
                 { x: x + 5, y: y + 10 }, // Right
