@@ -39,6 +39,16 @@ var Infernum;
     function map(value, x1, y1, x2, y2) {
         return (value - x1) * (y2 - x2) / (y1 - x1) + x2;
     }
+    function vertexesToEdges(vertexes) {
+        var edges = [];
+        vertexes.forEach(function (vertex, index) {
+            if (index == vertexes.length - 1)
+                edges.push({ x: vertexes[0].x - vertex.x, y: vertexes[0].y - vertex.y });
+            else
+                edges.push({ x: vertexes[index + 1].x - vertex.x, y: vertexes[index + 1].y - vertex.y });
+        });
+        return edges;
+    }
     function evalPoints(cx, cy, vx, vy, rotation) {
         var dx = vx - cx;
         var dy = vy - cy;
@@ -116,29 +126,19 @@ var Infernum;
         var rect1Rotated = rotatedSquare(rect1);
         var rect2Rotated = rotatedSquare(rect2);
         var rect1Points = [
-            rect1Rotated.topLeft,
             rect1Rotated.topRight,
+            rect1Rotated.bottomRight,
             rect1Rotated.bottomLeft,
-            rect1Rotated.bottomRight
+            rect1Rotated.topLeft
         ];
-        var rect1Edges = [
-            { x: rect1Rotated.bottomRight.x - rect1Rotated.topRight.x, y: rect1Rotated.bottomRight.y - rect1Rotated.topRight.y },
-            { x: rect1Rotated.bottomLeft.x - rect1Rotated.bottomRight.x, y: rect1Rotated.bottomLeft.y - rect1Rotated.bottomRight.y },
-            { x: rect1Rotated.topLeft.x - rect1Rotated.bottomLeft.x, y: rect1Rotated.topLeft.y - rect1Rotated.bottomLeft.y },
-            { x: rect1Rotated.topRight.x - rect1Rotated.topLeft.x, y: rect1Rotated.topRight.y - rect1Rotated.topLeft.y }
-        ];
+        var rect1Edges = vertexesToEdges(rect1Points);
         var rect2Points = [
-            rect2Rotated.topLeft,
             rect2Rotated.topRight,
+            rect2Rotated.bottomRight,
             rect2Rotated.bottomLeft,
-            rect2Rotated.bottomRight
+            rect2Rotated.topLeft
         ];
-        var rect2Edges = [
-            { x: rect2Rotated.bottomRight.x - rect2Rotated.topRight.x, y: rect2Rotated.bottomRight.y - rect2Rotated.topRight.y },
-            { x: rect2Rotated.bottomLeft.x - rect2Rotated.bottomRight.x, y: rect2Rotated.bottomLeft.y - rect2Rotated.bottomRight.y },
-            { x: rect2Rotated.topLeft.x - rect2Rotated.bottomLeft.x, y: rect2Rotated.topLeft.y - rect2Rotated.bottomLeft.y },
-            { x: rect2Rotated.topRight.x - rect2Rotated.topLeft.x, y: rect2Rotated.topRight.y - rect2Rotated.topLeft.y }
-        ];
+        var rect2Edges = vertexesToEdges(rect2Points);
         var rect1Polygon = { vertex: rect1Points, edge: rect1Edges };
         var rect2Polygon = { vertex: rect2Points, edge: rect2Edges };
         return sat(rect1Polygon, rect2Polygon);
@@ -174,6 +174,18 @@ var Infernum;
     function detectCircleCollision(circle1, circle2) {
         return Math.sqrt(Math.pow(circle1.x - circle2.x, 2) + Math.pow(circle1.y - circle2.y, 2)) < (circle1.radius + circle2.radius);
     }
+    function detectRectPolygonCollision(polygon, rect) {
+        var rectRotatedPoints = rotatedSquare(rect);
+        var rectPoints = [
+            rectRotatedPoints.topRight,
+            rectRotatedPoints.bottomRight,
+            rectRotatedPoints.bottomLeft,
+            rectRotatedPoints.topLeft
+        ];
+        var rectEdges = vertexesToEdges(rectPoints);
+        var rectPolygon = { vertex: rectPoints, edge: rectEdges };
+        return sat({ vertex: polygon.vertexes, edge: vertexesToEdges(polygon.vertexes) }, rectPolygon);
+    }
     function detectCollision(shape1, shape2) {
         if (shape1.radius != undefined && shape2.radius != undefined)
             return detectCircleCollision(shape1, shape2);
@@ -183,273 +195,56 @@ var Infernum;
             return detectCircleRectCollision(shape2, shape1);
         else if (shape1.width != undefined && shape2.width != undefined)
             return detectRectangleCollision(shape1, shape2);
+        else if (shape1.vertexes != undefined && shape2.vertexes != undefined)
+            return sat({ vertex: shape1.vertexes, edge: vertexesToEdges(shape1.vertexes) }, { vertex: shape2.vertexes, edge: vertexesToEdges(shape2.vertexes) });
+        else if (shape1.vertexes != undefined && shape2.width != undefined)
+            return detectRectPolygonCollision(shape1, shape2);
+        else if (shape1.width != undefined && shape2.vertexes != undefined)
+            return detectRectPolygonCollision(shape2, shape1);
+        else
+            throw new Error("Unsupported collision type. " + JSON.stringify(shape1) + ", " + JSON.stringify(shape2));
     }
     // Projectiles
     function lightSword(x, y, rotation, damage) {
+        var sword = {
+            id: nextFreeNumericId("advancedPolygon"),
+            class: "projectileHitbox",
+            vertexes: [
+                { x: x, y: y }, // Base
+                { x: x + 2.5, y: y + 2.5 }, // Down-right
+                { x: x + 2.5, y: y + 10 }, // Down
+                { x: x + 5, y: y + 10 }, // Right
+                { x: x + 10, y: y + 15 }, // Down-right
+                { x: x + 5, y: y + 20 }, // Down-left
+                { x: x + 2.5, y: y + 20 }, // Left
+                { x: x + 2.5, y: y + 40 }, // Down
+                { x: x, y: y + 45 }, // Down-left
+                { x: x - 2.5, y: y + 40 }, // Up-left
+                { x: x - 2.5, y: y + 20 }, // Up
+                { x: x - 5, y: y + 20 }, // Left
+                { x: x - 10, y: y + 15 }, // Up-left
+                { x: x - 5, y: y + 10 }, // Up-right
+                { x: x - 2.5, y: y + 10 }, // Right
+                { x: x - 2.5, y: y + 2.5 } // Up
+            ],
+            center: { x: x, y: y + 12.5 },
+            animation: "custom",
+            xVel: 0,
+            yVel: 0,
+            color: "white",
+            lineColor: "white",
+            lineWidth: 0,
+            meta: {
+                damage: damage,
+                rotation: rotation,
+                projectileID: nextFreeNumericId("projectile")
+            }
+        };
+        animData.advancedPolygons.push(sword);
     }
     ;
     var animData = {
         "rects": [
-            {
-                "id": "star1",
-                "class": "star",
-                "x": 100,
-                "y": 100,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star2",
-                "class": "star",
-                "x": 130,
-                "y": 215,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star3",
-                "class": "star",
-                "x": 40,
-                "y": 110,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star4",
-                "class": "star",
-                "x": 255,
-                "y": 300,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star5",
-                "class": "star",
-                "x": 900,
-                "y": 400,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star6",
-                "class": "star",
-                "x": 840,
-                "y": 100,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star7",
-                "class": "star",
-                "x": 870,
-                "y": 80,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star8",
-                "class": "star",
-                "x": 590,
-                "y": 340,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star9",
-                "class": "star",
-                "x": 450,
-                "y": 370,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star10",
-                "class": "star",
-                "x": 370,
-                "y": 210,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star11",
-                "class": "star",
-                "x": 671,
-                "y": 147,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star12",
-                "class": "star",
-                "x": 161,
-                "y": 528,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star13",
-                "class": "star",
-                "x": 59,
-                "y": 444,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star14",
-                "class": "star",
-                "x": 395,
-                "y": 128,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star15",
-                "class": "star",
-                "x": 640,
-                "y": 342,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star16",
-                "class": "star",
-                "x": 409,
-                "y": 573,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star17",
-                "class": "star",
-                "x": 521,
-                "y": 229,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star18",
-                "class": "star",
-                "x": 762,
-                "y": 467,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star19",
-                "class": "star",
-                "x": 323,
-                "y": 440,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star20",
-                "class": "star",
-                "x": 214,
-                "y": 60,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
             {
                 "id": "player",
                 "class": null,
@@ -477,8 +272,271 @@ var Infernum;
                 "meta": {}
             }
         ],
-        "circles": []
+        "circles": [],
+        "advancedPolygons": []
     };
+    // Stars were cluterring the animData object, so they are here instead now
+    var stars = [{
+            "id": "star1",
+            "class": "star",
+            "x": 100,
+            "y": 100,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star2",
+            "class": "star",
+            "x": 130,
+            "y": 215,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star3",
+            "class": "star",
+            "x": 40,
+            "y": 110,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star4",
+            "class": "star",
+            "x": 255,
+            "y": 300,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star5",
+            "class": "star",
+            "x": 900,
+            "y": 400,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star6",
+            "class": "star",
+            "x": 840,
+            "y": 100,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star7",
+            "class": "star",
+            "x": 870,
+            "y": 80,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star8",
+            "class": "star",
+            "x": 590,
+            "y": 340,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star9",
+            "class": "star",
+            "x": 450,
+            "y": 370,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star10",
+            "class": "star",
+            "x": 370,
+            "y": 210,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star11",
+            "class": "star",
+            "x": 671,
+            "y": 147,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star12",
+            "class": "star",
+            "x": 161,
+            "y": 528,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star13",
+            "class": "star",
+            "x": 59,
+            "y": 444,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star14",
+            "class": "star",
+            "x": 395,
+            "y": 128,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star15",
+            "class": "star",
+            "x": 640,
+            "y": 342,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star16",
+            "class": "star",
+            "x": 409,
+            "y": 573,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star17",
+            "class": "star",
+            "x": 521,
+            "y": 229,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star18",
+            "class": "star",
+            "x": 762,
+            "y": 467,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star19",
+            "class": "star",
+            "x": 323,
+            "y": 440,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        },
+        {
+            "id": "star20",
+            "class": "star",
+            "x": 214,
+            "y": 60,
+            "width": 2,
+            "height": 2,
+            "color": "yellow",
+            "animation": "static",
+            "xVel": 0,
+            "yVel": 0,
+            "meta": {}
+        }];
+    stars.forEach(function (star) { return animData.rects.push(star); });
     var binds = {
         left: "KeyA",
         right: "KeyD",
@@ -551,6 +609,12 @@ var Infernum;
             returns = rect; });
         return returns;
     }
+    function getAdvancedPolygonById(id) {
+        var returns = false;
+        animData.advancedPolygons.forEach(function (advancedPolygon) { if (advancedPolygon.id == id)
+            returns = advancedPolygon; });
+        return returns;
+    }
     function getCirclesByClass(className) {
         var returns = [];
         animData.circles.forEach(function (circle) { if (circle.class == className)
@@ -567,13 +631,45 @@ var Infernum;
             return false;
         return returns;
     }
+    function getAdvancedPolygonsByClass(className) {
+        var returns = [];
+        animData.advancedPolygons.forEach(function (advancedPolygon) { if (advancedPolygon.class == className)
+            returns.push(advancedPolygon); });
+        if (returns.length == 0)
+            return false;
+        return returns;
+    }
+    function getProjectilePartsById(id) {
+        var returns = [];
+        animData.rects.forEach(function (rect) { if (rect.meta.projectileID == id)
+            returns.push(rect); });
+        animData.circles.forEach(function (circle) { if (circle.meta.projectileID == id)
+            returns.push(circle); });
+        animData.advancedPolygons.forEach(function (advancedPolygon) { if (advancedPolygon.meta.projectileID == id)
+            returns.push(advancedPolygon); });
+        if (returns.length == 0)
+            return false;
+        return returns;
+    }
     function nextFreeNumericId(shape) {
         for (var x = 0;; x++) {
             if (shape == "circle" && !getCircleById(x))
                 return x;
             if (shape == "rect" && !getRectById(x))
                 return x;
+            if (shape == "advancedPolygon" && !getAdvancedPolygonById(x))
+                return x;
+            if (shape == "projectile" && !getProjectilePartsById(x))
+                return x;
         }
+    }
+    function movePolygon(polygon, x, y) {
+        polygon.vertexes.forEach(function (vertex) {
+            vertex.x += x;
+            vertex.y += y;
+        });
+        polygon.center.x += x;
+        polygon.center.y += y;
     }
     /*
         Start of game loop
@@ -582,6 +678,7 @@ var Infernum;
     */
     function animate(timestamp) {
         if (frame == 0) {
+            lightSword(100, 100, 0, 1);
             element = document.getElementById("bgm");
             if (element) {
                 // @ts-expect-error: bgm is an audio element, which has play
@@ -694,6 +791,73 @@ var Infernum;
         for (var i = 0; i < animData.circles.length; i++) {
             _loop_2(i);
         }
+        var _loop_3 = function (i) {
+            var polygon = animData.advancedPolygons[i];
+            ctx.save();
+            ctx.translate(polygon.center.x, polygon.center.y);
+            ctx.rotate((polygon.meta.rotation || 0) * Math.PI / 180);
+            ctx.translate(-polygon.center.x, -polygon.center.y);
+            ctx.beginPath();
+            polygon.vertexes.forEach(function (vertex, index) {
+                if (index == 0)
+                    ctx.moveTo(vertex.x, vertex.y);
+                else
+                    ctx.lineTo(vertex.x, vertex.y);
+            });
+            ctx.lineTo(polygon.vertexes[0].x, polygon.vertexes[0].y);
+            ctx.fillStyle = polygon.color;
+            ctx.fill();
+            ctx.lineWidth = polygon.lineWidth;
+            ctx.strokeStyle = polygon.lineColor;
+            ctx.stroke();
+            ctx.restore();
+            // Different animation styles move in different ways
+            if (polygon.animation == "bounce") {
+                polygon.vertexes.forEach(function (vertex) {
+                    if (vertex.x > canvasWidth) {
+                        polygon.xVel *= -1;
+                        movePolygon(polygon, canvasWidth - vertex.x, 0);
+                    }
+                    if (vertex.x < 0) {
+                        polygon.xVel *= -1;
+                        movePolygon(polygon, -vertex.x, 0);
+                    }
+                    if (vertex.y > canvasHeight) {
+                        polygon.yVel *= -1;
+                        movePolygon(polygon, 0, canvasHeight - vertex.y);
+                    }
+                    if (vertex.y < 0) {
+                        polygon.yVel *= -1;
+                        movePolygon(polygon, 0, -vertex.y);
+                    }
+                });
+            }
+            if (polygon.animation == "locked") {
+                polygon.vertexes.forEach(function (vertex) {
+                    if (vertex.x > canvasWidth)
+                        movePolygon(polygon, canvasWidth - vertex.x, 0);
+                    if (vertex.x < 0)
+                        movePolygon(polygon, -vertex.x, 0);
+                    if (vertex.y > canvasHeight)
+                        movePolygon(polygon, 0, canvasHeight - vertex.y);
+                    if (vertex.y < 0)
+                        movePolygon(polygon, 0, -vertex.y);
+                });
+            }
+            if (polygon.animation == "exitKill") {
+                var counter_1 = 0;
+                polygon.vertexes.forEach(function (vertex) { if ((vertex.x > canvasWidth || vertex.x < 0) && (vertex.y > canvasHeight || vertex.y < 0))
+                    counter_1++; });
+                if (counter_1 == polygon.vertexes.length)
+                    animData.advancedPolygons = animData.advancedPolygons.filter(function (i) { return i != polygon; });
+            }
+            if (polygon.animation != "static")
+                movePolygon(polygon, polygon.xVel * delta, polygon.yVel * delta);
+        };
+        // They are called advanced polygons for a reason
+        for (var i = 0; i < animData.advancedPolygons.length; i++) {
+            _loop_3(i);
+        }
         // Custom/Advanced animation rules
         var player = getRectById("player");
         if (!player)
@@ -707,13 +871,13 @@ var Infernum;
             if (player.yVel < 0)
                 player.yVel = 0;
         }
-        var projectiles = getCirclesByClass("projectile");
-        if (projectiles) {
+        var projectiles = (getCirclesByClass("projectileHitbox") || []).concat(getRectsByClass("projectileHitbox") || []);
+        if (projectiles.length > 0) {
             for (var i = 0; i < projectiles.length; i++) {
                 var projectile = projectiles[i];
                 if (detectCollision(player, projectile) && immunity <= 0) {
                     immunity = 30;
-                    if (!projectile.meta.damage)
+                    if (projectile.meta.damage == undefined)
                         throw new Error("Projectile has no damage value. Something has gone horribly wrong.");
                     health -= projectile.meta.damage;
                 }

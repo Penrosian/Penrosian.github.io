@@ -44,7 +44,7 @@ namespace Infernum {
         return (value - x1) * (y2 - x2) / (y1 - x1) + x2;
     }
 
-    type Shape = Circle | Rect;
+    type Shape = Circle | Rect | AdvancedPolygon;
 
     // Collision detection is really freaking complex
     // Rectangle-Rectangle collision is simple, RotatedRectangle-RotatedRectangle collision is more complex
@@ -58,6 +58,15 @@ namespace Infernum {
         vertex: { x: number, y: number }[];
         edge: { x: number, y: number }[];
     };
+
+    function vertexesToEdges(vertexes: { x: number, y: number }[]) {
+        let edges: { x: number, y: number }[] = [];
+        vertexes.forEach((vertex, index) => {
+            if (index == vertexes.length - 1) edges.push({ x: vertexes[0].x - vertex.x, y: vertexes[0].y - vertex.y });
+            else edges.push({ x: vertexes[index + 1].x - vertex.x, y: vertexes[index + 1].y - vertex.y });
+        });
+        return edges;
+    }
 
     function evalPoints(cx: number, cy: number, vx: number, vy: number, rotation: number) {
         const dx = vx - cx;
@@ -135,29 +144,19 @@ namespace Infernum {
         let rect2Rotated = rotatedSquare(rect2);
 
         let rect1Points = [
-            rect1Rotated.topLeft,
             rect1Rotated.topRight,
+            rect1Rotated.bottomRight,
             rect1Rotated.bottomLeft,
-            rect1Rotated.bottomRight
+            rect1Rotated.topLeft
         ];
-        let rect1Edges = [
-            { x: rect1Rotated.bottomRight.x - rect1Rotated.topRight.x, y: rect1Rotated.bottomRight.y - rect1Rotated.topRight.y },
-            { x: rect1Rotated.bottomLeft.x - rect1Rotated.bottomRight.x, y: rect1Rotated.bottomLeft.y - rect1Rotated.bottomRight.y },
-            { x: rect1Rotated.topLeft.x - rect1Rotated.bottomLeft.x, y: rect1Rotated.topLeft.y - rect1Rotated.bottomLeft.y },
-            { x: rect1Rotated.topRight.x - rect1Rotated.topLeft.x, y: rect1Rotated.topRight.y - rect1Rotated.topLeft.y }
-        ];
+        let rect1Edges = vertexesToEdges(rect1Points);
         let rect2Points = [
-            rect2Rotated.topLeft,
             rect2Rotated.topRight,
+            rect2Rotated.bottomRight,
             rect2Rotated.bottomLeft,
-            rect2Rotated.bottomRight
+            rect2Rotated.topLeft
         ];
-        let rect2Edges = [
-            { x: rect2Rotated.bottomRight.x - rect2Rotated.topRight.x, y: rect2Rotated.bottomRight.y - rect2Rotated.topRight.y },
-            { x: rect2Rotated.bottomLeft.x - rect2Rotated.bottomRight.x, y: rect2Rotated.bottomLeft.y - rect2Rotated.bottomRight.y },
-            { x: rect2Rotated.topLeft.x - rect2Rotated.bottomLeft.x, y: rect2Rotated.topLeft.y - rect2Rotated.bottomLeft.y },
-            { x: rect2Rotated.topRight.x - rect2Rotated.topLeft.x, y: rect2Rotated.topRight.y - rect2Rotated.topLeft.y }
-        ];
+        let rect2Edges = vertexesToEdges(rect2Points);
         let rect1Polygon = { vertex: rect1Points, edge: rect1Edges };
         let rect2Polygon = { vertex: rect2Points, edge: rect2Edges };
 
@@ -193,26 +192,78 @@ namespace Infernum {
         return Math.sqrt(Math.pow(circle1.x - circle2.x, 2) + Math.pow(circle1.y - circle2.y, 2)) < (circle1.radius + circle2.radius);
     }
 
+    function detectRectPolygonCollision(polygon: AdvancedPolygon, rect: Rect) {
+        const rectRotatedPoints = rotatedSquare(rect);
+        const rectPoints = [
+            rectRotatedPoints.topRight,
+            rectRotatedPoints.bottomRight,
+            rectRotatedPoints.bottomLeft,
+            rectRotatedPoints.topLeft
+        ];
+        const rectEdges = vertexesToEdges(rectPoints);
+        const rectPolygon = { vertex: rectPoints, edge: rectEdges };
+        return sat({ vertex: polygon.vertexes, edge: vertexesToEdges(polygon.vertexes) }, rectPolygon);
+    }
+
     function detectCollision(shape1: Shape, shape2: Shape) {
         if ((shape1 as Circle).radius != undefined && (shape2 as Circle).radius != undefined) return detectCircleCollision(shape1 as Circle, shape2 as Circle);
         else if ((shape1 as Circle).radius != undefined && (shape2 as Rect).width != undefined) return detectCircleRectCollision(shape1 as Circle, shape2 as Rect);
         else if ((shape1 as Rect).width != undefined && (shape2 as Circle).radius != undefined) return detectCircleRectCollision(shape2 as Circle, shape1 as Rect);
         else if ((shape1 as Rect).width != undefined && (shape2 as Rect).width != undefined) return detectRectangleCollision(shape1 as Rect, shape2 as Rect);
+        else if ((shape1 as AdvancedPolygon).vertexes != undefined && (shape2 as AdvancedPolygon).vertexes != undefined) return sat({ vertex: (shape1 as AdvancedPolygon).vertexes, edge: vertexesToEdges((shape1 as AdvancedPolygon).vertexes) }, { vertex: (shape2 as AdvancedPolygon).vertexes, edge: vertexesToEdges((shape2 as AdvancedPolygon).vertexes) });
+        else if ((shape1 as AdvancedPolygon).vertexes != undefined && (shape2 as Rect).width != undefined) return detectRectPolygonCollision(shape1 as AdvancedPolygon, shape2 as Rect);
+        else if ((shape1 as Rect).width != undefined && (shape2 as AdvancedPolygon).vertexes != undefined) return detectRectPolygonCollision(shape2 as AdvancedPolygon, shape1 as Rect);
+        else throw new Error("Unsupported collision type. " + JSON.stringify(shape1) + ", " + JSON.stringify(shape2));
     }
 
     // Projectiles
     function lightSword(x: number, y: number, rotation: number, damage: number) {
-
+        const sword: AdvancedPolygon = {
+            id: nextFreeNumericId("advancedPolygon"),
+            class: "projectileHitbox",
+            vertexes: [
+                { x: x, y: y }, // Up-Right
+                { x: x + 2.5, y: y + 2.5 }, // Down-right
+                { x: x + 2.5, y: y + 10 }, // Down
+                { x: x + 5, y: y + 10 }, // Right
+                { x: x + 10, y: y + 15 }, // Down-right
+                { x: x + 5, y: y + 20 }, // Down-left
+                { x: x + 2.5, y: y + 20 }, // Left
+                { x: x + 2.5, y: y + 40 }, // Down
+                { x: x, y: y + 45 }, // Down-left
+                { x: x - 2.5, y: y + 40 }, // Up-left
+                { x: x - 2.5, y: y + 20 }, // Up
+                { x: x - 5, y: y + 20 }, // Left
+                { x: x - 10, y: y + 15 }, // Up-left
+                { x: x - 5, y: y + 10 }, // Up-right
+                { x: x - 2.5, y: y + 10 }, // Right
+                { x: x - 2.5, y: y + 2.5 } // Up
+            ],
+            center: { x: x, y: y + 12.5 },
+            animation: "custom",
+            xVel: 0,
+            yVel: 0,
+            color: "white",
+            lineColor: "white",
+            lineWidth: 0,
+            meta: {
+                damage: damage,
+                rotation: rotation,
+                projectileID: nextFreeNumericId("projectile")
+            }
+        }
+        animData.advancedPolygons.push(sword);
     }
 
     // Storing in an object instead of in a bunch of variables is
     // cleaner and means I can add more shapes using code
-    type ShapeAnimation = "bounce" | "static" | "exitKill" | "locked";
+    type ShapeAnimation = "bounce" | "static" | "exitKill" | "locked" | "custom";
 
     interface Meta {
         damage?: number;
         rotation?: number;
         noDraw?: boolean;
+        projectileID?: any;
     };
 
     type Rect = {
@@ -245,9 +296,24 @@ namespace Infernum {
         "meta": Meta;
     };
 
+    type AdvancedPolygon = {
+        id: any;
+        class: any;
+        vertexes: { x: number, y: number }[];
+        center: { x: number, y: number };
+        animation: ShapeAnimation;
+        xVel: number;
+        yVel: number;
+        color: string;
+        lineColor: string;
+        lineWidth: number;
+        meta: Meta;
+    }
+
     interface animData {
         "rects": Rect[];
         "circles": Circle[];
+        "advancedPolygons": AdvancedPolygon[];
     }
 
     interface Binds {
@@ -259,267 +325,6 @@ namespace Infernum {
 
     let animData: animData = {
         "rects": [
-            {
-                "id": "star1",
-                "class": "star",
-                "x": 100,
-                "y": 100,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star2",
-                "class": "star",
-                "x": 130,
-                "y": 215,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star3",
-                "class": "star",
-                "x": 40,
-                "y": 110,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star4",
-                "class": "star",
-                "x": 255,
-                "y": 300,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star5",
-                "class": "star",
-                "x": 900,
-                "y": 400,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star6",
-                "class": "star",
-                "x": 840,
-                "y": 100,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star7",
-                "class": "star",
-                "x": 870,
-                "y": 80,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star8",
-                "class": "star",
-                "x": 590,
-                "y": 340,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star9",
-                "class": "star",
-                "x": 450,
-                "y": 370,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star10",
-                "class": "star",
-                "x": 370,
-                "y": 210,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star11",
-                "class": "star",
-                "x": 671,
-                "y": 147,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star12",
-                "class": "star",
-                "x": 161,
-                "y": 528,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star13",
-                "class": "star",
-                "x": 59,
-                "y": 444,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star14",
-                "class": "star",
-                "x": 395,
-                "y": 128,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star15",
-                "class": "star",
-                "x": 640,
-                "y": 342,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star16",
-                "class": "star",
-                "x": 409,
-                "y": 573,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-
-            {
-                "id": "star17",
-                "class": "star",
-                "x": 521,
-                "y": 229,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star18",
-                "class": "star",
-                "x": 762,
-                "y": 467,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star19",
-                "class": "star",
-                "x": 323,
-                "y": 440,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
-            {
-                "id": "star20",
-                "class": "star",
-                "x": 214,
-                "y": 60,
-                "width": 2,
-                "height": 2,
-                "color": "yellow",
-                "animation": "static",
-                "xVel": 0,
-                "yVel": 0,
-                "meta": {}
-            },
             {
                 "id": "player",
                 "class": null,
@@ -547,8 +352,271 @@ namespace Infernum {
                 "meta": {}
             }
         ],
-        "circles": []
+        "circles": [],
+        "advancedPolygons": []
     };
+    // Stars were cluterring the animData object, so they are here instead now
+    const stars = [{
+        "id": "star1",
+        "class": "star",
+        "x": 100,
+        "y": 100,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star2",
+        "class": "star",
+        "x": 130,
+        "y": 215,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star3",
+        "class": "star",
+        "x": 40,
+        "y": 110,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star4",
+        "class": "star",
+        "x": 255,
+        "y": 300,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star5",
+        "class": "star",
+        "x": 900,
+        "y": 400,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star6",
+        "class": "star",
+        "x": 840,
+        "y": 100,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star7",
+        "class": "star",
+        "x": 870,
+        "y": 80,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star8",
+        "class": "star",
+        "x": 590,
+        "y": 340,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star9",
+        "class": "star",
+        "x": 450,
+        "y": 370,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star10",
+        "class": "star",
+        "x": 370,
+        "y": 210,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star11",
+        "class": "star",
+        "x": 671,
+        "y": 147,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star12",
+        "class": "star",
+        "x": 161,
+        "y": 528,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star13",
+        "class": "star",
+        "x": 59,
+        "y": 444,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star14",
+        "class": "star",
+        "x": 395,
+        "y": 128,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star15",
+        "class": "star",
+        "x": 640,
+        "y": 342,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star16",
+        "class": "star",
+        "x": 409,
+        "y": 573,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star17",
+        "class": "star",
+        "x": 521,
+        "y": 229,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star18",
+        "class": "star",
+        "x": 762,
+        "y": 467,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star19",
+        "class": "star",
+        "x": 323,
+        "y": 440,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    },
+    {
+        "id": "star20",
+        "class": "star",
+        "x": 214,
+        "y": 60,
+        "width": 2,
+        "height": 2,
+        "color": "yellow",
+        "animation": "static",
+        "xVel": 0,
+        "yVel": 0,
+        "meta": {}
+    }]
+    stars.forEach(star => animData.rects.push((star as Rect)));
 
     let binds: Binds = {
         left: "KeyA",
@@ -623,6 +691,11 @@ namespace Infernum {
         animData.rects.forEach(rect => { if (rect.id == id) returns = rect; });
         return returns;
     }
+    function getAdvancedPolygonById(id: any): AdvancedPolygon | false {
+        let returns: AdvancedPolygon | false = false;
+        animData.advancedPolygons.forEach(advancedPolygon => { if (advancedPolygon.id == id) returns = advancedPolygon; });
+        return returns;
+    }
     function getCirclesByClass(className: any): Circle[] | false {
         let returns: Circle[] = [];
         animData.circles.forEach(circle => { if (circle.class == className) returns.push(circle); });
@@ -635,12 +708,37 @@ namespace Infernum {
         if (returns.length == 0) return false;
         return returns;
     }
+    function getAdvancedPolygonsByClass(className: any): AdvancedPolygon[] | false {
+        let returns: AdvancedPolygon[] = [];
+        animData.advancedPolygons.forEach(advancedPolygon => { if (advancedPolygon.class == className) returns.push(advancedPolygon); });
+        if (returns.length == 0) return false;
+        return returns;
+    }
+    function getProjectilePartsById(id: any) {
+        let returns: Shape[] = [];
+        animData.rects.forEach(rect => { if (rect.meta.projectileID == id) returns.push(rect); });
+        animData.circles.forEach(circle => { if (circle.meta.projectileID == id) returns.push(circle); });
+        animData.advancedPolygons.forEach(advancedPolygon => { if (advancedPolygon.meta.projectileID == id) returns.push(advancedPolygon); });
+        if (returns.length == 0) return false;
+        return returns;
+    }
 
-    function nextFreeNumericId(shape: "circle" | "rect") {
+    function nextFreeNumericId(shape: "circle" | "rect" | "advancedPolygon" | "projectile"): number {
         for (let x = 0; ; x++) {
             if (shape == "circle" && !getCircleById(x)) return x;
             if (shape == "rect" && !getRectById(x)) return x;
+            if (shape == "advancedPolygon" && !getAdvancedPolygonById(x)) return x;
+            if (shape == "projectile" && !getProjectilePartsById(x)) return x;
         }
+    }
+
+    function movePolygon(polygon: AdvancedPolygon, x: number, y: number) {
+        polygon.vertexes.forEach(vertex => {
+            vertex.x += x;
+            vertex.y += y;
+        });
+        polygon.center.x += x;
+        polygon.center.y += y;
     }
 
     /*
@@ -650,6 +748,7 @@ namespace Infernum {
     */
     function animate(timestamp: number) {
         if (frame == 0) {
+            lightSword(100, 100, 0, 1);
             element = document.getElementById("bgm");
             if (element) {
                 // @ts-expect-error: bgm is an audio element, which has play
@@ -748,6 +847,62 @@ namespace Infernum {
             }
         }
 
+        // They are called advanced polygons for a reason
+        for (let i = 0; i < animData.advancedPolygons.length; i++) {
+            let polygon = animData.advancedPolygons[i];
+            ctx.save();
+            ctx.translate(polygon.center.x, polygon.center.y);
+            ctx.rotate((polygon.meta.rotation || 0) * Math.PI / 180);
+            ctx.translate(-polygon.center.x, -polygon.center.y);
+            ctx.beginPath();
+            polygon.vertexes.forEach((vertex, index) => {
+                if (index == 0) ctx.moveTo(vertex.x, vertex.y);
+                else ctx.lineTo(vertex.x, vertex.y);
+            });
+            ctx.lineTo(polygon.vertexes[0].x, polygon.vertexes[0].y);
+            ctx.fillStyle = polygon.color;
+            ctx.fill();
+            ctx.lineWidth = polygon.lineWidth;
+            ctx.strokeStyle = polygon.lineColor;
+            ctx.stroke();
+            ctx.restore();
+            // Different animation styles move in different ways
+            if (polygon.animation == "bounce") {
+                polygon.vertexes.forEach(vertex => {
+                    if (vertex.x > canvasWidth) {
+                        polygon.xVel *= -1;
+                        movePolygon(polygon, canvasWidth - vertex.x, 0);
+                    }
+                    if (vertex.x < 0) {
+                        polygon.xVel *= -1;
+                        movePolygon(polygon, -vertex.x, 0);
+                    }
+                    if (vertex.y > canvasHeight) {
+                        polygon.yVel *= -1;
+                        movePolygon(polygon, 0, canvasHeight - vertex.y);
+                    }
+                    if (vertex.y < 0) {
+                        polygon.yVel *= -1;
+                        movePolygon(polygon, 0, -vertex.y);
+                    }
+                });
+            }
+            if (polygon.animation == "locked") {
+                polygon.vertexes.forEach(vertex => {
+                    if (vertex.x > canvasWidth) movePolygon(polygon, canvasWidth - vertex.x, 0);
+                    if (vertex.x < 0) movePolygon(polygon, -vertex.x, 0);
+                    if (vertex.y > canvasHeight) movePolygon(polygon, 0, canvasHeight - vertex.y);
+                    if (vertex.y < 0) movePolygon(polygon, 0, -vertex.y);
+                });
+            }
+            if (polygon.animation == "exitKill") {
+                let counter = 0;
+                polygon.vertexes.forEach(vertex => { if ((vertex.x > canvasWidth || vertex.x < 0) && (vertex.y > canvasHeight || vertex.y < 0)) counter++; });
+                if (counter == polygon.vertexes.length) animData.advancedPolygons = animData.advancedPolygons.filter(i => i != polygon);
+            }
+            if (polygon.animation != "static") movePolygon(polygon, polygon.xVel * delta, polygon.yVel * delta);
+        }
+
         // Custom/Advanced animation rules
         let player = getRectById("player");
         if (!player) throw new Error("Player not found. Something has gone horribly wrong.");
@@ -760,13 +915,13 @@ namespace Infernum {
             if (player.yVel < 0) player.yVel = 0;
         }
 
-        let projectiles = getCirclesByClass("projectile");
-        if (projectiles) {
+        let projectiles: Shape[] = ((getCirclesByClass("projectileHitbox") as Shape[]) || []).concat((getRectsByClass("projectileHitbox") as Shape[]) || []);
+        if (projectiles.length > 0) {
             for (let i = 0; i < projectiles.length; i++) {
                 let projectile = projectiles[i];
                 if (detectCollision(player, projectile) && immunity <= 0) {
                     immunity = 30;
-                    if (!projectile.meta.damage) throw new Error("Projectile has no damage value. Something has gone horribly wrong.");
+                    if (projectile.meta.damage == undefined) throw new Error("Projectile has no damage value. Something has gone horribly wrong.");
                     health -= projectile.meta.damage;
                 }
             }
