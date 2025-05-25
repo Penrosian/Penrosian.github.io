@@ -40,8 +40,169 @@ namespace Infernum {
     }
 
     // Maps a value from one range to another
-    function map (value: number, x1: number, y1: number, x2: number, y2: number): number {
+    function map(value: number, x1: number, y1: number, x2: number, y2: number): number {
         return (value - x1) * (y2 - x2) / (y1 - x1) + x2;
+    }
+
+    type Shape = Circle | Rect;
+
+    // Collision detection is really freaking complex
+    // Rectangle-Rectangle collision is simple, RotatedRectangle-RotatedRectangle collision is more complex
+    // https://www.youtube.com/watch?v=MvlhMEE9zuc
+    // Circle-Circle collision is very easy
+    // Circle-RotatedRectangle collision is just Circle-Rectangle collision with the circle's center rotated
+    // a negative amount of the rectangle's rotation
+    // https://stackoverflow.com/a/70723337
+
+    type Polygon = {
+        vertex: { x: number, y: number }[];
+        edge: { x: number, y: number }[];
+    };
+
+    function evalPoints(cx: number, cy: number, vx: number, vy: number, rotation: number) {
+        const dx = vx - cx;
+        const dy = vy - cy;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const originalAngle = Math.atan2(dy, dx);
+
+        const rotatedX = cx + distance * Math.cos(originalAngle + rotation);
+        const rotatedY = cy + distance * Math.sin(originalAngle + rotation);
+
+        return {
+            x: rotatedX,
+            y: rotatedY
+        }
+    }
+
+    function rotatedSquare(square: Rect) {
+        return {
+            topLeft: evalPoints(square.x + square.width / 2, square.y + square.height / 2, square.x, square.y, square.meta.rotation || 0),
+            topRight: evalPoints(square.x + square.width / 2, square.y + square.height / 2, square.x + square.width, square.y, square.meta.rotation || 0),
+            bottomLeft: evalPoints(square.x + square.width / 2, square.y + square.height / 2, square.x, square.y + square.height, square.meta.rotation || 0),
+            bottomRight: evalPoints(square.x + square.width / 2, square.y + square.height / 2, square.x + square.width, square.y + square.height, square.meta.rotation || 0)
+        }
+    }
+
+    function sat(polygonA: Polygon, polygonB: Polygon) {
+        let perpindicularLine = null;
+        let dot = 0;
+        let perpindicularStack = [];
+        let amin = null;
+        let amax = null;
+        let bmin = null;
+        let bmax = null;
+        for (let i = 0; i < polygonA.edge.length; i++) {
+            perpindicularLine = { x: -polygonA.edge[i].y, y: polygonA.edge[i].x };
+            perpindicularStack.push(perpindicularLine);
+        }
+        for (let i = 0; i < polygonB.edge.length; i++) {
+            perpindicularLine = { x: -polygonB.edge[i].y, y: polygonB.edge[i].x };
+            perpindicularStack.push(perpindicularLine);
+        }
+        for (let i = 0; i < perpindicularStack.length; i++) {
+            amin = null;
+            amax = null;
+            bmin = null;
+            bmax = null;
+            for (let j = 0; j < polygonA.vertex.length; j++) {
+                dot = polygonA.vertex[j].x * perpindicularStack[i].x + polygonA.vertex[j].y * perpindicularStack[i].y;
+                if (amin == null || dot < amin) amin = dot;
+                if (amax == null || dot > amax) amax = dot;
+            }
+            for (let j = 0; j < polygonB.vertex.length; j++) {
+                dot = polygonB.vertex[j].x * perpindicularStack[i].x + polygonB.vertex[j].y * perpindicularStack[i].y;
+                if (bmin == null || dot < bmin) bmin = dot;
+                if (bmax == null || dot > bmax) bmax = dot;
+            }
+            if (bmin == null || bmax == null || amin == null || amax == null) {
+                throw new Error("Seperating Axis Theorem failed. " + amax + ", " + amin + ", " + bmax + ", " + bmin);
+            }
+            if ((amin < bmax && amin > bmin) || (bmin < amax && bmin > amin)) continue;
+            else return false;
+        }
+        return true;
+    }
+
+    function detectRectangleCollision(rect1: Rect, rect2: Rect) {
+        if (rect1.meta["rotation"] || 0 == 0 && rect2.meta["rotation"] || 0 == 0) {
+            // Seperate axis theorem doesn't work for non-rotated rectangles
+            if (rect1.x + rect1.width < rect2.x || rect1.x > rect2.x + rect2.width ||
+                rect1.y + rect1.height < rect2.y || rect1.y > rect2.y + rect2.height) return false;
+            else return true;
+        }
+
+        let rect1Rotated = rotatedSquare(rect1);
+        let rect2Rotated = rotatedSquare(rect2);
+
+        let rect1Points = [
+            rect1Rotated.topLeft,
+            rect1Rotated.topRight,
+            rect1Rotated.bottomLeft,
+            rect1Rotated.bottomRight
+        ];
+        let rect1Edges = [
+            { x: rect1Rotated.bottomRight.x - rect1Rotated.topRight.x, y: rect1Rotated.bottomRight.y - rect1Rotated.topRight.y },
+            { x: rect1Rotated.bottomLeft.x - rect1Rotated.bottomRight.x, y: rect1Rotated.bottomLeft.y - rect1Rotated.bottomRight.y },
+            { x: rect1Rotated.topLeft.x - rect1Rotated.bottomLeft.x, y: rect1Rotated.topLeft.y - rect1Rotated.bottomLeft.y },
+            { x: rect1Rotated.topRight.x - rect1Rotated.topLeft.x, y: rect1Rotated.topRight.y - rect1Rotated.topLeft.y }
+        ];
+        let rect2Points = [
+            rect2Rotated.topLeft,
+            rect2Rotated.topRight,
+            rect2Rotated.bottomLeft,
+            rect2Rotated.bottomRight
+        ];
+        let rect2Edges = [
+            { x: rect2Rotated.bottomRight.x - rect2Rotated.topRight.x, y: rect2Rotated.bottomRight.y - rect2Rotated.topRight.y },
+            { x: rect2Rotated.bottomLeft.x - rect2Rotated.bottomRight.x, y: rect2Rotated.bottomLeft.y - rect2Rotated.bottomRight.y },
+            { x: rect2Rotated.topLeft.x - rect2Rotated.bottomLeft.x, y: rect2Rotated.topLeft.y - rect2Rotated.bottomLeft.y },
+            { x: rect2Rotated.topRight.x - rect2Rotated.topLeft.x, y: rect2Rotated.topRight.y - rect2Rotated.topLeft.y }
+        ];
+        let rect1Polygon = { vertex: rect1Points, edge: rect1Edges };
+        let rect2Polygon = { vertex: rect2Points, edge: rect2Edges };
+
+        return sat(rect1Polygon, rect2Polygon);
+    }
+
+    function detectCircleRectCollision(circle: Circle, rect: Rect) {
+        const angle = rect.meta["rotation"] || 0;
+        const rectMidPointX = rect.x + rect.width / 2;
+        const rectMidPointY = rect.y + rect.height / 2;
+        const unrotatedCircleX = Math.cos(-angle) * (circle.x - rectMidPointX) - Math.sin(-angle) * (circle.y - rectMidPointY) + rectMidPointX;
+        const unrotatedCircleY = Math.sin(-angle) * (circle.x - rectMidPointX) + Math.cos(-angle) * (circle.y - rectMidPointY) + rectMidPointY;
+
+        // Closest point in the rectangle to the center of circle rotated backwards(unrotated)
+        let closestX: number, closestY: number;
+
+        // Find the unrotated closest x point from center of unrotated circle
+        if (unrotatedCircleX < rect.x) closestX = rect.x;
+        else if (unrotatedCircleX > rect.x + rect.width) closestX = rect.x + rect.width;
+        else closestX = unrotatedCircleX;
+
+        // Find the unrotated closest y point from center of unrotated circle
+        if (unrotatedCircleY < rect.y) closestY = rect.y;
+        else if (unrotatedCircleY > rect.y + rect.height) closestY = rect.y + rect.height;
+        else closestY = unrotatedCircleY;
+
+        const distance = Math.sqrt(Math.pow(Math.abs(unrotatedCircleX - closestX), 2) + Math.pow(Math.abs(unrotatedCircleY - closestY), 2));
+        if (distance < circle.radius) return true;
+        else return false;
+    }
+
+    function detectCircleCollision(circle1: Circle, circle2: Circle) {
+        return Math.sqrt(Math.pow(circle1.x - circle2.x, 2) + Math.pow(circle1.y - circle2.y, 2)) < (circle1.radius + circle2.radius);
+    }
+
+    function detectCollision(shape1: Shape, shape2: Shape) {
+        if ((shape1 as Circle).radius != undefined && (shape2 as Circle).radius != undefined) return detectCircleCollision(shape1 as Circle, shape2 as Circle);
+        else if ((shape1 as Circle).radius != undefined && (shape2 as Rect).width != undefined) return detectCircleRectCollision(shape1 as Circle, shape2 as Rect);
+        else if ((shape1 as Rect).width != undefined && (shape2 as Circle).radius != undefined) return detectCircleRectCollision(shape2 as Circle, shape1 as Rect);
+        else if ((shape1 as Rect).width != undefined && (shape2 as Rect).width != undefined) return detectRectangleCollision(shape1 as Rect, shape2 as Rect);
+    }
+
+    // Projectiles
+    function lightSword(x: number, y: number, rotation: number, damage: number) {
+
     }
 
     // Storing in an object instead of in a bunch of variables is
@@ -50,6 +211,8 @@ namespace Infernum {
 
     interface Meta {
         damage?: number;
+        rotation?: number;
+        noDraw?: boolean;
     };
 
     type Rect = {
@@ -63,7 +226,7 @@ namespace Infernum {
         "animation": ShapeAnimation;
         "xVel": number;
         "yVel": number;
-        "meta": object;
+        "meta": Meta;
     };
 
     type Circle = {
@@ -445,6 +608,10 @@ namespace Infernum {
     (window as any).cursorY = cursorY;
     (window as any).maxX = maxX;
     (window as any).maxY = maxY;
+    (window as any).detectRectangleCollision = detectRectangleCollision;
+    (window as any).detectCircleCollision = detectCircleCollision;
+    (window as any).detectCollision = detectCollision;
+    (window as any).detectCircleRectCollision = detectCircleRectCollision;
 
     function getCircleById(id: any): Circle | false {
         let returns: Circle | false = false;
@@ -486,19 +653,27 @@ namespace Infernum {
             element = document.getElementById("bgm");
             if (element) {
                 // @ts-expect-error: bgm is an audio element, which has play
-                element.play().then(() => {}, () => alert("Please enable autoplay for this site. This game features music-synced attacks, so precise audio timing is required."));
+                element.play().then(() => { }, () => alert("Please enable autoplay for this site. This game features music-synced attacks, so precise audio timing is required."));
             };
         }
         frame++;
         let delta = (timestamp - lastFrameTime) / 16.75;
         lastFrameTime = timestamp;
-        framerate = 1000/(delta * (50/3));
+        framerate = 1000 / (delta * (50 / 3));
         fillPage("black");
         if (fighting < 0) gameStatus = "Survive";
 
         for (let i = 0; i < animData.rects.length; i++) {
             let rect = animData.rects[i];
-            fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
+            if (rect.meta["rotation"] != undefined) {
+                ctx.save();
+                ctx.translate(rect.x + rect.width / 2, rect.y + rect.height / 2);
+                ctx.rotate(rect.meta["rotation"] * Math.PI / 180);
+                ctx.translate(-(rect.x + rect.width / 2), -(rect.y + rect.height / 2));
+                fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
+                ctx.restore();
+            }
+            else if (!rect.meta["noDraw"]) fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
             // Different animation styles move in different ways
             if (rect.animation == "bounce") {
                 if (rect.x + rect.width > canvasWidth) {
@@ -579,7 +754,7 @@ namespace Infernum {
         let ground = getRectById("ground");
         if (!ground) throw new Error("Ground not found. Something has gone horribly wrong.");
 
-        if (player.y + player.height >= ground.y) {
+        if (detectCollision(player, ground)) {
             player.y = ground.y - player.height;
             flightTime = 396;
             if (player.yVel < 0) player.yVel = 0;
@@ -589,7 +764,7 @@ namespace Infernum {
         if (projectiles) {
             for (let i = 0; i < projectiles.length; i++) {
                 let projectile = projectiles[i];
-                if (player.width / 2 + projectile.radius >= Math.sqrt(Math.pow(player.x + player.width / 2 - projectile.x, 2) + Math.pow(player.y + player.height / 2 - projectile.y, 2)) && immunity <= 0) {
+                if (detectCollision(player, projectile) && immunity <= 0) {
                     immunity = 30;
                     if (!projectile.meta.damage) throw new Error("Projectile has no damage value. Something has gone horribly wrong.");
                     health -= projectile.meta.damage;
@@ -600,7 +775,7 @@ namespace Infernum {
         if (pressed.includes(binds.left)) player.xVel -= 2 * delta;
         if (pressed.includes(binds.right)) player.xVel += 2 * delta;
         if (pressed.includes(binds.jump)) {
-            if (player.y + player.height >= ground.y) player.yVel = -7;
+            if (detectCollision(player, ground)) player.yVel = -7;
             else if (flightTime > 0) {
                 player.yVel -= 0.7 * delta;
                 flightTime -= delta;
@@ -662,7 +837,7 @@ namespace Infernum {
         if (element) element.innerHTML = gameStatus;
         element = document.getElementById("fps");
         if (frame % 30 == 0 && element) {
-            element.innerHTML = Math.floor(frameSum/30) + " fps";
+            element.innerHTML = Math.floor(frameSum / 30) + " fps";
             frameSum = 0;
         }
         frameSum += framerate;
