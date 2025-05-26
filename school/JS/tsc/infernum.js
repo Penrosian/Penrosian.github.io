@@ -335,7 +335,7 @@ var Infernum;
         var angleStep = 360 / count;
         var telegraphID = nextFreeNumericId("projectile");
         for (var i = 0; i < count; i++) {
-            var angle = i * angleStep + rotation - 90;
+            var angle = i * angleStep + rotation - 90; // Telegraph angles were offset by 90 degrees and I don't know why
             var telegraphX = x;
             var telegraphY = y;
             var telegraph = {
