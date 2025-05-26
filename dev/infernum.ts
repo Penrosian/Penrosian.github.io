@@ -259,8 +259,8 @@ namespace Infernum {
         let player = getRectById("player");
         if (!player) throw new Error("Player not found. Something has gone horribly wrong.");
         for (let i = 0; i < 40; i++) {
-            lightSword(i * (canvasWidth / 40), player.y + 60, 180, 80, 0);
-            lightSword(i * (canvasWidth / 40), player.y - 60, 0, 80, 1);
+            lightSword(i * (canvasWidth / 40), player.y + 60, 180, 10000, 0);
+            lightSword(i * (canvasWidth / 40), player.y - 60, 0, 10000, 1);
         }
     }
 
@@ -337,7 +337,7 @@ namespace Infernum {
         "rects": [
             {
                 "id": "player",
-                "class": null,
+                "class": "player",
                 "x": 55,
                 "y": 80,
                 "width": 20,
@@ -350,7 +350,7 @@ namespace Infernum {
             },
             {
                 "id": "ground",
-                "class": null,
+                "class": "ground",
                 "x": 0,
                 "y": 520,
                 "width": 960,
@@ -662,7 +662,6 @@ namespace Infernum {
     };
 
     let pressed: (string | number)[] = [];
-    let score = 0;
     let health = 920;
     let immunity = 0;
     let gameStatus = ".........";
@@ -685,6 +684,8 @@ namespace Infernum {
     let attackIndex = 0;
     let regenTime = 0;
     let regenCounter = 0;
+    let gameOver = false;
+    let gameOverTime = 0;
 
     // Expose variables to the global scope for debugging
     (window as any).animData = animData;
@@ -692,7 +693,6 @@ namespace Infernum {
     (window as any).gameStatus = gameStatus;
     (window as any).health = health;
     (window as any).immunity = immunity;
-    (window as any).score = score;
     (window as any).fighting = fighting;
     (window as any).pressed = pressed;
     (window as any).flightTime = flightTime;
@@ -795,16 +795,52 @@ namespace Infernum {
             element = document.getElementById("bgm");
             if (element) {
                 // @ts-expect-error: bgm is an audio element, which has play
-                element.play().then(() => { }, () => alert("Please enable autoplay for this site. This game features music-synced attacks, so precise audio timing is required."));
+                element.play().then(() => { }, () => alert("Please enable autoplay for this site. This game features music-sync, so precise audio timing is required."));
             };
         }
         frame++;
         let delta = (timestamp - lastFrameTime) / 16.75;
         lastFrameTime = timestamp;
         framerate = 1000 / (delta * (50 / 3));
-        fillPage("black");
         if (fighting > 0) gameStatus = "Survive";
 
+        if (gameOver) {
+            gameOverTime += delta;
+            let player = getRectById("player");
+            if (!player) throw new Error("Player not found. Something has gone horribly wrong.");
+            if (gameOverTime > 60) fillPage("black");
+            if (gameOverTime > 120) {
+                ctx.font = "50px Arial";
+                ctx.fillStyle = "white";
+                ctx.fillText("You have failed the test.", canvasWidth / 2 - 260, canvasHeight / 2);
+            }
+            if (gameOverTime > 180) {
+                ctx.font = "20px Arial";
+                ctx.fillStyle = "white";
+                ctx.fillText("Press R to restart.", canvasWidth / 2 - 65, canvasHeight / 2 + 50);
+            }
+            if (pressed.includes("KeyR")) {
+                gameOver = false;
+                gameOverTime = 0;
+                animData.rects = animData.rects.filter(a => a.class == "player" || a.class == "ground" || a.class == "healthBarBackground" || a.class == "healthBar" || a.class == "star");
+                animData.circles = [];
+                animData.advancedPolygons = [];
+                health = 920;
+                fighting = -330;
+                element = document.getElementById("bgm");
+                if (element) {
+                    // @ts-expect-error: bgm is an audio element, which has currentTime
+                    element.currentTime = 45;
+                    // @ts-expect-error: bgm is an audio element, which has play
+                    element.play();
+                }
+                attackIndex = 0;
+            }
+            requestAnimationFrame(animate);
+            return;
+        }
+
+        fillPage("black");
         for (let i = 0; i < animData.rects.length; i++) {
             let rect = animData.rects[i];
             if (rect.meta["rotation"] != undefined) {
@@ -978,6 +1014,7 @@ namespace Infernum {
                     immunity = 30;
                     if (projectile.meta.damage == undefined) throw new Error("Projectile has no damage value. Something has gone horribly wrong.");
                     health -= projectile.meta.damage;
+                    regenTime = 0;
                 }
             }
         }
@@ -1095,7 +1132,15 @@ namespace Infernum {
             health += Math.floor(regenCounter / 120);
             regenCounter -= Math.floor(regenCounter / 120) * 120;
             if (health > 920) health = 920;
-            if (health < 0) health = 0;
+            if (health < 0) {
+                health = 0;
+                gameOver = true;
+                element = document.getElementById("bgm");
+                if (element) {
+                    // @ts-expect-error: bgm is an audio element, which has pause
+                    element.pause();
+                }
+            }
         }
 
         let healthBar = getRectById("healthBar");
@@ -1120,22 +1165,46 @@ namespace Infernum {
     ^^^^ End of game loop ^^^^
     */
 
+    function fairSpawnY(bottom: boolean, bound: number, offset: number) {
+        let player = getRectById("player");
+        if (!player) throw new Error("Player not found. Something has gone horribly wrong.");
+        if (!bottom) {
+            if (player.y < bound) return bound + offset;
+            else return player.y - offset;
+        }
+        else {
+            if (player.y > canvasHeight - bound) return canvasHeight - bound - offset;
+            else return player.y + offset;
+        }
+    }
+
     function startAttacks() {
         if (fighting >= 0 && attackIndex <= 0) {
             attackIndex++;
             for (let i = 0; i < 10; i++) {
-                lightSword((canvasWidth - 60) / 10 * i + 30, (() => {
-                    let player = getRectById("player");
-                    if (!player) throw new Error("Player not found. Something has gone horribly wrong.");
-                    else if (player.y < 60) return 100;
-                    else return player.y - 60;
-                })(), 180, 80, 0);
-                lightSword((canvasWidth - 60) / 10 * i + 30, (() => {
-                    let player = getRectById("player");
-                    if (!player) throw new Error("Player not found. Something has gone horribly wrong.");
-                    else if (player.y < 60) return 100;
-                    else return player.y - 60;
-                })(), 0, 80, 1);
+                lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(false, 140, 120), 180, 80, 0);
+                lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(false, 140, 120), 0, 80, 1);
+            }
+        }
+        if (fighting >= 60 && attackIndex <= 1) {
+            attackIndex++;
+            for (let i = 0; i < 11; i++) {
+                lightSword((canvasWidth - 20) / 11 * i + 30, fairSpawnY(false, 140, 120), 180, 80, 0);
+                lightSword((canvasWidth - 20) / 11 * i + 30, fairSpawnY(false, 140, 120), 0, 80, 1);
+            }
+        }
+        if (fighting >= 120 && attackIndex <= 2) {
+            attackIndex++;
+            for (let i = 0; i < 10; i++) {
+                lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(true, 140, 120), 180, 80, 0);
+                lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(true, 140, 120), 0, 80, 1);
+            }
+        }
+        if (fighting >= 180 && attackIndex <= 3) {
+            attackIndex++;
+            for (let i = 0; i < 11; i++) {
+                lightSword((canvasWidth - 20) / 11 * i + 30, fairSpawnY(true, 140, 120), 180, 80, 0);
+                lightSword((canvasWidth - 20) / 11 * i + 30, fairSpawnY(true, 140, 120), 0, 80, 1);
             }
         }
     }
@@ -1149,10 +1218,10 @@ namespace Infernum {
                 if (projectile.meta.projectileID == undefined) throw new Error("Projectile has no ID. Something has gone horribly wrong.");
                 switch (projectile.meta.projectileID) {
                     case 0:
-                        if (projectile.meta.age > 30) projectile.yVel = -20;
+                        if (projectile.meta.age > 45) projectile.yVel = -20;
                         break;
                     case 1:
-                        if (projectile.meta.age > 30) projectile.yVel = 20;
+                        if (projectile.meta.age > 45) projectile.yVel = 20;
                 }
             });
         }

@@ -247,8 +247,8 @@ var Infernum;
         if (!player)
             throw new Error("Player not found. Something has gone horribly wrong.");
         for (var i = 0; i < 40; i++) {
-            lightSword(i * (canvasWidth / 40), player.y + 60, 180, 80, 0);
-            lightSword(i * (canvasWidth / 40), player.y - 60, 0, 80, 1);
+            lightSword(i * (canvasWidth / 40), player.y + 60, 180, 10000, 0);
+            lightSword(i * (canvasWidth / 40), player.y - 60, 0, 10000, 1);
         }
     }
     ;
@@ -256,7 +256,7 @@ var Infernum;
         "rects": [
             {
                 "id": "player",
-                "class": null,
+                "class": "player",
                 "x": 55,
                 "y": 80,
                 "width": 20,
@@ -269,7 +269,7 @@ var Infernum;
             },
             {
                 "id": "ground",
-                "class": null,
+                "class": "ground",
                 "x": 0,
                 "y": 520,
                 "width": 960,
@@ -579,7 +579,6 @@ var Infernum;
         dash: "ShiftLeft"
     };
     var pressed = [];
-    var score = 0;
     var health = 920;
     var immunity = 0;
     var gameStatus = ".........";
@@ -602,13 +601,14 @@ var Infernum;
     var attackIndex = 0;
     var regenTime = 0;
     var regenCounter = 0;
+    var gameOver = false;
+    var gameOverTime = 0;
     // Expose variables to the global scope for debugging
     window.animData = animData;
     window.debug = debug;
     window.gameStatus = gameStatus;
     window.health = health;
     window.immunity = immunity;
-    window.score = score;
     window.fighting = fighting;
     window.pressed = pressed;
     window.flightTime = flightTime;
@@ -724,7 +724,7 @@ var Infernum;
             element = document.getElementById("bgm");
             if (element) {
                 // @ts-expect-error: bgm is an audio element, which has play
-                element.play().then(function () { }, function () { return alert("Please enable autoplay for this site. This game features music-synced attacks, so precise audio timing is required."); });
+                element.play().then(function () { }, function () { return alert("Please enable autoplay for this site. This game features music-sync, so precise audio timing is required."); });
             }
             ;
         }
@@ -732,9 +732,46 @@ var Infernum;
         var delta = (timestamp - lastFrameTime) / 16.75;
         lastFrameTime = timestamp;
         framerate = 1000 / (delta * (50 / 3));
-        fillPage("black");
         if (fighting > 0)
             gameStatus = "Survive";
+        if (gameOver) {
+            gameOverTime += delta;
+            var player_1 = getRectById("player");
+            if (!player_1)
+                throw new Error("Player not found. Something has gone horribly wrong.");
+            if (gameOverTime > 60)
+                fillPage("black");
+            if (gameOverTime > 120) {
+                ctx.font = "50px Arial";
+                ctx.fillStyle = "white";
+                ctx.fillText("You have failed the test.", canvasWidth / 2 - 260, canvasHeight / 2);
+            }
+            if (gameOverTime > 180) {
+                ctx.font = "20px Arial";
+                ctx.fillStyle = "white";
+                ctx.fillText("Press R to restart.", canvasWidth / 2 - 65, canvasHeight / 2 + 50);
+            }
+            if (pressed.includes("KeyR")) {
+                gameOver = false;
+                gameOverTime = 0;
+                animData.rects = animData.rects.filter(function (a) { return a.class == "player" || a.class == "ground" || a.class == "healthBarBackground" || a.class == "healthBar" || a.class == "star"; });
+                animData.circles = [];
+                animData.advancedPolygons = [];
+                health = 920;
+                fighting = -330;
+                element = document.getElementById("bgm");
+                if (element) {
+                    // @ts-expect-error: bgm is an audio element, which has currentTime
+                    element.currentTime = 45;
+                    // @ts-expect-error: bgm is an audio element, which has play
+                    element.play();
+                }
+                attackIndex = 0;
+            }
+            requestAnimationFrame(animate);
+            return;
+        }
+        fillPage("black");
         var _loop_1 = function (i) {
             var rect = animData.rects[i];
             if (rect.meta["rotation"] != undefined) {
@@ -930,6 +967,7 @@ var Infernum;
                     if (projectile.meta.damage == undefined)
                         throw new Error("Projectile has no damage value. Something has gone horribly wrong.");
                     health -= projectile.meta.damage;
+                    regenTime = 0;
                 }
             }
         }
@@ -1064,8 +1102,15 @@ var Infernum;
             regenCounter -= Math.floor(regenCounter / 120) * 120;
             if (health > 920)
                 health = 920;
-            if (health < 0)
+            if (health < 0) {
                 health = 0;
+                gameOver = true;
+                element = document.getElementById("bgm");
+                if (element) {
+                    // @ts-expect-error: bgm is an audio element, which has pause
+                    element.pause();
+                }
+            }
         }
         var healthBar = getRectById("healthBar");
         if (!healthBar)
@@ -1087,28 +1132,50 @@ var Infernum;
     ^^^^ End of game loop ^^^^
     ^^^^ End of game loop ^^^^
     */
+    function fairSpawnY(bottom, bound, offset) {
+        var player = getRectById("player");
+        if (!player)
+            throw new Error("Player not found. Something has gone horribly wrong.");
+        if (!bottom) {
+            if (player.y < bound)
+                return bound + offset;
+            else
+                return player.y - offset;
+        }
+        else {
+            if (player.y > canvasHeight - bound)
+                return canvasHeight - bound - offset;
+            else
+                return player.y + offset;
+        }
+    }
     function startAttacks() {
         if (fighting >= 0 && attackIndex <= 0) {
             attackIndex++;
             for (var i = 0; i < 10; i++) {
-                lightSword((canvasWidth - 60) / 10 * i + 30, (function () {
-                    var player = getRectById("player");
-                    if (!player)
-                        throw new Error("Player not found. Something has gone horribly wrong.");
-                    else if (player.y < 60)
-                        return 100;
-                    else
-                        return player.y - 60;
-                })(), 180, 80, 0);
-                lightSword((canvasWidth - 60) / 10 * i + 30, (function () {
-                    var player = getRectById("player");
-                    if (!player)
-                        throw new Error("Player not found. Something has gone horribly wrong.");
-                    else if (player.y < 60)
-                        return 100;
-                    else
-                        return player.y - 60;
-                })(), 0, 80, 1);
+                lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(false, 140, 120), 180, 80, 0);
+                lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(false, 140, 120), 0, 80, 1);
+            }
+        }
+        if (fighting >= 60 && attackIndex <= 1) {
+            attackIndex++;
+            for (var i = 0; i < 11; i++) {
+                lightSword((canvasWidth - 20) / 11 * i + 30, fairSpawnY(false, 140, 120), 180, 80, 0);
+                lightSword((canvasWidth - 20) / 11 * i + 30, fairSpawnY(false, 140, 120), 0, 80, 1);
+            }
+        }
+        if (fighting >= 120 && attackIndex <= 2) {
+            attackIndex++;
+            for (var i = 0; i < 10; i++) {
+                lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(true, 140, 120), 180, 80, 0);
+                lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(true, 140, 120), 0, 80, 1);
+            }
+        }
+        if (fighting >= 180 && attackIndex <= 3) {
+            attackIndex++;
+            for (var i = 0; i < 11; i++) {
+                lightSword((canvasWidth - 20) / 11 * i + 30, fairSpawnY(true, 140, 120), 180, 80, 0);
+                lightSword((canvasWidth - 20) / 11 * i + 30, fairSpawnY(true, 140, 120), 0, 80, 1);
             }
         }
     }
@@ -1123,11 +1190,11 @@ var Infernum;
                     throw new Error("Projectile has no ID. Something has gone horribly wrong.");
                 switch (projectile.meta.projectileID) {
                     case 0:
-                        if (projectile.meta.age > 30)
+                        if (projectile.meta.age > 45)
                             projectile.yVel = -20;
                         break;
                     case 1:
-                        if (projectile.meta.age > 30)
+                        if (projectile.meta.age > 45)
                             projectile.yVel = 20;
                 }
             });
