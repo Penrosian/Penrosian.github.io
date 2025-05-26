@@ -217,13 +217,13 @@ namespace Infernum {
     }
 
     // Projectiles
-    function lightSword(x: number, y: number, rotation: number, damage: number) {
+    function lightSword(x: number, y: number, rotation: number, damage: number, projectileID: any) {
         const sword: AdvancedPolygon = {
             id: nextFreeNumericId("advancedPolygon"),
             class: "projectileHitbox",
             vertexes: [
                 { x: x, y: y }, // Up-Right
-                { x: x + 2.5, y: y + 2.5 }, // Down-right
+                { x: x + 2.5, y: y + 2.5 }, // Base / Down-right
                 { x: x + 2.5, y: y + 10 }, // Down
                 { x: x + 5, y: y + 10 }, // Right
                 { x: x + 10, y: y + 15 }, // Down-right
@@ -244,12 +244,12 @@ namespace Infernum {
             xVel: 0,
             yVel: 0,
             color: "white",
-            lineColor: "white",
-            lineWidth: 0,
+            lineColor: "lightGray",
+            lineWidth: 1,
             meta: {
                 damage: damage,
                 rotation: rotation,
-                projectileID: nextFreeNumericId("projectile")
+                projectileID: projectileID
             }
         }
         animData.advancedPolygons.push(sword);
@@ -264,6 +264,7 @@ namespace Infernum {
         rotation?: number;
         noDraw?: boolean;
         projectileID?: any;
+        age?: number;
     };
 
     type Rect = {
@@ -503,7 +504,7 @@ namespace Infernum {
         "id": "star12",
         "class": "star",
         "x": 161,
-        "y": 528,
+        "y": 428,
         "width": 2,
         "height": 2,
         "color": "yellow",
@@ -627,12 +628,12 @@ namespace Infernum {
 
     let pressed: (string | number)[] = [];
     let score = 0;
-    let health = 5;
+    let health = 920;
     let immunity = 0;
     let gameStatus = ".........";
     let element: HTMLElement | null;
     let debug = false;
-    let fighting = 3030;
+    let fighting = -3030;
     let flightTime = 396;
     let lastFrameTime = 0;
     let swapBind = "left";
@@ -646,6 +647,7 @@ namespace Infernum {
     let cursorY = 0;
     let maxX = window.innerWidth;
     let maxY = window.innerHeight;
+    let attackIndex = 0;
 
     // Expose variables to the global scope for debugging
     (window as any).animData = animData;
@@ -748,7 +750,6 @@ namespace Infernum {
     */
     function animate(timestamp: number) {
         if (frame == 0) {
-            lightSword(100, 100, 0, 1);
             element = document.getElementById("bgm");
             if (element) {
                 // @ts-expect-error: bgm is an audio element, which has play
@@ -760,7 +761,7 @@ namespace Infernum {
         lastFrameTime = timestamp;
         framerate = 1000 / (delta * (50 / 3));
         fillPage("black");
-        if (fighting < 0) gameStatus = "Survive";
+        if (fighting > 0) gameStatus = "Survive";
 
         for (let i = 0; i < animData.rects.length; i++) {
             let rect = animData.rects[i];
@@ -774,6 +775,10 @@ namespace Infernum {
             }
             else if (!rect.meta["noDraw"]) fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
             // Different animation styles move in different ways
+            if (rect.animation != "static") {
+                rect.x += rect.xVel * delta;
+                rect.y += rect.yVel * delta;
+            }
             if (rect.animation == "bounce") {
                 if (rect.x + rect.width > canvasWidth) {
                     rect.xVel *= -1;
@@ -793,18 +798,26 @@ namespace Infernum {
                 }
             }
             if (rect.animation == "locked") {
-                if (rect.x + rect.width > canvasWidth) rect.x = canvasWidth - rect.width;
-                if (rect.x < 0) rect.x = 0;
-                if (rect.y + rect.height > canvasHeight) rect.y = canvasHeight - rect.height;
-                if (rect.y < 0) rect.y = 0;
+                if (rect.x + rect.width > canvasWidth) {
+                    rect.x = canvasWidth - rect.width;
+                    rect.xVel = 0;
+                }
+                if (rect.x < 0) {
+                    rect.x = 0;
+                    rect.xVel = 0;
+                }
+                if (rect.y + rect.height > canvasHeight) {
+                    rect.y = canvasHeight - rect.height;
+                    rect.yVel = 0;
+                }
+                if (rect.y < 0) {
+                    rect.y = 0;
+                    rect.yVel = 0;
+                }
             }
             if (rect.animation == "exitKill") {
                 if (rect.x > canvasWidth || rect.x + rect.width < 0 || rect.y > canvasHeight || rect.y + rect.height < 0)
                     animData.rects = animData.rects.filter(i => i != rect);
-            }
-            if (rect.animation != "static") {
-                rect.x += rect.xVel * delta;
-                rect.y += rect.yVel * delta;
             }
         }
 
@@ -897,7 +910,7 @@ namespace Infernum {
             }
             if (polygon.animation == "exitKill") {
                 let counter = 0;
-                polygon.vertexes.forEach(vertex => { if ((vertex.x > canvasWidth || vertex.x < 0) && (vertex.y > canvasHeight || vertex.y < 0)) counter++; });
+                polygon.vertexes.forEach(vertex => { if (vertex.x > canvasWidth || vertex.x < 0 || vertex.y > canvasHeight || vertex.y < 0) counter++; });
                 if (counter == polygon.vertexes.length) animData.advancedPolygons = animData.advancedPolygons.filter(i => i != polygon);
             }
             if (polygon.animation != "static") movePolygon(polygon, polygon.xVel * delta, polygon.yVel * delta);
@@ -915,7 +928,7 @@ namespace Infernum {
             if (player.yVel < 0) player.yVel = 0;
         }
 
-        let projectiles: Shape[] = ((getCirclesByClass("projectileHitbox") as Shape[]) || []).concat((getRectsByClass("projectileHitbox") as Shape[]) || []);
+        let projectiles: Shape[] = ((getCirclesByClass("projectileHitbox") as Shape[]) || []).concat((getRectsByClass("projectileHitbox") as Shape[]) || []).concat((getAdvancedPolygonsByClass("projectileHitbox") as Shape[]) || []);
         if (projectiles.length > 0) {
             for (let i = 0; i < projectiles.length; i++) {
                 let projectile = projectiles[i];
@@ -949,7 +962,7 @@ namespace Infernum {
         if (dashCooldown > 30) player.xVel = 15 * dashDir;
 
         if (multiPressed(["KeyP", "KeyE", "KeyN"])) {
-            pressed = pressed.filter(a => ![-1, "KeyP", "KeyE", "KeyN", "KeyR", "KeyO", "KeyS", "KeyI", "KeyA"].includes(a));
+            pressed = pressed.filter(a => ![-1, "KeyP", "KeyE", "KeyN"].includes(a));
             if (debug) debug = false;
             else debug = true;
             alert("Debug mode: " + debug);
@@ -1001,6 +1014,11 @@ namespace Infernum {
         if (element && debug) element.innerHTML = "Mapped: " + Math.round(map(cursorX, 0, maxX, 0, 960)) + ", " + Math.round(map(cursorY, 0, maxY, 0, 540)) + " - Cursor: " + cursorX + ", " + cursorY;
         else if (element) element.innerHTML = "";
 
+        element = document.getElementById("debug");
+        if (element && debug) {
+            element.innerHTML = "Player: " + Math.round(100 * player.x) / 100 + ", " + Math.round(100 * player.y) / 100 + " | Health: " + health;
+        }
+
         if (capturing) {
             if (pressed.length > 0) {
                 binds[swapBind as keyof Binds] = pressed[0];
@@ -1011,8 +1029,11 @@ namespace Infernum {
         player.xVel -= (player.xVel / 6) * delta;
         if (player.yVel < 10) player.yVel += 0.2 * delta;
         if (player.yVel < -7) player.yVel = -7;
+
+        startAttacks();
+        progressAttacks(delta);
         immunity -= delta;
-        fighting -= delta;
+        fighting += delta;
         dashCooldown -= delta;
 
         requestAnimationFrame(animate);
@@ -1022,6 +1043,44 @@ namespace Infernum {
     ^^^^ End of game loop ^^^^
     ^^^^ End of game loop ^^^^
     */
+
+    function startAttacks() {
+        if (fighting >= 0 && attackIndex <= 0) {
+            attackIndex++;
+            for (let i = 0; i < 10; i++) {
+                lightSword((canvasWidth - 60) / 10 * i + 30, (() => {
+                    let player = getRectById("player");
+                    if (!player) throw new Error("Player not found. Something has gone horribly wrong.");
+                    else if (player.y < 60) return 100;
+                    else return player.y - 60;
+                })(), 180, 80, 0);
+                lightSword((canvasWidth - 60) / 10 * i + 30, (() => {
+                    let player = getRectById("player");
+                    if (!player) throw new Error("Player not found. Something has gone horribly wrong.");
+                    else if (player.y < 60) return 100;
+                    else return player.y - 60;
+                })(), 0, 80, 1);
+            }
+        }
+    }
+
+    function progressAttacks(delta: number) {
+        let projectiles: Shape[] = ((getCirclesByClass("projectileHitbox") as Shape[]) || []).concat((getRectsByClass("projectileHitbox") as Shape[]) || []).concat((getAdvancedPolygonsByClass("projectileHitbox") as Shape[]) || []);
+        if (projectiles.length > 0) {
+            projectiles.forEach(projectile => {
+                if (projectile.meta.age == undefined) projectile.meta.age = 0;
+                projectile.meta.age += delta;
+                if (projectile.meta.projectileID == undefined) throw new Error("Projectile has no ID. Something has gone horribly wrong.");
+                switch (projectile.meta.projectileID) {
+                    case 0:
+                        if (projectile.meta.age > 30) projectile.yVel = -20;
+                        break;
+                    case 1:
+                        if (projectile.meta.age > 30) projectile.yVel = 20;
+                }
+            });
+        }
+    }
 
     element = document.getElementById("swapBind");
     if (element) element.addEventListener("click", () => {
