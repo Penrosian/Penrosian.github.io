@@ -39,6 +39,21 @@ namespace Infernum {
         return returnVal;
     }
 
+    function fillPolygon(vertexes: { x: number, y: number; }[], fillColor: string, strokeColor: string, strokeWidth: number) {
+        ctx.beginPath();
+        vertexes.forEach((vertex, index) => {
+            if (index == 0) ctx.moveTo(vertex.x, vertex.y);
+            else ctx.lineTo(vertex.x, vertex.y);
+        });
+        ctx.lineTo(vertexes[0].x, vertexes[0].y);
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+        ctx.lineWidth = strokeWidth;
+        ctx.strokeStyle = strokeColor;
+        ctx.stroke();
+        ctx.restore();
+    }
+
     // Maps a value from one range to another
     function map(value: number, x1: number, y1: number, x2: number, y2: number): number {
         return (value - x1) * (y2 - x2) / (y1 - x1) + x2;
@@ -46,13 +61,17 @@ namespace Infernum {
 
     type Shape = Circle | Rect | AdvancedPolygon;
 
-    // Collision detection is really freaking complex
-    // Rectangle-Rectangle collision is simple, RotatedRectangle-RotatedRectangle collision is more complex
-    // https://www.youtube.com/watch?v=MvlhMEE9zuc
-    // Circle-Circle collision is very easy
-    // Circle-RotatedRectangle collision is just Circle-Rectangle collision with the circle's center rotated
-    // a negative amount of the rectangle's rotation
-    // https://stackoverflow.com/a/70723337
+    /* 
+    Collision detection is really freaking complex
+    Rectangle-Rectangle collision is simple
+    Polygon-Polygon collision is very complicated
+    https://www.youtube.com/watch?v=MvlhMEE9zuc
+    Circle-Circle collision is very easy
+    Circle-Rectangle collision is only kind of complicated
+    Circle-RotatedRectangle collision is just Circle-Rectangle collision with the circle's center rotated
+    a negative amount of the rectangle's rotation around the rectangle's center, so that it becomes normal Circle-Rectangle collision
+    https://stackoverflow.com/a/70723337
+    */
 
     type Polygon = {
         vertex: { x: number, y: number; }[];
@@ -202,17 +221,38 @@ namespace Infernum {
         ];
         const rectEdges = vertexesToEdges(rectPoints);
         const rectPolygon = { vertex: rectPoints, edge: rectEdges };
-        return sat({ vertex: polygon.vertexes, edge: vertexesToEdges(polygon.vertexes) }, rectPolygon);
+        let rotatedVertexes: { x: number, y: number; }[] = [];
+        polygon.vertexes.forEach(vertex => {
+            const rotatedVertex = evalPoints(polygon.center.x, polygon.center.y, vertex.x, vertex.y, polygon.meta.rotation || 0);
+            rotatedVertexes.push(rotatedVertex);
+        });
+        return sat({ vertex: rotatedVertexes, edge: vertexesToEdges(rotatedVertexes) }, rectPolygon);
+    }
+
+    function detectPolygonCollision(polygon1: AdvancedPolygon, polygon2: AdvancedPolygon) {
+        const rotatedVertexes1: { x: number, y: number; }[] = [];
+        polygon1.vertexes.forEach(vertex => {
+            const rotatedVertex = evalPoints(polygon1.center.x, polygon1.center.y, vertex.x, vertex.y, polygon1.meta.rotation || 0);
+            rotatedVertexes1.push(rotatedVertex);
+        });
+        const rotatedVertexes2: { x: number, y: number; }[] = [];
+        polygon2.vertexes.forEach(vertex => {
+            const rotatedVertex = evalPoints(polygon2.center.x, polygon2.center.y, vertex.x, vertex.y, polygon2.meta.rotation || 0);
+            rotatedVertexes2.push(rotatedVertex);
+        });
+        const polygon1Edges = vertexesToEdges(rotatedVertexes1);
+        const polygon2Edges = vertexesToEdges(rotatedVertexes2);
+        return sat({ vertex: rotatedVertexes1, edge: polygon1Edges }, { vertex: rotatedVertexes2, edge: polygon2Edges });
     }
 
     function detectCollision(shape1: Shape, shape2: Shape) {
-        if ((shape1 as Circle).radius != undefined && (shape2 as Circle).radius != undefined) return detectCircleCollision(shape1 as Circle, shape2 as Circle);
-        else if ((shape1 as Circle).radius != undefined && (shape2 as Rect).width != undefined) return detectCircleRectCollision(shape1 as Circle, shape2 as Rect);
-        else if ((shape1 as Rect).width != undefined && (shape2 as Circle).radius != undefined) return detectCircleRectCollision(shape2 as Circle, shape1 as Rect);
-        else if ((shape1 as Rect).width != undefined && (shape2 as Rect).width != undefined) return detectRectangleCollision(shape1 as Rect, shape2 as Rect);
-        else if ((shape1 as AdvancedPolygon).vertexes != undefined && (shape2 as AdvancedPolygon).vertexes != undefined) return sat({ vertex: (shape1 as AdvancedPolygon).vertexes, edge: vertexesToEdges((shape1 as AdvancedPolygon).vertexes) }, { vertex: (shape2 as AdvancedPolygon).vertexes, edge: vertexesToEdges((shape2 as AdvancedPolygon).vertexes) });
-        else if ((shape1 as AdvancedPolygon).vertexes != undefined && (shape2 as Rect).width != undefined) return detectRectPolygonCollision(shape1 as AdvancedPolygon, shape2 as Rect);
-        else if ((shape1 as Rect).width != undefined && (shape2 as AdvancedPolygon).vertexes != undefined) return detectRectPolygonCollision(shape2 as AdvancedPolygon, shape1 as Rect);
+        if (isCircle(shape1) && isCircle(shape2)) return detectCircleCollision(shape1 as Circle, shape2 as Circle);
+        else if (isCircle(shape1) && isRect(shape2)) return detectCircleRectCollision(shape1 as Circle, shape2 as Rect);
+        else if (isRect(shape1) && isCircle(shape2)) return detectCircleRectCollision(shape2 as Circle, shape1 as Rect);
+        else if (isRect(shape1) && isRect(shape2)) return detectRectangleCollision(shape1 as Rect, shape2 as Rect);
+        else if (isAdvancedPolygon(shape1) && isAdvancedPolygon(shape2)) return detectPolygonCollision(shape1 as AdvancedPolygon, shape2 as AdvancedPolygon);
+        else if (isAdvancedPolygon(shape1) && isRect(shape2)) return detectRectPolygonCollision(shape1 as AdvancedPolygon, shape2 as Rect);
+        else if (isRect(shape1) && isAdvancedPolygon(shape2)) return detectRectPolygonCollision(shape2 as AdvancedPolygon, shape1 as Rect);
         else throw new Error("Unsupported collision type. " + JSON.stringify(shape1) + ", " + JSON.stringify(shape2));
     }
 
@@ -252,7 +292,26 @@ namespace Infernum {
                 projectileID: projectileID
             }
         };
+        const telegraph: Rect = {
+            id: nextFreeNumericId("rect"),
+            class: "projectileTelegraph",
+            x: x - 10,
+            y: y - 12.5,
+            width: 20,
+            height: 1000,
+            color: "rgba(255, 255, 255, 0.5)",
+            animation: "static",
+            xVel: 0,
+            yVel: 0,
+            meta: {
+                rotation: rotation,
+                projectileID: projectileID,
+                alpha: 0.5,
+                rotationCenter: { x: sword.center.x, y: sword.center.y }
+            }
+        };
         animData.advancedPolygons.push(sword);
+        animData.rects.push(telegraph);
     }
 
     function execution() {
@@ -274,6 +333,8 @@ namespace Infernum {
         noDraw?: boolean;
         projectileID?: any;
         age?: number;
+        alpha?: number;
+        rotationCenter?: { x: number, y: number; };
     };
 
     type Rect = {
@@ -785,6 +846,21 @@ namespace Infernum {
         polygon.center.y += y;
     }
 
+    function isRect(shape: Shape): boolean {
+        return (shape as Rect).width != undefined;
+    }
+    function isCircle(shape: Shape): boolean {
+        return (shape as Circle).radius != undefined;
+    }
+    function isAdvancedPolygon(shape: Shape): boolean {
+        return (shape as AdvancedPolygon).vertexes != undefined;
+    }
+    function shapeOf(shape: Shape): "rect" | "circle" | "advancedPolygon" {
+        if (isRect(shape)) return "rect";
+        else if (isCircle(shape)) return "circle";
+        else return "advancedPolygon";
+    }
+
     /*
         Start of game loop
         Start of game loop
@@ -843,15 +919,17 @@ namespace Infernum {
         fillPage("black");
         for (let i = 0; i < animData.rects.length; i++) {
             let rect = animData.rects[i];
+            ctx.save();
             if (rect.meta["rotation"] != undefined) {
-                ctx.save();
-                ctx.translate(rect.x + rect.width / 2, rect.y + rect.height / 2);
+                const translateX = rect.meta["rotationCenter"] ? rect.meta["rotationCenter"].x : rect.x + rect.width / 2;
+                const translateY = rect.meta["rotationCenter"] ? rect.meta["rotationCenter"].y : rect.y + rect.height / 2;
+                ctx.translate(translateX, translateY);
                 ctx.rotate(rect.meta["rotation"] * Math.PI / 180);
-                ctx.translate(-(rect.x + rect.width / 2), -(rect.y + rect.height / 2));
-                fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
-                ctx.restore();
+                ctx.translate(-translateX, -translateY);
             }
-            else if (!rect.meta["noDraw"]) fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
+            if (rect.meta["alpha"] != undefined) ctx.globalAlpha = rect.meta["alpha"];
+            if (!rect.meta["noDraw"]) fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
+            ctx.restore();
             // Different animation styles move in different ways
             if (rect.animation != "static") {
                 rect.x += rect.xVel * delta;
@@ -902,6 +980,16 @@ namespace Infernum {
         // Rectangles and circles are stored/drawn seperately
         for (let i = 0; i < animData.circles.length; i++) {
             let circle = animData.circles[i];
+            ctx.save();
+            if (circle.meta["rotation"] != undefined) {
+                const translateX = circle.meta["rotationCenter"] ? circle.meta["rotationCenter"].x : circle.x;
+                const translateY = circle.meta["rotationCenter"] ? circle.meta["rotationCenter"].y : circle.y;
+                ctx.translate(translateX, translateY);
+                ctx.rotate(circle.meta["rotation"] * Math.PI / 180);
+                ctx.translate(-translateX, -translateY);
+            }
+            if (circle.meta["alpha"] != undefined) ctx.globalAlpha = circle.meta["alpha"];
+            ctx.restore();
             fillCircle(circle.x, circle.y, circle.radius, circle.color, circle.lineColor, circle.lineWidth, circle.length);
             // Different animation styles move in different ways
             if (circle.animation == "bounce") {
@@ -937,25 +1025,17 @@ namespace Infernum {
                 circle.y += circle.yVel * delta;
             }
         }
-
         // They are called advanced polygons for a reason
         for (let i = 0; i < animData.advancedPolygons.length; i++) {
             let polygon = animData.advancedPolygons[i];
             ctx.save();
-            ctx.translate(polygon.center.x, polygon.center.y);
-            ctx.rotate((polygon.meta.rotation || 0) * Math.PI / 180);
-            ctx.translate(-polygon.center.x, -polygon.center.y);
-            ctx.beginPath();
-            polygon.vertexes.forEach((vertex, index) => {
-                if (index == 0) ctx.moveTo(vertex.x, vertex.y);
-                else ctx.lineTo(vertex.x, vertex.y);
-            });
-            ctx.lineTo(polygon.vertexes[0].x, polygon.vertexes[0].y);
-            ctx.fillStyle = polygon.color;
-            ctx.fill();
-            ctx.lineWidth = polygon.lineWidth;
-            ctx.strokeStyle = polygon.lineColor;
-            ctx.stroke();
+            if (polygon.meta["rotation"] != undefined) {
+                ctx.translate(polygon.center.x, polygon.center.y);
+                ctx.rotate(polygon.meta["rotation"] * Math.PI / 180);
+                ctx.translate(-polygon.center.x, -polygon.center.y);
+            }
+            if (polygon.meta["alpha"] != undefined) ctx.globalAlpha = polygon.meta["alpha"];
+            fillPolygon(polygon.vertexes, polygon.color, polygon.lineColor, polygon.lineWidth);
             ctx.restore();
             // Different animation styles move in different ways
             if (polygon.animation == "bounce") {
@@ -1077,6 +1157,11 @@ namespace Infernum {
             execution();
         }
 
+        if (multiPressed(["KeyS", "KeyT", "KeyA"]) && debug) {
+            pressed = pressed.filter(a => ![-1, "KeyS", "KeyT", "KeyA"].includes(a));
+            fighting = -330;
+        }
+
         element = document.getElementById("swapBind");
         if (element) element.innerHTML = "Current bind: " + swapBind;
         element = document.getElementById("currentBind");
@@ -1178,6 +1263,19 @@ namespace Infernum {
         }
     }
 
+    function fairSpawnX(left: boolean, bound: number, offset: number) {
+        let player = getRectById("player");
+        if (!player) throw new Error("Player not found. Something has gone horribly wrong.");
+        if (!left) {
+            if (player.x > canvasWidth - bound) return canvasWidth - bound - offset;
+            else return player.x + offset;
+        }
+        else {
+            if (player.x < bound) return bound + offset;
+            else return player.x - offset;
+        }
+    }
+
     function startAttacks() {
         if (fighting >= 0 && attackIndex <= 0) {
             attackIndex++;
@@ -1189,8 +1287,8 @@ namespace Infernum {
         if (fighting >= 60 && attackIndex <= 1) {
             attackIndex++;
             for (let i = 0; i < 11; i++) {
-                lightSword((canvasWidth - 20) / 11 * i + 30, fairSpawnY(false, 140, 120), 180, 80, 0);
-                lightSword((canvasWidth - 20) / 11 * i + 30, fairSpawnY(false, 140, 120), 0, 80, 1);
+                lightSword((canvasWidth - 20) / 11 * i + 10, fairSpawnY(false, 140, 120), 180, 80, 0);
+                lightSword((canvasWidth - 20) / 11 * i + 10, fairSpawnY(false, 140, 120), 0, 80, 1);
             }
         }
         if (fighting >= 120 && attackIndex <= 2) {
@@ -1203,14 +1301,47 @@ namespace Infernum {
         if (fighting >= 180 && attackIndex <= 3) {
             attackIndex++;
             for (let i = 0; i < 11; i++) {
-                lightSword((canvasWidth - 20) / 11 * i + 30, fairSpawnY(true, 140, 120), 180, 80, 0);
-                lightSword((canvasWidth - 20) / 11 * i + 30, fairSpawnY(true, 140, 120), 0, 80, 1);
+                lightSword((canvasWidth - 20) / 11 * i + 10, fairSpawnY(true, 140, 120), 180, 80, 0);
+                lightSword((canvasWidth - 20) / 11 * i + 10, fairSpawnY(true, 140, 120), 0, 80, 1);
+            }
+        }
+        if (fighting >= 240 && attackIndex <= 4) {
+            attackIndex++;
+            for (let i = 0; i < 5; i++) {
+                lightSword(fairSpawnX(false, 140, 120), (canvasHeight - 60) / 5 * i + 30, 90, 80, 2);
+                lightSword(fairSpawnX(false, 140, 120), (canvasHeight - 60) / 5 * i + 30, 270, 80, 3);
+            }
+        }
+        if (fighting >= 300 && attackIndex <= 5) {
+            attackIndex++;
+            for (let i = 0; i < 6; i++) {
+                lightSword(fairSpawnX(false, 140, 120), (canvasHeight - 20) / 6 * i + 30, 90, 80, 2);
+                lightSword(fairSpawnX(false, 140, 120), (canvasHeight - 20) / 6 * i + 30, 270, 80, 3);
+            }
+        }
+        if (fighting >= 360 && attackIndex <= 6) {
+            attackIndex++;
+            for (let i = 0; i < 5; i++) {
+                lightSword(fairSpawnX(true, 140, 120), (canvasHeight - 60) / 5 * i + 30, 90, 80, 2);
+                lightSword(fairSpawnX(true, 140, 120), (canvasHeight - 60) / 5 * i + 30, 270, 80, 3);
+            }
+        }
+        if (fighting >= 420 && attackIndex <= 7) {
+            attackIndex++;
+            for (let i = 0; i < 6; i++) {
+                lightSword(fairSpawnX(true, 140, 120), (canvasHeight - 20) / 6 * i + 30, 90, 80, 2);
+                lightSword(fairSpawnX(true, 140, 120), (canvasHeight - 20) / 6 * i + 30, 270, 80, 3);
             }
         }
     }
 
     function progressAttacks(delta: number) {
-        let projectiles: Shape[] = ((getCirclesByClass("projectileHitbox") as Shape[]) || []).concat((getRectsByClass("projectileHitbox") as Shape[]) || []).concat((getAdvancedPolygonsByClass("projectileHitbox") as Shape[]) || []);
+        let projectiles: Shape[] = ((getCirclesByClass("projectileHitbox") as Shape[]) || [])
+            .concat((getCirclesByClass("projectileTelegraph") as Shape[]) || [])
+            .concat((getRectsByClass("projectileHitbox") as Shape[]) || [])
+            .concat((getRectsByClass("projectileTelegraph") as Shape[]) || [])
+            .concat((getAdvancedPolygonsByClass("projectileHitbox") as Shape[]) || [])
+            .concat((getAdvancedPolygonsByClass("projectileTelegraph") as Shape[]) || []);
         if (projectiles.length > 0) {
             projectiles.forEach(projectile => {
                 if (projectile.meta.age == undefined) projectile.meta.age = 0;
@@ -1218,10 +1349,32 @@ namespace Infernum {
                 if (projectile.meta.projectileID == undefined) throw new Error("Projectile has no ID. Something has gone horribly wrong.");
                 switch (projectile.meta.projectileID) {
                     case 0:
-                        if (projectile.meta.age > 45) projectile.yVel = -20;
+                        if (projectile.meta.age > 45) {
+                            if (projectile.class != "projectileTelegraph") projectile.yVel = -30;
+                            // @ts-expect-error: we will always be removing from the correct array for the shape of the projectile
+                            else animData[(shapeOf(projectile) + "s") as keyof animData] = animData[(shapeOf(projectile) + "s") as keyof animData].filter(i => i != projectile);
+                        }
                         break;
                     case 1:
-                        if (projectile.meta.age > 45) projectile.yVel = 20;
+                        if (projectile.meta.age > 45) {
+                            if (projectile.class != "projectileTelegraph") projectile.yVel = 30;
+                            // @ts-expect-error: we will always be removing from the correct array for the shape of the projectile
+                            else animData[(shapeOf(projectile) + "s") as keyof animData] = animData[(shapeOf(projectile) + "s") as keyof animData].filter(i => i != projectile);
+                        }
+                        break;
+                    case 2:
+                        if (projectile.meta.age > 45) {
+                            if (projectile.class != "projectileTelegraph") projectile.xVel = -30;
+                            // @ts-expect-error: we will always be removing from the correct array for the shape of the projectile
+                            else animData[(shapeOf(projectile) + "s") as keyof animData] = animData[(shapeOf(projectile) + "s") as keyof animData].filter(i => i != projectile);
+                        }
+                        break;
+                    case 3:
+                        if (projectile.meta.age > 45) {
+                            if (projectile.class != "projectileTelegraph") projectile.xVel = 30;
+                            // @ts-expect-error: we will always be removing from the correct array for the shape of the projectile
+                            else animData[(shapeOf(projectile) + "s") as keyof animData] = animData[(shapeOf(projectile) + "s") as keyof animData].filter(i => i != projectile);
+                        }
                 }
             });
         }
