@@ -55,12 +55,12 @@ namespace Infernum {
     // https://stackoverflow.com/a/70723337
 
     type Polygon = {
-        vertex: { x: number, y: number }[];
-        edge: { x: number, y: number }[];
+        vertex: { x: number, y: number; }[];
+        edge: { x: number, y: number; }[];
     };
 
-    function vertexesToEdges(vertexes: { x: number, y: number }[]) {
-        let edges: { x: number, y: number }[] = [];
+    function vertexesToEdges(vertexes: { x: number, y: number; }[]) {
+        let edges: { x: number, y: number; }[] = [];
         vertexes.forEach((vertex, index) => {
             if (index == vertexes.length - 1) edges.push({ x: vertexes[0].x - vertex.x, y: vertexes[0].y - vertex.y });
             else edges.push({ x: vertexes[index + 1].x - vertex.x, y: vertexes[index + 1].y - vertex.y });
@@ -80,7 +80,7 @@ namespace Infernum {
         return {
             x: rotatedX,
             y: rotatedY
-        }
+        };
     }
 
     function rotatedSquare(square: Rect) {
@@ -89,7 +89,7 @@ namespace Infernum {
             topRight: evalPoints(square.x + square.width / 2, square.y + square.height / 2, square.x + square.width, square.y, square.meta.rotation || 0),
             bottomLeft: evalPoints(square.x + square.width / 2, square.y + square.height / 2, square.x, square.y + square.height, square.meta.rotation || 0),
             bottomRight: evalPoints(square.x + square.width / 2, square.y + square.height / 2, square.x + square.width, square.y + square.height, square.meta.rotation || 0)
-        }
+        };
     }
 
     function sat(polygonA: Polygon, polygonB: Polygon) {
@@ -251,7 +251,7 @@ namespace Infernum {
                 rotation: rotation,
                 projectileID: projectileID
             }
-        }
+        };
         animData.advancedPolygons.push(sword);
     }
 
@@ -300,8 +300,8 @@ namespace Infernum {
     type AdvancedPolygon = {
         id: any;
         class: any;
-        vertexes: { x: number, y: number }[];
-        center: { x: number, y: number };
+        vertexes: { x: number, y: number; }[];
+        center: { x: number, y: number; };
         animation: ShapeAnimation;
         xVel: number;
         yVel: number;
@@ -309,7 +309,7 @@ namespace Infernum {
         lineColor: string;
         lineWidth: number;
         meta: Meta;
-    }
+    };
 
     interface animData {
         "rects": Rect[];
@@ -616,7 +616,7 @@ namespace Infernum {
         "xVel": 0,
         "yVel": 0,
         "meta": {}
-    }]
+    }];
     stars.forEach(star => animData.rects.push((star as Rect)));
 
     let binds: Binds = {
