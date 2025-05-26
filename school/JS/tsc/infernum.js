@@ -302,9 +302,89 @@ var Infernum;
         if (!player)
             throw new Error("Player not found. Something has gone horribly wrong.");
         for (var i = 0; i < 40; i++) {
-            lightSword(i * (canvasWidth / 40), player.y + 60, 180, 10000, 0);
-            lightSword(i * (canvasWidth / 40), player.y - 60, 0, 10000, 1);
+            lightSword(i * (canvasWidth / 40), player.y + 60, 180, 10000, "0");
+            lightSword(i * (canvasWidth / 40), player.y - 60, 0, 10000, "1");
         }
+    }
+    function lightBall(x, y, radius, damage, projectileID) {
+        var ball = {
+            id: nextFreeNumericId("circle"),
+            class: "projectileHitbox",
+            x: x,
+            y: y,
+            radius: radius,
+            length: 1,
+            animation: "exitKill",
+            xVel: 0,
+            yVel: 0,
+            color: "#FFE135",
+            lineColor: "lightGray",
+            lineWidth: 1,
+            meta: {
+                damage: damage,
+                projectileID: projectileID
+            }
+        };
+        animData.circles.push(ball);
+    }
+    function radialBurst(x, y, count, damage, rotation) {
+        while (rotation > 360)
+            rotation -= 360;
+        if (count < 1)
+            throw new Error("Count must be at least 1.");
+        var angleStep = 360 / count;
+        var telegraphID = nextFreeNumericId("projectile");
+        for (var i = 0; i < count; i++) {
+            var angle = i * angleStep + rotation - 90;
+            var telegraphX = x;
+            var telegraphY = y;
+            var telegraph = {
+                id: nextFreeNumericId("rect"),
+                class: "projectileTelegraph",
+                x: telegraphX - 10,
+                y: telegraphY - 10,
+                width: 20,
+                height: 1000,
+                color: "white",
+                animation: "static",
+                xVel: 0,
+                yVel: 0,
+                meta: {
+                    rotation: angle,
+                    alpha: 0.5,
+                    rotationCenter: { x: telegraphX, y: telegraphY },
+                    projectileID: telegraphID
+                }
+            };
+            animData.rects.push(telegraph);
+        }
+        setTimeout(function () {
+            var telegraphs = getProjectilePartsById(telegraphID);
+            if (telegraphs)
+                animData.rects = animData.rects.filter(function (a) { return !telegraphs.includes(a); });
+            for (var i = 0; i < count; i++) {
+                var projectileID = nextFreeNumericId("projectile");
+                var angle = i * angleStep + rotation;
+                var vector = { x: Math.cos(angle * Math.PI / 180) * 20, y: Math.sin(angle * Math.PI / 180) * 20 };
+                var xVel = vector.x;
+                var yVel = vector.y;
+                lightBall(x, y, 5, damage, projectileID);
+                var balls = getProjectilePartsById(projectileID);
+                if (!balls)
+                    throw new Error("Projectile not found after creation.");
+                var ball = balls[0];
+                if (ball) {
+                    ball.xVel = xVel;
+                    ball.yVel = yVel;
+                }
+            }
+        }, 750);
+    }
+    function normalizeVector(x, y, targetMagnitude) {
+        var magnitude = Math.sqrt(x * x + y * y);
+        if (magnitude == 0)
+            return { x: 0, y: 0 };
+        return { x: (x / magnitude) * targetMagnitude, y: (y / magnitude) * targetMagnitude };
     }
     ;
     var animData = {
@@ -695,6 +775,15 @@ var Infernum;
     window.getProjectilePartsById = getProjectilePartsById;
     window.lightSword = lightSword;
     window.execution = execution;
+    window.lightBall = lightBall;
+    window.radialBurst = radialBurst;
+    window.normalizeVector = normalizeVector;
+    window.movePolygon = movePolygon;
+    window.isRect = isRect;
+    window.isCircle = isCircle;
+    window.isAdvancedPolygon = isAdvancedPolygon;
+    window.shapeOf = shapeOf;
+    window.fillPolygon = fillPolygon;
     function getCircleById(id) {
         var returns = false;
         animData.circles.forEach(function (circle) { if (circle.id == id)
@@ -854,8 +943,7 @@ var Infernum;
                 ctx.rotate(rect.meta["rotation"] * Math.PI / 180);
                 ctx.translate(-translateX, -translateY);
             }
-            if (rect.meta["alpha"] != undefined)
-                ctx.globalAlpha = rect.meta["alpha"];
+            ctx.globalAlpha = rect.meta["alpha"] != undefined ? rect.meta["alpha"] : 1;
             if (!rect.meta["noDraw"])
                 fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
             ctx.restore();
@@ -918,10 +1006,10 @@ var Infernum;
                 ctx.rotate(circle.meta["rotation"] * Math.PI / 180);
                 ctx.translate(-translateX, -translateY);
             }
-            if (circle.meta["alpha"] != undefined)
-                ctx.globalAlpha = circle.meta["alpha"];
+            ctx.globalAlpha = circle.meta["alpha"] != undefined ? circle.meta["alpha"] : 1;
+            if (!circle.meta["noDraw"])
+                fillCircle(circle.x, circle.y, circle.radius, circle.color, circle.lineColor, circle.lineWidth, circle.length);
             ctx.restore();
-            fillCircle(circle.x, circle.y, circle.radius, circle.color, circle.lineColor, circle.lineWidth, circle.length);
             // Different animation styles move in different ways
             if (circle.animation == "bounce") {
                 if (circle.x + circle.radius > canvasWidth) {
@@ -972,9 +1060,9 @@ var Infernum;
                 ctx.rotate(polygon.meta["rotation"] * Math.PI / 180);
                 ctx.translate(-polygon.center.x, -polygon.center.y);
             }
-            if (polygon.meta["alpha"] != undefined)
-                ctx.globalAlpha = polygon.meta["alpha"];
-            fillPolygon(polygon.vertexes, polygon.color, polygon.lineColor, polygon.lineWidth);
+            ctx.globalAlpha = polygon.meta["alpha"] != undefined ? polygon.meta["alpha"] : 1;
+            if (!polygon.meta["noDraw"])
+                fillPolygon(polygon.vertexes, polygon.color, polygon.lineColor, polygon.lineWidth);
             ctx.restore();
             // Different animation styles move in different ways
             if (polygon.animation == "bounce") {
@@ -1252,58 +1340,106 @@ var Infernum;
         if (fighting >= 0 && attackIndex <= 0) {
             attackIndex++;
             for (var i = 0; i < 10; i++) {
-                lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(false, 140, 120), 180, 80, 0);
-                lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(false, 140, 120), 0, 80, 1);
+                lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(false, 140, 120), 180, 80, "0");
+                lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(false, 140, 120), 0, 80, "1");
             }
         }
         if (fighting >= 60 && attackIndex <= 1) {
             attackIndex++;
             for (var i = 0; i < 11; i++) {
-                lightSword((canvasWidth - 20) / 11 * i + 10, fairSpawnY(false, 140, 120), 180, 80, 0);
-                lightSword((canvasWidth - 20) / 11 * i + 10, fairSpawnY(false, 140, 120), 0, 80, 1);
+                lightSword((canvasWidth - 20) / 11 * i + 10, fairSpawnY(false, 140, 120), 180, 80, "0");
+                lightSword((canvasWidth - 20) / 11 * i + 10, fairSpawnY(false, 140, 120), 0, 80, "1");
             }
         }
         if (fighting >= 120 && attackIndex <= 2) {
             attackIndex++;
             for (var i = 0; i < 10; i++) {
-                lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(true, 140, 120), 180, 80, 0);
-                lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(true, 140, 120), 0, 80, 1);
+                lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(true, 140, 120), 180, 80, "0");
+                lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(true, 140, 120), 0, 80, "1");
             }
         }
         if (fighting >= 180 && attackIndex <= 3) {
             attackIndex++;
             for (var i = 0; i < 11; i++) {
-                lightSword((canvasWidth - 20) / 11 * i + 10, fairSpawnY(true, 140, 120), 180, 80, 0);
-                lightSword((canvasWidth - 20) / 11 * i + 10, fairSpawnY(true, 140, 120), 0, 80, 1);
+                lightSword((canvasWidth - 20) / 11 * i + 10, fairSpawnY(true, 140, 120), 180, 80, "0");
+                lightSword((canvasWidth - 20) / 11 * i + 10, fairSpawnY(true, 140, 120), 0, 80, "1");
             }
         }
         if (fighting >= 240 && attackIndex <= 4) {
             attackIndex++;
             for (var i = 0; i < 5; i++) {
-                lightSword(fairSpawnX(false, 140, 120), (canvasHeight - 60) / 5 * i + 30, 90, 80, 2);
-                lightSword(fairSpawnX(false, 140, 120), (canvasHeight - 60) / 5 * i + 30, 270, 80, 3);
+                lightSword(fairSpawnX(false, 140, 120), (canvasHeight - 60) / 5 * i + 30, 90, 80, "2");
+                lightSword(fairSpawnX(false, 140, 120), (canvasHeight - 60) / 5 * i + 30, 270, 80, "3");
             }
         }
         if (fighting >= 300 && attackIndex <= 5) {
             attackIndex++;
             for (var i = 0; i < 6; i++) {
-                lightSword(fairSpawnX(false, 140, 120), (canvasHeight - 20) / 6 * i + 30, 90, 80, 2);
-                lightSword(fairSpawnX(false, 140, 120), (canvasHeight - 20) / 6 * i + 30, 270, 80, 3);
+                lightSword(fairSpawnX(false, 140, 120), (canvasHeight - 20) / 6 * i + 30, 90, 80, "2");
+                lightSword(fairSpawnX(false, 140, 120), (canvasHeight - 20) / 6 * i + 30, 270, 80, "3");
             }
         }
         if (fighting >= 360 && attackIndex <= 6) {
             attackIndex++;
             for (var i = 0; i < 5; i++) {
-                lightSword(fairSpawnX(true, 140, 120), (canvasHeight - 60) / 5 * i + 30, 90, 80, 2);
-                lightSword(fairSpawnX(true, 140, 120), (canvasHeight - 60) / 5 * i + 30, 270, 80, 3);
+                lightSword(fairSpawnX(true, 140, 120), (canvasHeight - 60) / 5 * i + 30, 90, 80, "2");
+                lightSword(fairSpawnX(true, 140, 120), (canvasHeight - 60) / 5 * i + 30, 270, 80, "3");
             }
         }
         if (fighting >= 420 && attackIndex <= 7) {
             attackIndex++;
             for (var i = 0; i < 6; i++) {
-                lightSword(fairSpawnX(true, 140, 120), (canvasHeight - 20) / 6 * i + 30, 90, 80, 2);
-                lightSword(fairSpawnX(true, 140, 120), (canvasHeight - 20) / 6 * i + 30, 270, 80, 3);
+                lightSword(fairSpawnX(true, 140, 120), (canvasHeight - 20) / 6 * i + 30, 90, 80, "2");
+                lightSword(fairSpawnX(true, 140, 120), (canvasHeight - 20) / 6 * i + 30, 270, 80, "3");
             }
+        }
+        if (fighting >= 480 && attackIndex <= 8) {
+            attackIndex++;
+            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(false, 200, 180), 6, 50, 0);
+            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(true, 200, 180), 6, 50, 0);
+        }
+        if (fighting >= 540 && attackIndex <= 9) {
+            attackIndex++;
+            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(false, 200, 180), 6, 50, 0);
+            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(true, 200, 180), 6, 50, 0);
+        }
+        if (fighting >= 600 && attackIndex <= 10) {
+            attackIndex++;
+            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(false, 200, 180), 8, 50, 0);
+            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(false, 200, 180), 8, 50, 0);
+        }
+        if (fighting >= 660 && attackIndex <= 11) {
+            attackIndex++;
+            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(true, 200, 180), 8, 50, 0);
+            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(true, 200, 180), 8, 50, 0);
+        }
+        if (fighting >= 720 && attackIndex <= 12) {
+            attackIndex++;
+            var player = getRectById("player");
+            if (!player)
+                throw new Error("Player not found. Something has gone horribly wrong.");
+            animData.circles.push({
+                id: nextFreeNumericId("circle"),
+                class: "projectileTelegraph",
+                x: player.x,
+                y: player.y,
+                radius: 30,
+                color: "white",
+                lineColor: "white",
+                lineWidth: 0,
+                length: 1,
+                xVel: 0,
+                yVel: 0,
+                animation: "static",
+                meta: {
+                    projectileID: "4",
+                    age: 0,
+                    alpha: 0.5
+                }
+            });
+            var x_1 = player.x + player.width / 2;
+            var y_1 = player.y + player.height / 2;
+            setTimeout(function () { radialBurst(x_1, y_1, 16, 50, 4); }, 750);
         }
     }
     function progressAttacks(delta) {
@@ -1321,7 +1457,7 @@ var Infernum;
                 if (projectile.meta.projectileID == undefined)
                     throw new Error("Projectile has no ID. Something has gone horribly wrong.");
                 switch (projectile.meta.projectileID) {
-                    case 0:
+                    case "0":
                         if (projectile.meta.age > 45) {
                             if (projectile.class != "projectileTelegraph")
                                 projectile.yVel = -30;
@@ -1330,7 +1466,7 @@ var Infernum;
                                 animData[(shapeOf(projectile) + "s")] = animData[(shapeOf(projectile) + "s")].filter(function (i) { return i != projectile; });
                         }
                         break;
-                    case 1:
+                    case "1":
                         if (projectile.meta.age > 45) {
                             if (projectile.class != "projectileTelegraph")
                                 projectile.yVel = 30;
@@ -1339,7 +1475,7 @@ var Infernum;
                                 animData[(shapeOf(projectile) + "s")] = animData[(shapeOf(projectile) + "s")].filter(function (i) { return i != projectile; });
                         }
                         break;
-                    case 2:
+                    case "2":
                         if (projectile.meta.age > 45) {
                             if (projectile.class != "projectileTelegraph")
                                 projectile.xVel = -30;
@@ -1348,7 +1484,7 @@ var Infernum;
                                 animData[(shapeOf(projectile) + "s")] = animData[(shapeOf(projectile) + "s")].filter(function (i) { return i != projectile; });
                         }
                         break;
-                    case 3:
+                    case "3":
                         if (projectile.meta.age > 45) {
                             if (projectile.class != "projectileTelegraph")
                                 projectile.xVel = 30;
@@ -1356,6 +1492,11 @@ var Infernum;
                             else
                                 animData[(shapeOf(projectile) + "s")] = animData[(shapeOf(projectile) + "s")].filter(function (i) { return i != projectile; });
                         }
+                        break;
+                    case "4":
+                        // @ts-expect-error: we will always be removing from the correct array for the shape of the projectile
+                        if (projectile.meta.age > 45)
+                            animData[(shapeOf(projectile) + "s")] = animData[(shapeOf(projectile) + "s")].filter(function (i) { return i != projectile; });
                 }
             });
         }
