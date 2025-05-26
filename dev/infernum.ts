@@ -240,7 +240,7 @@ namespace Infernum {
                 { x: x - 2.5, y: y + 2.5 } // Up
             ],
             center: { x: x, y: y + 12.5 },
-            animation: "custom",
+            animation: "exitKill",
             xVel: 0,
             yVel: 0,
             color: "white",
@@ -253,6 +253,15 @@ namespace Infernum {
             }
         };
         animData.advancedPolygons.push(sword);
+    }
+
+    function execution() {
+        let player = getRectById("player");
+        if (!player) throw new Error("Player not found. Something has gone horribly wrong.");
+        for (let i = 0; i < 40; i++) {
+            lightSword(i * (canvasWidth / 40), player.y + 60, 180, 80, 0);
+            lightSword(i * (canvasWidth / 40), player.y - 60, 0, 80, 1);
+        }
     }
 
     // Storing in an object instead of in a bunch of variables is
@@ -347,6 +356,32 @@ namespace Infernum {
                 "width": 960,
                 "height": 20,
                 "color": "green",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "healthBarBackground",
+                "class": "healthBarBackground",
+                "x": 850,
+                "y": 30,
+                "width": 100,
+                "height": 10,
+                "color": "lightGray",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "healthBar",
+                "class": "healthBar",
+                "x": 850,
+                "y": 30,
+                "width": 100,
+                "height": 10,
+                "color": "red",
                 "animation": "static",
                 "xVel": 0,
                 "yVel": 0,
@@ -648,6 +683,8 @@ namespace Infernum {
     let maxX = window.innerWidth;
     let maxY = window.innerHeight;
     let attackIndex = 0;
+    let regenTime = 0;
+    let regenCounter = 0;
 
     // Expose variables to the global scope for debugging
     (window as any).animData = animData;
@@ -682,6 +719,11 @@ namespace Infernum {
     (window as any).detectCircleCollision = detectCircleCollision;
     (window as any).detectCollision = detectCollision;
     (window as any).detectCircleRectCollision = detectCircleRectCollision;
+    (window as any).getAdvancedPolygonById = getAdvancedPolygonById;
+    (window as any).getAdvancedPolygonsByClass = getAdvancedPolygonsByClass;
+    (window as any).getProjectilePartsById = getProjectilePartsById;
+    (window as any).lightSword = lightSword;
+    (window as any).execution = execution;
 
     function getCircleById(id: any): Circle | false {
         let returns: Circle | false = false;
@@ -911,7 +953,7 @@ namespace Infernum {
             if (polygon.animation == "exitKill") {
                 let counter = 0;
                 polygon.vertexes.forEach(vertex => { if (vertex.x > canvasWidth || vertex.x < 0 || vertex.y > canvasHeight || vertex.y < 0) counter++; });
-                if (counter == polygon.vertexes.length) animData.advancedPolygons = animData.advancedPolygons.filter(i => i != polygon);
+                if (counter >= polygon.vertexes.length) animData.advancedPolygons = animData.advancedPolygons.filter(i => i != polygon);
             }
             if (polygon.animation != "static") movePolygon(polygon, polygon.xVel * delta, polygon.yVel * delta);
         }
@@ -925,7 +967,7 @@ namespace Infernum {
         if (detectCollision(player, ground)) {
             player.y = ground.y - player.height;
             flightTime = 396;
-            if (player.yVel < 0) player.yVel = 0;
+            if (player.yVel > 0) player.yVel = 0;
         }
 
         let projectiles: Shape[] = ((getCirclesByClass("projectileHitbox") as Shape[]) || []).concat((getRectsByClass("projectileHitbox") as Shape[]) || []).concat((getAdvancedPolygonsByClass("projectileHitbox") as Shape[]) || []);
@@ -993,6 +1035,11 @@ namespace Infernum {
             }
         }
 
+        if (multiPressed(["KeyE", "KeyX", "KeyC"]) && debug) {
+            pressed = pressed.filter(a => ![-1, "KeyE", "KeyX", "KeyC"].includes(a));
+            execution();
+        }
+
         element = document.getElementById("swapBind");
         if (element) element.innerHTML = "Current bind: " + swapBind;
         element = document.getElementById("currentBind");
@@ -1027,8 +1074,37 @@ namespace Infernum {
             }
         }
         player.xVel -= (player.xVel / 6) * delta;
-        if (player.yVel < 10) player.yVel += 0.2 * delta;
+        if (Math.abs(player.xVel) < 0.1) player.xVel = 0;
+        if (player.yVel < 10 && !detectCollision(player, ground)) player.yVel += 0.2 * delta;
         if (player.yVel < -7) player.yVel = -7;
+        if (Math.abs(player.yVel) < 0.1) player.yVel = 0;
+
+        // Why is Terraria health regeneration so complicated
+        // I also could have just used a simple timer, but this is more accurate to the game so idc
+        if (health < 920) {
+            let effectiveRegenTime: number;
+            let movementModifer: number;
+            if (regenTime > 3600) regenTime = 3600;
+            if (regenTime <= 1800) effectiveRegenTime = Math.floor(regenTime / 300);
+            else effectiveRegenTime = 6 + (Math.floor((regenTime - 1800) / 600));
+            if (regenTime >= 40 && regenTime < 1800) regenTime = 1800;
+            if (player.xVel == 0 && player.yVel == 0) movementModifer = 6.25;
+            else movementModifer = 0.5;
+            regenCounter += Math.round(0.5 * (((23 / 10 * 0.85 + 0.15) * effectiveRegenTime * movementModifer * 1.1) + 11.2)) * delta;
+            regenTime += delta;
+            health += Math.floor(regenCounter / 120);
+            regenCounter -= Math.floor(regenCounter / 120) * 120;
+            if (health > 920) health = 920;
+            if (health < 0) health = 0;
+        }
+
+        let healthBar = getRectById("healthBar");
+        if (!healthBar) throw new Error("Health bar not found. Something has gone horribly wrong.");
+        healthBar.width = Math.max(map(health, 0, 920, 0, 100), 0);
+        healthBar.x = canvasWidth - healthBar.width - 10;
+        ctx.font = "10px Arial";
+        ctx.fillStyle = "white";
+        ctx.fillText("Health: " + health + "/920", canvasWidth - 90, 25);
 
         startAttacks();
         progressAttacks(delta);

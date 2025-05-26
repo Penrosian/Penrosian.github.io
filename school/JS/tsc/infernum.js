@@ -228,7 +228,7 @@ var Infernum;
                 { x: x - 2.5, y: y + 2.5 } // Up
             ],
             center: { x: x, y: y + 12.5 },
-            animation: "custom",
+            animation: "exitKill",
             xVel: 0,
             yVel: 0,
             color: "white",
@@ -241,6 +241,15 @@ var Infernum;
             }
         };
         animData.advancedPolygons.push(sword);
+    }
+    function execution() {
+        var player = getRectById("player");
+        if (!player)
+            throw new Error("Player not found. Something has gone horribly wrong.");
+        for (var i = 0; i < 40; i++) {
+            lightSword(i * (canvasWidth / 40), player.y + 60, 180, 80, 0);
+            lightSword(i * (canvasWidth / 40), player.y - 60, 0, 80, 1);
+        }
     }
     ;
     var animData = {
@@ -266,6 +275,32 @@ var Infernum;
                 "width": 960,
                 "height": 20,
                 "color": "green",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "healthBarBackground",
+                "class": "healthBarBackground",
+                "x": 850,
+                "y": 30,
+                "width": 100,
+                "height": 10,
+                "color": "lightGray",
+                "animation": "static",
+                "xVel": 0,
+                "yVel": 0,
+                "meta": {}
+            },
+            {
+                "id": "healthBar",
+                "class": "healthBar",
+                "x": 850,
+                "y": 30,
+                "width": 100,
+                "height": 10,
+                "color": "red",
                 "animation": "static",
                 "xVel": 0,
                 "yVel": 0,
@@ -565,6 +600,8 @@ var Infernum;
     var maxX = window.innerWidth;
     var maxY = window.innerHeight;
     var attackIndex = 0;
+    var regenTime = 0;
+    var regenCounter = 0;
     // Expose variables to the global scope for debugging
     window.animData = animData;
     window.debug = debug;
@@ -598,6 +635,11 @@ var Infernum;
     window.detectCircleCollision = detectCircleCollision;
     window.detectCollision = detectCollision;
     window.detectCircleRectCollision = detectCircleRectCollision;
+    window.getAdvancedPolygonById = getAdvancedPolygonById;
+    window.getAdvancedPolygonsByClass = getAdvancedPolygonsByClass;
+    window.getProjectilePartsById = getProjectilePartsById;
+    window.lightSword = lightSword;
+    window.execution = execution;
     function getCircleById(id) {
         var returns = false;
         animData.circles.forEach(function (circle) { if (circle.id == id)
@@ -856,7 +898,7 @@ var Infernum;
                 var counter_1 = 0;
                 polygon.vertexes.forEach(function (vertex) { if (vertex.x > canvasWidth || vertex.x < 0 || vertex.y > canvasHeight || vertex.y < 0)
                     counter_1++; });
-                if (counter_1 == polygon.vertexes.length)
+                if (counter_1 >= polygon.vertexes.length)
                     animData.advancedPolygons = animData.advancedPolygons.filter(function (i) { return i != polygon; });
             }
             if (polygon.animation != "static")
@@ -876,7 +918,7 @@ var Infernum;
         if (detectCollision(player, ground)) {
             player.y = ground.y - player.height;
             flightTime = 396;
-            if (player.yVel < 0)
+            if (player.yVel > 0)
                 player.yVel = 0;
         }
         var projectiles = (getCirclesByClass("projectileHitbox") || []).concat(getRectsByClass("projectileHitbox") || []).concat(getAdvancedPolygonsByClass("projectileHitbox") || []);
@@ -951,6 +993,10 @@ var Infernum;
                     maxY = maxTmp;
             }
         }
+        if (multiPressed(["KeyE", "KeyX", "KeyC"]) && debug) {
+            pressed = pressed.filter(function (a) { return ![-1, "KeyE", "KeyX", "KeyC"].includes(a); });
+            execution();
+        }
         element = document.getElementById("swapBind");
         if (element)
             element.innerHTML = "Current bind: " + swapBind;
@@ -987,10 +1033,48 @@ var Infernum;
             }
         }
         player.xVel -= (player.xVel / 6) * delta;
-        if (player.yVel < 10)
+        if (Math.abs(player.xVel) < 0.1)
+            player.xVel = 0;
+        if (player.yVel < 10 && !detectCollision(player, ground))
             player.yVel += 0.2 * delta;
         if (player.yVel < -7)
             player.yVel = -7;
+        if (Math.abs(player.yVel) < 0.1)
+            player.yVel = 0;
+        // Why is Terraria health regeneration so complicated
+        // I also could have just used a simple timer, but this is more accurate to the game so idc
+        if (health < 920) {
+            var effectiveRegenTime = void 0;
+            var movementModifer = void 0;
+            if (regenTime > 3600)
+                regenTime = 3600;
+            if (regenTime <= 1800)
+                effectiveRegenTime = Math.floor(regenTime / 300);
+            else
+                effectiveRegenTime = 6 + (Math.floor((regenTime - 1800) / 600));
+            if (regenTime >= 40 && regenTime < 1800)
+                regenTime = 1800;
+            if (player.xVel == 0 && player.yVel == 0)
+                movementModifer = 6.25;
+            else
+                movementModifer = 0.5;
+            regenCounter += Math.round(0.5 * (((23 / 10 * 0.85 + 0.15) * effectiveRegenTime * movementModifer * 1.1) + 11.2)) * delta;
+            regenTime += delta;
+            health += Math.floor(regenCounter / 120);
+            regenCounter -= Math.floor(regenCounter / 120) * 120;
+            if (health > 920)
+                health = 920;
+            if (health < 0)
+                health = 0;
+        }
+        var healthBar = getRectById("healthBar");
+        if (!healthBar)
+            throw new Error("Health bar not found. Something has gone horribly wrong.");
+        healthBar.width = Math.max(map(health, 0, 920, 0, 100), 0);
+        healthBar.x = canvasWidth - healthBar.width - 10;
+        ctx.font = "10px Arial";
+        ctx.fillStyle = "white";
+        ctx.fillText("Health: " + health + "/920", canvasWidth - 90, 25);
         startAttacks();
         progressAttacks(delta);
         immunity -= delta;
