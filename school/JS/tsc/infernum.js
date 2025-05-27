@@ -55,6 +55,12 @@ var Infernum;
     function map(value, x1, y1, x2, y2) {
         return (value - x1) * (y2 - x2) / (y1 - x1) + x2;
     }
+    function getColorCounter() {
+        var colors = ["red", "green", "blue", "yellow", "purple", "orange", "pink", "cyan"];
+        var color = colors[colorCounter % colors.length];
+        colorCounter++;
+        return color;
+    }
     function vertexesToEdges(vertexes) {
         var edges = [];
         vertexes.forEach(function (vertex, index) {
@@ -328,8 +334,6 @@ var Infernum;
         animData.circles.push(ball);
     }
     function radialBurst(x, y, count, damage, rotation) {
-        while (rotation > 360)
-            rotation -= 360;
         if (count < 1)
             throw new Error("Count must be at least 1.");
         var angleStep = 360 / count;
@@ -378,6 +382,97 @@ var Infernum;
                     ball.yVel = yVel;
                 }
             }
+        }, 750);
+    }
+    function verticalDeathRay(x, width, damage, projectileID) {
+        var ground = getRectById("ground");
+        if (!ground)
+            throw new Error("Ground not found. Something has gone horribly wrong.");
+        var telegraphID = nextFreeNumericId("projectile");
+        var telegraph = {
+            id: nextFreeNumericId("rect"),
+            class: "projectileTelegraph",
+            x: x,
+            y: 0,
+            width: width,
+            height: canvasHeight - ground.height,
+            color: "white",
+            animation: "static",
+            xVel: 0,
+            yVel: 0,
+            meta: {
+                projectileID: telegraphID,
+                alpha: 0.5
+            }
+        };
+        var deathRay = {
+            id: nextFreeNumericId("rect"),
+            class: "projectileHitbox",
+            x: x,
+            y: 0,
+            width: width,
+            height: canvasHeight - ground.height,
+            color: getColorCounter(),
+            animation: "static",
+            xVel: 0,
+            yVel: 0,
+            meta: {
+                damage: damage,
+                projectileID: projectileID
+            }
+        };
+        animData.rects.push(telegraph);
+        setTimeout(function () {
+            animData.rects.push(deathRay);
+            var telegraphs = getProjectilePartsById(telegraphID);
+            if (!telegraphs)
+                throw new Error("Telegraph not found after creation.");
+            var telegraph = telegraphs[0];
+            animData.rects = animData.rects.filter(function (a) { return a != telegraph; });
+        }, 750);
+    }
+    function horizontalDeathRay(y, height, damage, projectileID) {
+        var telegraphID = nextFreeNumericId("projectile");
+        var telegraph = {
+            id: nextFreeNumericId("rect"),
+            class: "projectileTelegraph",
+            x: 0,
+            y: y,
+            width: canvasWidth,
+            height: height,
+            color: "white",
+            animation: "static",
+            xVel: 0,
+            yVel: 0,
+            meta: {
+                projectileID: telegraphID,
+                alpha: 0.5
+            }
+        };
+        var deathRay = {
+            id: nextFreeNumericId("rect"),
+            class: "projectileHitbox",
+            x: 0,
+            y: y,
+            width: canvasWidth,
+            height: height,
+            color: getColorCounter(),
+            animation: "static",
+            xVel: 0,
+            yVel: 0,
+            meta: {
+                damage: damage,
+                projectileID: projectileID
+            }
+        };
+        animData.rects.push(telegraph);
+        setTimeout(function () {
+            animData.rects.push(deathRay);
+            var telegraphs = getProjectilePartsById(telegraphID);
+            if (!telegraphs)
+                throw new Error("Telegraph not found after creation.");
+            var telegraph = telegraphs[0];
+            animData.rects = animData.rects.filter(function (a) { return a != telegraph; });
         }, 750);
     }
     function normalizeVector(x, y, targetMagnitude) {
@@ -738,6 +833,8 @@ var Infernum;
     var regenCounter = 0;
     var gameOver = false;
     var gameOverTime = 0;
+    var colorCounter = 0;
+    var intervalCounters = {};
     // Expose variables to the global scope for debugging
     window.animData = animData;
     window.debug = debug;
@@ -1337,12 +1434,19 @@ var Infernum;
         }
     }
     function startAttacks() {
+        var player = getRectById("player");
+        if (!player)
+            throw new Error("Player not found. Something has gone horribly wrong.");
         if (fighting >= 0 && attackIndex <= 0) {
             attackIndex++;
             for (var i = 0; i < 10; i++) {
                 lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(false, 140, 120), 180, 80, "0");
                 lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(false, 140, 120), 0, 80, "1");
             }
+            lightSword(player.x + 200, player.y, 90, 80, "2");
+            lightSword(player.x - 200, player.y, 270, 80, "3");
+            lightSword(player.x, player.y - 200, 0, 80, "0");
+            lightSword(player.x, player.y + 200, 180, 80, "1");
         }
         if (fighting >= 60 && attackIndex <= 1) {
             attackIndex++;
@@ -1350,6 +1454,10 @@ var Infernum;
                 lightSword((canvasWidth - 20) / 11 * i + 10, fairSpawnY(false, 140, 120), 180, 80, "0");
                 lightSword((canvasWidth - 20) / 11 * i + 10, fairSpawnY(false, 140, 120), 0, 80, "1");
             }
+            lightSword(player.x + 200, player.y, 90, 80, "2");
+            lightSword(player.x - 200, player.y, 270, 80, "3");
+            lightSword(player.x, player.y - 200, 0, 80, "0");
+            lightSword(player.x, player.y + 200, 180, 80, "1");
         }
         if (fighting >= 120 && attackIndex <= 2) {
             attackIndex++;
@@ -1357,6 +1465,10 @@ var Infernum;
                 lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(true, 140, 120), 180, 80, "0");
                 lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(true, 140, 120), 0, 80, "1");
             }
+            lightSword(player.x + 200, player.y, 90, 80, "2");
+            lightSword(player.x - 200, player.y, 270, 80, "3");
+            lightSword(player.x, player.y - 200, 0, 80, "0");
+            lightSword(player.x, player.y + 200, 180, 80, "1");
         }
         if (fighting >= 180 && attackIndex <= 3) {
             attackIndex++;
@@ -1364,6 +1476,10 @@ var Infernum;
                 lightSword((canvasWidth - 20) / 11 * i + 10, fairSpawnY(true, 140, 120), 180, 80, "0");
                 lightSword((canvasWidth - 20) / 11 * i + 10, fairSpawnY(true, 140, 120), 0, 80, "1");
             }
+            lightSword(player.x + 200, player.y, 90, 80, "2");
+            lightSword(player.x - 200, player.y, 270, 80, "3");
+            lightSword(player.x, player.y - 200, 0, 80, "0");
+            lightSword(player.x, player.y + 200, 180, 80, "1");
         }
         if (fighting >= 240 && attackIndex <= 4) {
             attackIndex++;
@@ -1371,6 +1487,10 @@ var Infernum;
                 lightSword(fairSpawnX(false, 140, 120), (canvasHeight - 60) / 5 * i + 30, 90, 80, "2");
                 lightSword(fairSpawnX(false, 140, 120), (canvasHeight - 60) / 5 * i + 30, 270, 80, "3");
             }
+            lightSword(player.x + 200, player.y, 90, 80, "2");
+            lightSword(player.x - 200, player.y, 270, 80, "3");
+            lightSword(player.x, player.y - 200, 0, 80, "0");
+            lightSword(player.x, player.y + 200, 180, 80, "1");
         }
         if (fighting >= 300 && attackIndex <= 5) {
             attackIndex++;
@@ -1378,6 +1498,10 @@ var Infernum;
                 lightSword(fairSpawnX(false, 140, 120), (canvasHeight - 20) / 6 * i + 30, 90, 80, "2");
                 lightSword(fairSpawnX(false, 140, 120), (canvasHeight - 20) / 6 * i + 30, 270, 80, "3");
             }
+            lightSword(player.x + 200, player.y, 90, 80, "2");
+            lightSword(player.x - 200, player.y, 270, 80, "3");
+            lightSword(player.x, player.y - 200, 0, 80, "0");
+            lightSword(player.x, player.y + 200, 180, 80, "1");
         }
         if (fighting >= 360 && attackIndex <= 6) {
             attackIndex++;
@@ -1385,6 +1509,10 @@ var Infernum;
                 lightSword(fairSpawnX(true, 140, 120), (canvasHeight - 60) / 5 * i + 30, 90, 80, "2");
                 lightSword(fairSpawnX(true, 140, 120), (canvasHeight - 60) / 5 * i + 30, 270, 80, "3");
             }
+            lightSword(player.x + 200, player.y, 90, 80, "2");
+            lightSword(player.x - 200, player.y, 270, 80, "3");
+            lightSword(player.x, player.y - 200, 0, 80, "0");
+            lightSword(player.x, player.y + 200, 180, 80, "1");
         }
         if (fighting >= 420 && attackIndex <= 7) {
             attackIndex++;
@@ -1392,6 +1520,10 @@ var Infernum;
                 lightSword(fairSpawnX(true, 140, 120), (canvasHeight - 20) / 6 * i + 30, 90, 80, "2");
                 lightSword(fairSpawnX(true, 140, 120), (canvasHeight - 20) / 6 * i + 30, 270, 80, "3");
             }
+            lightSword(player.x + 200, player.y, 90, 80, "2");
+            lightSword(player.x - 200, player.y, 270, 80, "3");
+            lightSword(player.x, player.y - 200, 0, 80, "0");
+            lightSword(player.x, player.y + 200, 180, 80, "1");
         }
         if (fighting >= 480 && attackIndex <= 8) {
             attackIndex++;
@@ -1415,9 +1547,6 @@ var Infernum;
         }
         if (fighting >= 720 && attackIndex <= 12) {
             attackIndex++;
-            var player = getRectById("player");
-            if (!player)
-                throw new Error("Player not found. Something has gone horribly wrong.");
             animData.circles.push({
                 id: nextFreeNumericId("circle"),
                 class: "projectileTelegraph",
@@ -1441,6 +1570,50 @@ var Infernum;
             var y_1 = player.y + player.height / 2;
             setTimeout(function () { radialBurst(x_1, y_1, 16, 50, 4); }, 750);
         }
+        if (fighting >= 840 && attackIndex <= 13) {
+            attackIndex++;
+            animData.circles.push({
+                id: nextFreeNumericId("circle"),
+                class: "projectileTelegraph",
+                x: player.x,
+                y: player.y,
+                radius: 30,
+                color: "white",
+                lineColor: "white",
+                lineWidth: 0,
+                length: 1,
+                xVel: 0,
+                yVel: 0,
+                animation: "static",
+                meta: {
+                    projectileID: "4",
+                    age: 0,
+                    alpha: 0.5
+                }
+            });
+            var x_2 = player.x + player.width / 2;
+            var y_2 = player.y + player.height / 2;
+            setTimeout(function () { radialBurst(x_2, y_2, 16, 50, 4); }, 750);
+        }
+        if (fighting >= 960 && attackIndex <= 14) {
+            attackIndex++;
+            verticalDeathRay(-10, canvasWidth / 5 + 20, 100, "5");
+            intervalCounters["ic1"] = 0;
+            intervalCounters["id1"] = setInterval(function () {
+                intervalCounters["ic1"]++;
+                verticalDeathRay(canvasWidth * intervalCounters["ic1"] / 5 - 10, canvasWidth / 5 + 20, 100, "5");
+            }, 500);
+        }
+        if (fighting >= 1140 && attackIndex <= 15) {
+            attackIndex++;
+            horizontalDeathRay(-20, canvasHeight / 2 + 40, 100, "5");
+        }
+        if (fighting >= 1200 && attackIndex <= 16) {
+            attackIndex++;
+            horizontalDeathRay(canvasHeight / 2 - 20, canvasHeight / 2 + 40, 100, "5");
+        }
+        if (intervalCounters["ic1"] == 4)
+            clearInterval(intervalCounters["id1"]);
     }
     function progressAttacks(delta) {
         var projectiles = (getCirclesByClass("projectileHitbox") || [])
@@ -1496,6 +1669,11 @@ var Infernum;
                     case "4":
                         // @ts-expect-error: we will always be removing from the correct array for the shape of the projectile
                         if (projectile.meta.age > 45)
+                            animData[(shapeOf(projectile) + "s")] = animData[(shapeOf(projectile) + "s")].filter(function (i) { return i != projectile; });
+                        break;
+                    case "5":
+                        // @ts-expect-error: we will always be removing from the correct array for the shape of the projectile
+                        if (projectile.meta.age > 15)
                             animData[(shapeOf(projectile) + "s")] = animData[(shapeOf(projectile) + "s")].filter(function (i) { return i != projectile; });
                 }
             });
