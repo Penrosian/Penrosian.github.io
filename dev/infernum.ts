@@ -491,6 +491,64 @@ namespace Infernum {
         }, 750);
     }
 
+    function theSun(x: number, y: number, damage: number, projectileID: any) {
+        const spawnTelegraphID = nextFreeNumericId("projectile");
+        const spawnTelegraph: Circle = {
+            id: nextFreeNumericId("circle"),
+            class: "projecitleTelegraph",
+            x: x,
+            y: y,
+            radius: 30,
+            color: "white",
+            animation: "static",
+            xVel: 0,
+            yVel: 0,
+            length: 1,
+            lineColor: "white",
+            lineWidth: 0,
+            meta: {
+                projectileID: spawnTelegraphID,
+                alpha: 0.5
+            }
+        };
+        const sunID = nextFreeNumericId("circle");
+        const sun: Circle = {
+            id: sunID,
+            class: "projectileHitbox",
+            x: x,
+            y: y,
+            radius: 0,
+            color: "orange",
+            animation: "static",
+            xVel: 0,
+            yVel: 0,
+            length: 1,
+            lineColor: "white",
+            lineWidth: 0,
+            meta: {
+                projectileID: projectileID,
+                damage: damage
+            }
+        };
+        animData.circles.push(spawnTelegraph);
+        setTimeout(() => {
+            animData.circles.push(sun);
+            const sun2 = getCircleById(sunID);
+            if (!sun2) throw new Error("Sun not found after creation.");
+            const spawnTelegraphs = getProjectilePartsById(spawnTelegraphID);
+            if (!spawnTelegraphs) throw new Error("Telegraph not found after creation.");
+            const spawnTelegraph = spawnTelegraphs[0];
+            animData.circles.filter(a => a != spawnTelegraph);
+            intervalCounters["icSunSpawn"] = 0;
+            intervalCounters["idSunSpawn"] = setInterval(() => {
+                intervalCounters["icSunSpawn"]++;
+                sun2.radius = map(intervalCounters["icSunSpawn"], 0, 1000, 0, 30);
+                if (intervalCounters["icSunSpawn"] >= 1000) clearInterval(intervalCounters["idSunSpawn"]);
+            }, 1);
+            // Deathrays Here
+        }, 1000);
+    }
+
 
     function normalizeVector(x: number, y: number, targetMagnitude: number) {
         const magnitude = Math.sqrt(x * x + y * y);
