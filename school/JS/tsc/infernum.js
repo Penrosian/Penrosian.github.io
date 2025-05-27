@@ -475,6 +475,66 @@ var Infernum;
             animData.rects = animData.rects.filter(function (a) { return a != telegraph; });
         }, 750);
     }
+    function theSun(x, y, damage, projectileID) {
+        var spawnTelegraphID = nextFreeNumericId("projectile");
+        var spawnTelegraph = {
+            id: nextFreeNumericId("circle"),
+            class: "projecitleTelegraph",
+            x: x,
+            y: y,
+            radius: 30,
+            color: "white",
+            animation: "static",
+            xVel: 0,
+            yVel: 0,
+            length: 1,
+            lineColor: "white",
+            lineWidth: 0,
+            meta: {
+                projectileID: spawnTelegraphID,
+                alpha: 0.5
+            }
+        };
+        var sunID = nextFreeNumericId("circle");
+        var sun = {
+            id: sunID,
+            class: "projectileHitbox",
+            x: x,
+            y: y,
+            radius: 0,
+            color: "orange",
+            animation: "static",
+            xVel: 0,
+            yVel: 0,
+            length: 1,
+            lineColor: "white",
+            lineWidth: 0,
+            meta: {
+                projectileID: projectileID,
+                damage: damage
+            }
+        };
+        animData.circles.push(spawnTelegraph);
+        setTimeout(function () {
+            animData.circles.push(sun);
+            var sun2 = getCircleById(sunID);
+            if (!sun2)
+                throw new Error("Sun not found after creation.");
+            var spawnTelegraphs = getProjectilePartsById(spawnTelegraphID);
+            if (!spawnTelegraphs)
+                throw new Error("Telegraph not found after creation.");
+            var spawnTelegraph = spawnTelegraphs[0];
+            animData.circles.filter(function (a) { return a != spawnTelegraph; });
+            intervalCounters["icSunSpawn"] = 0;
+            intervalCounters["idSunSpawn"] = setInterval(function () {
+                intervalCounters["icSunSpawn"]++;
+                sun2.radius = map(intervalCounters["icSunSpawn"], 0, 1000, 0, 30);
+                if (intervalCounters["icSunSpawn"] >= 1000)
+                    clearInterval(intervalCounters["idSunSpawn"]);
+            }, 1);
+            // Deathrays Here
+        }, 1000);
+    }
     function normalizeVector(x, y, targetMagnitude) {
         var magnitude = Math.sqrt(x * x + y * y);
         if (magnitude == 0)
