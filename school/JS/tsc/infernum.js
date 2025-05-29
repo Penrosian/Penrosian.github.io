@@ -84,11 +84,14 @@ var Infernum;
         };
     }
     function rotatedSquare(square) {
+        if (!square.meta.rotationCenter) {
+            square.meta.rotationCenter = { x: square.x + square.width / 2, y: square.y + square.height / 2 };
+        }
         return {
-            topLeft: evalPoints(square.x + square.width / 2, square.y + square.height / 2, square.x, square.y, square.meta.rotation || 0),
-            topRight: evalPoints(square.x + square.width / 2, square.y + square.height / 2, square.x + square.width, square.y, square.meta.rotation || 0),
-            bottomLeft: evalPoints(square.x + square.width / 2, square.y + square.height / 2, square.x, square.y + square.height, square.meta.rotation || 0),
-            bottomRight: evalPoints(square.x + square.width / 2, square.y + square.height / 2, square.x + square.width, square.y + square.height, square.meta.rotation || 0)
+            topLeft: evalPoints(square.meta.rotationCenter.x, square.meta.rotationCenter.y, square.x, square.y, (square.meta.rotation || 0) * Math.PI / 180),
+            topRight: evalPoints(square.meta.rotationCenter.x, square.meta.rotationCenter.y, square.x + square.width, square.y, (square.meta.rotation || 0) * Math.PI / 180),
+            bottomLeft: evalPoints(square.meta.rotationCenter.x, square.meta.rotationCenter.y, square.x, square.y + square.height, (square.meta.rotation || 0) * Math.PI / 180),
+            bottomRight: evalPoints(square.meta.rotationCenter.x, square.meta.rotationCenter.y, square.x + square.width, square.y + square.height, (square.meta.rotation || 0) * Math.PI / 180)
         };
     }
     function sat(polygonA, polygonB) {
@@ -153,7 +156,23 @@ var Infernum;
         return true;
     }
     function detectRectangleCollision(rect1, rect2) {
-        if (rect1.meta["rotation"] || 0 == 0 && rect2.meta["rotation"] || 0 == 0) {
+        if ((rect1.meta.rotation || 0) == 0 && (rect2.meta.rotation || 0) == 0) {
+            if (hitboxes) {
+                ctx.strokeStyle = "blue";
+                ctx.strokeWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(rect1.x, rect1.y);
+                ctx.lineTo(rect1.x + rect1.width, rect1.y);
+                ctx.lineTo(rect1.x + rect1.width, rect1.y + rect1.height);
+                ctx.lineTo(rect1.x, rect1.y + rect1.height);
+                ctx.lineTo(rect1.x, rect1.y);
+                ctx.moveTo(rect2.x, rect2.y);
+                ctx.lineTo(rect2.x + rect2.width, rect2.y);
+                ctx.lineTo(rect2.x + rect2.width, rect2.y + rect2.height);
+                ctx.lineTo(rect2.x, rect2.y + rect2.height);
+                ctx.lineTo(rect2.x, rect2.y);
+                ctx.stroke();
+            }
             // Seperate axis theorem doesn't work for non-rotated rectangles
             if (rect1.x + rect1.width < rect2.x || rect1.x > rect2.x + rect2.width ||
                 rect1.y + rect1.height < rect2.y || rect1.y > rect2.y + rect2.height)
@@ -266,7 +285,7 @@ var Infernum;
     function lightSword(x, y, rotation, damage, projectileID) {
         var sword = {
             id: nextFreeNumericId("advancedPolygon"),
-            class: "projectileHitbox",
+            class: "projectile",
             vertexes: [
                 { x: x, y: y }, // Up-Right
                 { x: x + 2.5, y: y + 2.5 }, // Base / Down-right
@@ -293,7 +312,6 @@ var Infernum;
             lineColor: "lightGray",
             lineWidth: 1,
             meta: {
-                damage: damage,
                 rotation: rotation,
                 projectileID: projectileID
             }
@@ -316,8 +334,27 @@ var Infernum;
                 rotationCenter: { x: sword.center.x, y: sword.center.y }
             }
         };
+        var hitbox = {
+            id: nextFreeNumericId("rect"),
+            class: "projectileHitbox",
+            x: x - 2.5,
+            y: y,
+            width: 5,
+            height: 40,
+            color: "white",
+            animation: "exitKill",
+            xVel: 0,
+            yVel: 0,
+            meta: {
+                damage: damage,
+                projectileID: projectileID,
+                rotation: rotation,
+                alpha: 0,
+                rotationCenter: { x: sword.center.x, y: sword.center.y }
+            }
+        };
         animData.advancedPolygons.push(sword);
-        animData.rects.push(telegraph);
+        animData.rects.push(telegraph, hitbox);
     }
     function execution() {
         var player = getRectById("player");
@@ -1841,23 +1878,23 @@ var Infernum;
         }
         if (fighting >= 480 && attackIndex <= 8) {
             attackIndex++;
-            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(false, 200, 180), 8, 50, 0);
-            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(true, 200, 180), 8, 50, 0);
+            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(false, 200, 180), 16, 50, 0);
+            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(true, 200, 180), 16, 50, 0);
         }
         if (fighting >= 540 && attackIndex <= 9) {
             attackIndex++;
-            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(false, 200, 180), 8, 50, 0);
-            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(true, 200, 180), 8, 50, 0);
+            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(false, 200, 180), 16, 50, 0);
+            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(true, 200, 180), 16, 50, 0);
         }
         if (fighting >= 600 && attackIndex <= 10) {
             attackIndex++;
-            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(false, 200, 180), 12, 50, 0);
-            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(false, 200, 180), 12, 50, 0);
+            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(false, 200, 180), 24, 50, 0);
+            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(false, 200, 180), 24, 50, 0);
         }
         if (fighting >= 660 && attackIndex <= 11) {
             attackIndex++;
-            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(true, 200, 180), 12, 50, 0);
-            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(true, 200, 180), 12, 50, 0);
+            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(true, 200, 180), 24, 50, 0);
+            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(true, 200, 180), 24, 50, 0);
         }
         if (fighting >= 720 && attackIndex <= 12) {
             attackIndex++;
@@ -1882,7 +1919,10 @@ var Infernum;
             });
             var x_1 = player.x + player.width / 2;
             var y_1 = player.y + player.height / 2;
-            setTimeout(function () { radialBurst(x_1, y_1, 24, 50, 4); }, 750);
+            setTimeout(function () {
+                radialBurst(x_1, y_1, 36, 50, 0);
+                radialBurst(-(x_1 - canvasWidth / 2) + canvasWidth / 2, -(y_1 - canvasHeight / 2) + canvasHeight / 2, 36, 50, 5);
+            }, 750);
         }
         if (fighting >= 840 && attackIndex <= 13) {
             attackIndex++;
@@ -1907,7 +1947,10 @@ var Infernum;
             });
             var x_2 = player.x + player.width / 2;
             var y_2 = player.y + player.height / 2;
-            setTimeout(function () { radialBurst(x_2, y_2, 16, 50, 4); }, 750);
+            setTimeout(function () {
+                radialBurst(x_2, y_2, 36, 50, 0);
+                radialBurst(-(x_2 - canvasWidth / 2) + canvasWidth / 2, -(y_2 - canvasHeight / 2) + canvasHeight / 2, 36, 50, 5);
+            }, 750);
         }
         if (fighting >= 960 && attackIndex <= 14) {
             attackIndex++;
@@ -1959,8 +2002,8 @@ var Infernum;
                 var telegraph = telegraphs[0];
                 animData.rects = animData.rects.filter(function (a) { return a != telegraph; });
                 verticalDeathRay(canvasWidth / 2, canvasWidth / 2, 100, "5");
-                radialBurst(canvasWidth / 4, canvasHeight / 4, 6, 60, 0);
-                radialBurst(canvasWidth / 4, canvasHeight * 3 / 4, 6, 60, 0);
+                radialBurst(canvasWidth / 4, canvasHeight / 4, 16, 60, 0);
+                radialBurst(canvasWidth / 4, canvasHeight * 3 / 4, 16, 60, 0);
             }, 500);
         }
         if (fighting >= 1950 && attackIndex <= 19) {
@@ -1990,25 +2033,25 @@ var Infernum;
                 var telegraph = telegraphs[0];
                 animData.rects = animData.rects.filter(function (a) { return a != telegraph; });
                 verticalDeathRay(0, canvasWidth / 2, 100, "5");
-                radialBurst(canvasWidth * 3 / 4, canvasHeight / 4, 6, 60, 0);
-                radialBurst(canvasWidth * 3 / 4, canvasHeight * 3 / 4, 6, 60, 0);
+                radialBurst(canvasWidth * 3 / 4, canvasHeight / 4, 16, 60, 0);
+                radialBurst(canvasWidth * 3 / 4, canvasHeight * 3 / 4, 16, 60, 0);
             }, 500);
         }
         if (fighting >= 2040 && attackIndex <= 20) {
             attackIndex++;
-            darkBomb(canvasWidth, 0, { x: -1, y: 1 }, 16, 5);
+            darkBomb(canvasWidth, 0, { x: -1, y: 1 }, 32, 5);
         }
         if (fighting >= 2160 && attackIndex <= 21) {
             attackIndex++;
-            radialBurst(canvasWidth / 2, canvasHeight / 2, 24, 80, 0);
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 80, 0);
         }
         if (fighting >= 2220 && attackIndex <= 22) {
             attackIndex++;
-            radialBurst(canvasWidth / 2, canvasHeight / 2, 16, 90, 0);
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 24, 90, 0);
         }
         if (fighting >= 2280 && attackIndex <= 23) {
             attackIndex++;
-            radialBurst(canvasWidth / 2, canvasHeight / 2, 12, 100, 0);
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 20, 100, 0);
         }
         if (fighting >= 2340 && attackIndex <= 24) {
             attackIndex++;
@@ -2023,10 +2066,13 @@ var Infernum;
     function progressAttacks(delta) {
         var projectiles = (getCirclesByClass("projectileHitbox") || [])
             .concat(getCirclesByClass("projectileTelegraph") || [])
+            .concat(getCirclesByClass("projectile") || [])
             .concat(getRectsByClass("projectileHitbox") || [])
             .concat(getRectsByClass("projectileTelegraph") || [])
+            .concat(getRectsByClass("projectile") || [])
             .concat(getAdvancedPolygonsByClass("projectileHitbox") || [])
-            .concat(getAdvancedPolygonsByClass("projectileTelegraph") || []);
+            .concat(getAdvancedPolygonsByClass("projectileTelegraph") || [])
+            .concat(getAdvancedPolygonsByClass("projectile") || []);
         if (projectiles.length > 0) {
             projectiles.forEach(function (projectile) {
                 if (projectile.meta.age == undefined)
