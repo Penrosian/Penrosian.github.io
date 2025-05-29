@@ -384,7 +384,8 @@ var Infernum;
             }
         }, 750);
     }
-    function verticalDeathRay(x, width, damage, projectileID) {
+    function verticalDeathRay(x, width, damage, projectileID, color) {
+        if (color === void 0) { color = getColorCounter(); }
         var ground = getRectById("ground");
         if (!ground)
             throw new Error("Ground not found. Something has gone horribly wrong.");
@@ -412,7 +413,7 @@ var Infernum;
             y: 0,
             width: width,
             height: canvasHeight - ground.height,
-            color: getColorCounter(),
+            color: color,
             animation: "static",
             xVel: 0,
             yVel: 0,
@@ -431,7 +432,8 @@ var Infernum;
             animData.rects = animData.rects.filter(function (a) { return a != telegraph; });
         }, 750);
     }
-    function horizontalDeathRay(y, height, damage, projectileID) {
+    function horizontalDeathRay(y, height, damage, projectileID, color) {
+        if (color === void 0) { color = getColorCounter(); }
         var telegraphID = nextFreeNumericId("projectile");
         var telegraph = {
             id: nextFreeNumericId("rect"),
@@ -456,7 +458,7 @@ var Infernum;
             y: y,
             width: canvasWidth,
             height: height,
-            color: getColorCounter(),
+            color: color,
             animation: "static",
             xVel: 0,
             yVel: 0,
@@ -482,7 +484,7 @@ var Infernum;
             class: "projecitleTelegraph",
             x: x,
             y: y,
-            radius: 30,
+            radius: 120,
             color: "white",
             animation: "static",
             xVel: 0,
@@ -524,16 +526,201 @@ var Infernum;
             if (!spawnTelegraphs)
                 throw new Error("Telegraph not found after creation.");
             var spawnTelegraph = spawnTelegraphs[0];
-            animData.circles.filter(function (a) { return a != spawnTelegraph; });
+            animData.circles = animData.circles.filter(function (a) { return a != spawnTelegraph; });
             intervalCounters["icSunSpawn"] = 0;
             intervalCounters["idSunSpawn"] = setInterval(function () {
                 intervalCounters["icSunSpawn"]++;
-                sun2.radius = map(intervalCounters["icSunSpawn"], 0, 1000, 0, 30);
-                if (intervalCounters["icSunSpawn"] >= 1000)
+                sun2.radius = map(intervalCounters["icSunSpawn"], 0, 250, 0, 120);
+                if (intervalCounters["icSunSpawn"] >= 250)
                     clearInterval(intervalCounters["idSunSpawn"]);
             }, 1);
-            // Deathrays Here
+            intervalCounters["icSunRay"] = 0;
+            intervalCounters["idSunRay"] = setInterval(function () {
+                intervalCounters["icSunRay"]++;
+                if (intervalCounters["icSunRay"] % 2 == 0)
+                    verticalDeathRay(sun2.x - 60, 120, 100, "5", "#FFE135");
+                else
+                    horizontalDeathRay(sun2.y - 60, 120, 100, "5", "#FFE135");
+                radialBurst(sun2.x, sun2.y, 24, 100, intervalCounters["icSunRay"] * 3.75);
+                setTimeout(function () { radialBurst(sun2.x, sun2.y, 24, 100, intervalCounters["icSunRay"] * 3.75); }, 100);
+                setTimeout(function () { radialBurst(sun2.x, sun2.y, 24, 100, intervalCounters["icSunRay"] * 3.75); }, 200);
+                if (intervalCounters["icSunRay"] >= 4) {
+                    clearInterval(intervalCounters["idSunRay"]);
+                    var deathTelegraphID_1 = nextFreeNumericId("projectile");
+                    setTimeout(function () {
+                        intervalCounters["icSunDeath"] = 0;
+                        intervalCounters["idSunDeath"] = setInterval(function () {
+                            intervalCounters["icSunDeath"]++;
+                            if (intervalCounters["icSunDeath"] == 1) {
+                                var deathTelegraph = {
+                                    id: nextFreeNumericId("circle"),
+                                    class: "projectileTelegraph",
+                                    x: sun2.x,
+                                    y: sun2.y,
+                                    radius: 480,
+                                    color: "white",
+                                    animation: "static",
+                                    xVel: 0,
+                                    yVel: 0,
+                                    length: 1,
+                                    lineColor: "white",
+                                    lineWidth: 0,
+                                    meta: {
+                                        projectileID: deathTelegraphID_1,
+                                        alpha: 0.5
+                                    }
+                                };
+                                animData.circles.push(deathTelegraph);
+                            }
+                            else if (intervalCounters["icSunDeath"] == 250) {
+                                var deathTelegraphs = getProjectilePartsById(deathTelegraphID_1);
+                                if (!deathTelegraphs)
+                                    throw new Error("Death telegraph not found after creation.");
+                                var deathTelegraph_1 = deathTelegraphs[0];
+                                animData.circles = animData.circles.filter(function (a) { return a != deathTelegraph_1; });
+                            }
+                            else if (intervalCounters["icSunDeath"] >= 250 && intervalCounters["icSunDeath"] < 500)
+                                sun2.radius = map(intervalCounters["icSunDeath"], 250, 499, 120, 480);
+                            else if (intervalCounters["icSunDeath"] >= 500 && intervalCounters["icSunDeath"] < 750)
+                                sun2.radius = map(intervalCounters["icSunDeath"], 500, 749, 480, 0);
+                            else if (intervalCounters["icSunDeath"] >= 750) {
+                                clearInterval(intervalCounters["idSunDeath"]);
+                                animData.circles = animData.circles.filter(function (a) { return a != sun2; });
+                            }
+                        }, 1);
+                    }, 1000);
+                }
+            }, 1000);
         }, 1000);
+    }
+    function darkBomb(x, y, vector, count, fcount) {
+        var telegraphID = nextFreeNumericId("projectile");
+        var telegraph = {
+            id: nextFreeNumericId("rect"),
+            class: "projectileTelegraph",
+            x: x - 60,
+            y: y - 60,
+            width: 120,
+            height: 1500,
+            animation: "static",
+            xVel: 0,
+            yVel: 0,
+            color: "white",
+            meta: {
+                rotationCenter: { x: x, y: y },
+                alpha: 0.5,
+                rotation: Math.atan(vector.x / -vector.y) * 180 / Math.PI,
+                projectileID: telegraphID
+            }
+        };
+        vector = normalizeVector(vector.x, vector.y, 20);
+        var blackHole = {
+            id: nextFreeNumericId("circle"),
+            class: "projectileHitbox",
+            x: x,
+            y: y,
+            radius: 60,
+            length: 1,
+            animation: "custom",
+            xVel: vector.x,
+            yVel: vector.y,
+            color: "black",
+            lineColor: "white",
+            lineWidth: 5,
+            meta: {
+                damage: 100,
+                projectileID: "darkBomb"
+            }
+        };
+        animData.rects.push(telegraph);
+        setTimeout(function () {
+            animData.circles.push(blackHole);
+            var telegraphs = getProjectilePartsById(telegraphID);
+            if (!telegraphs)
+                throw new Error("Telegraph not found after creation.");
+            var telegraph = telegraphs[0];
+            animData.rects = animData.rects.filter(function (a) { return a != telegraph; });
+            intervalCounters["idDarkBomb"] = setInterval(function () {
+                var darkBomb = getCircleById(blackHole.id);
+                if (!darkBomb) {
+                    console.log("boom");
+                    console.log(intervalCounters["exDarkBomb"]);
+                    clearInterval(intervalCounters["idDarkBomb"]);
+                    for (var i = 0; i < fcount; i++) {
+                        setTimeout(function () {
+                            console.log("radial burst");
+                            radialBurst(intervalCounters["exDarkBomb"].x, intervalCounters["exDarkBomb"].y, count, 100, 0);
+                        }, i * 100);
+                    }
+                    var explosionID = nextFreeNumericId("projectile");
+                    var explosion_1 = {
+                        id: nextFreeNumericId("circle"),
+                        class: "projectileHitbox",
+                        x: intervalCounters["exDarkBomb"].x,
+                        y: intervalCounters["exDarkBomb"].y,
+                        radius: 0,
+                        length: 1,
+                        animation: "static",
+                        xVel: 0,
+                        yVel: 0,
+                        color: "purple",
+                        lineColor: "white",
+                        lineWidth: 0,
+                        meta: {
+                            damage: 100,
+                            projectileID: explosionID
+                        }
+                    };
+                    animData.circles.push(explosion_1);
+                    intervalCounters["icDarkExplosion"] = 0;
+                    intervalCounters["idDarkExplosion"] = setInterval(function () {
+                        intervalCounters["icDarkExplosion"]++;
+                        if (intervalCounters["icDarkExplosion"] < 125)
+                            explosion_1.radius = map(intervalCounters["icDarkExplosion"], 0, 124, 0, 120);
+                        else if (intervalCounters["icDarkExplosion"] < 250)
+                            explosion_1.radius = map(intervalCounters["icDarkExplosion"], 125, 249, 120, 0);
+                        else if (intervalCounters["icDarkExplosion"] >= 250) {
+                            clearInterval(intervalCounters["idDarkExplosion"]);
+                            animData.circles = animData.circles.filter(function (a) { return a != explosion_1; });
+                        }
+                    }, 2);
+                }
+            }, 1);
+        }, 500);
+    }
+    function flashbang() {
+        var flashbangID = nextFreeNumericId("rect");
+        animData.rects.push({
+            id: flashbangID,
+            class: "flashbang",
+            x: 0,
+            y: 0,
+            width: canvasWidth,
+            height: canvasHeight,
+            color: "black",
+            animation: "static",
+            xVel: 0,
+            yVel: 0,
+            meta: {
+                noDraw: true,
+                postDraw: true,
+                alpha: 1
+            }
+        });
+        intervalCounters["icFlashbang"] = 0;
+        intervalCounters["idFlashbang"] = setInterval(function () {
+            intervalCounters["icFlashbang"]++;
+            var flashbang = getRectById(flashbangID);
+            if (!flashbang) {
+                throw new Error("Flashbang not found after creation.");
+            }
+            if (intervalCounters["icFlashbang"] < 500)
+                flashbang.meta["alpha"] = map(intervalCounters["icFlashbang"], 0, 500, 1, 0.5);
+            else {
+                clearInterval(intervalCounters["idFlashbang"]);
+                animData.rects = animData.rects.filter(function (a) { return a.id != flashbangID; });
+            }
+        }, 4);
     }
     function normalizeVector(x, y, targetMagnitude) {
         var magnitude = Math.sqrt(x * x + y * y);
@@ -1090,6 +1277,7 @@ var Infernum;
             return;
         }
         fillPage("black");
+        var postDraws = [];
         var _loop_1 = function (i) {
             var rect = animData.rects[i];
             ctx.save();
@@ -1103,6 +1291,8 @@ var Infernum;
             ctx.globalAlpha = rect.meta["alpha"] != undefined ? rect.meta["alpha"] : 1;
             if (!rect.meta["noDraw"])
                 fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
+            if (rect.meta["postDraw"])
+                postDraws.push(rect);
             ctx.restore();
             // Different animation styles move in different ways
             if (rect.animation != "static") {
@@ -1166,6 +1356,8 @@ var Infernum;
             ctx.globalAlpha = circle.meta["alpha"] != undefined ? circle.meta["alpha"] : 1;
             if (!circle.meta["noDraw"])
                 fillCircle(circle.x, circle.y, circle.radius, circle.color, circle.lineColor, circle.lineWidth, circle.length);
+            if (circle.meta["postDraw"])
+                postDraws.push(circle);
             ctx.restore();
             // Different animation styles move in different ways
             if (circle.animation == "bounce") {
@@ -1220,6 +1412,8 @@ var Infernum;
             ctx.globalAlpha = polygon.meta["alpha"] != undefined ? polygon.meta["alpha"] : 1;
             if (!polygon.meta["noDraw"])
                 fillPolygon(polygon.vertexes, polygon.color, polygon.lineColor, polygon.lineWidth);
+            if (polygon.meta["postDraw"])
+                postDraws.push(polygon);
             ctx.restore();
             // Different animation styles move in different ways
             if (polygon.animation == "bounce") {
@@ -1268,6 +1462,44 @@ var Infernum;
         for (var i = 0; i < animData.advancedPolygons.length; i++) {
             _loop_3(i);
         }
+        postDraws.forEach(function (shape) {
+            ctx.save();
+            if (shapeOf(shape) == "rect") {
+                var rect = shape;
+                if (rect.meta["rotation"] != undefined) {
+                    var translateX = rect.meta["rotationCenter"] ? rect.meta["rotationCenter"].x : rect.x + rect.width / 2;
+                    var translateY = rect.meta["rotationCenter"] ? rect.meta["rotationCenter"].y : rect.y + rect.height / 2;
+                    ctx.translate(translateX, translateY);
+                    ctx.rotate(rect.meta["rotation"] * Math.PI / 180);
+                    ctx.translate(-translateX, -translateY);
+                }
+                ctx.globalAlpha = rect.meta["alpha"] != undefined ? rect.meta["alpha"] : 1;
+                fillRect(rect.x, rect.y, rect.width, rect.height, rect.color);
+            }
+            else if (shapeOf(shape) == "circle") {
+                var circle = shape;
+                if (circle.meta["rotation"] != undefined) {
+                    var translateX = circle.meta["rotationCenter"] ? circle.meta["rotationCenter"].x : circle.x;
+                    var translateY = circle.meta["rotationCenter"] ? circle.meta["rotationCenter"].y : circle.y;
+                    ctx.translate(translateX, translateY);
+                    ctx.rotate(circle.meta["rotation"] * Math.PI / 180);
+                    ctx.translate(-translateX, -translateY);
+                }
+                ctx.globalAlpha = circle.meta["alpha"] != undefined ? circle.meta["alpha"] : 1;
+                fillCircle(circle.x, circle.y, circle.radius, circle.color, circle.lineColor, circle.lineWidth, circle.length);
+            }
+            else if (shapeOf(shape) == "advancedPolygon") {
+                var polygon = shape;
+                if (polygon.meta["rotation"] != undefined) {
+                    ctx.translate(polygon.center.x, polygon.center.y);
+                    ctx.rotate(polygon.meta["rotation"] * Math.PI / 180);
+                    ctx.translate(-polygon.center.x, -polygon.center.y);
+                }
+                ctx.globalAlpha = polygon.meta["alpha"] != undefined ? polygon.meta["alpha"] : 1;
+                fillPolygon(polygon.vertexes, polygon.color, polygon.lineColor, polygon.lineWidth);
+            }
+            ctx.restore();
+        });
         // Custom/Advanced animation rules
         var player = getRectById("player");
         if (!player)
@@ -1505,8 +1737,8 @@ var Infernum;
             }
             lightSword(player.x + 200, player.y, 90, 80, "2");
             lightSword(player.x - 200, player.y, 270, 80, "3");
-            lightSword(player.x, player.y - 200, 0, 80, "0");
-            lightSword(player.x, player.y + 200, 180, 80, "1");
+            lightSword(player.x, player.y - 200, 0, 80, "1");
+            lightSword(player.x, player.y + 200, 180, 80, "0");
         }
         if (fighting >= 60 && attackIndex <= 1) {
             attackIndex++;
@@ -1516,8 +1748,8 @@ var Infernum;
             }
             lightSword(player.x + 200, player.y, 90, 80, "2");
             lightSword(player.x - 200, player.y, 270, 80, "3");
-            lightSword(player.x, player.y - 200, 0, 80, "0");
-            lightSword(player.x, player.y + 200, 180, 80, "1");
+            lightSword(player.x, player.y - 200, 0, 80, "1");
+            lightSword(player.x, player.y + 200, 180, 80, "0");
         }
         if (fighting >= 120 && attackIndex <= 2) {
             attackIndex++;
@@ -1527,8 +1759,8 @@ var Infernum;
             }
             lightSword(player.x + 200, player.y, 90, 80, "2");
             lightSword(player.x - 200, player.y, 270, 80, "3");
-            lightSword(player.x, player.y - 200, 0, 80, "0");
-            lightSword(player.x, player.y + 200, 180, 80, "1");
+            lightSword(player.x, player.y - 200, 0, 80, "1");
+            lightSword(player.x, player.y + 200, 180, 80, "0");
         }
         if (fighting >= 180 && attackIndex <= 3) {
             attackIndex++;
@@ -1538,8 +1770,8 @@ var Infernum;
             }
             lightSword(player.x + 200, player.y, 90, 80, "2");
             lightSword(player.x - 200, player.y, 270, 80, "3");
-            lightSword(player.x, player.y - 200, 0, 80, "0");
-            lightSword(player.x, player.y + 200, 180, 80, "1");
+            lightSword(player.x, player.y - 200, 0, 80, "1");
+            lightSword(player.x, player.y + 200, 180, 80, "0");
         }
         if (fighting >= 240 && attackIndex <= 4) {
             attackIndex++;
@@ -1549,8 +1781,8 @@ var Infernum;
             }
             lightSword(player.x + 200, player.y, 90, 80, "2");
             lightSword(player.x - 200, player.y, 270, 80, "3");
-            lightSword(player.x, player.y - 200, 0, 80, "0");
-            lightSword(player.x, player.y + 200, 180, 80, "1");
+            lightSword(player.x, player.y - 200, 0, 80, "1");
+            lightSword(player.x, player.y + 200, 180, 80, "0");
         }
         if (fighting >= 300 && attackIndex <= 5) {
             attackIndex++;
@@ -1560,8 +1792,8 @@ var Infernum;
             }
             lightSword(player.x + 200, player.y, 90, 80, "2");
             lightSword(player.x - 200, player.y, 270, 80, "3");
-            lightSword(player.x, player.y - 200, 0, 80, "0");
-            lightSword(player.x, player.y + 200, 180, 80, "1");
+            lightSword(player.x, player.y - 200, 0, 80, "1");
+            lightSword(player.x, player.y + 200, 180, 80, "0");
         }
         if (fighting >= 360 && attackIndex <= 6) {
             attackIndex++;
@@ -1571,8 +1803,8 @@ var Infernum;
             }
             lightSword(player.x + 200, player.y, 90, 80, "2");
             lightSword(player.x - 200, player.y, 270, 80, "3");
-            lightSword(player.x, player.y - 200, 0, 80, "0");
-            lightSword(player.x, player.y + 200, 180, 80, "1");
+            lightSword(player.x, player.y - 200, 0, 80, "1");
+            lightSword(player.x, player.y + 200, 180, 80, "0");
         }
         if (fighting >= 420 && attackIndex <= 7) {
             attackIndex++;
@@ -1582,28 +1814,28 @@ var Infernum;
             }
             lightSword(player.x + 200, player.y, 90, 80, "2");
             lightSword(player.x - 200, player.y, 270, 80, "3");
-            lightSword(player.x, player.y - 200, 0, 80, "0");
-            lightSword(player.x, player.y + 200, 180, 80, "1");
+            lightSword(player.x, player.y - 200, 0, 80, "1");
+            lightSword(player.x, player.y + 200, 180, 80, "0");
         }
         if (fighting >= 480 && attackIndex <= 8) {
             attackIndex++;
-            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(false, 200, 180), 6, 50, 0);
-            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(true, 200, 180), 6, 50, 0);
+            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(false, 200, 180), 8, 50, 0);
+            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(true, 200, 180), 8, 50, 0);
         }
         if (fighting >= 540 && attackIndex <= 9) {
             attackIndex++;
-            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(false, 200, 180), 6, 50, 0);
-            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(true, 200, 180), 6, 50, 0);
+            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(false, 200, 180), 8, 50, 0);
+            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(true, 200, 180), 8, 50, 0);
         }
         if (fighting >= 600 && attackIndex <= 10) {
             attackIndex++;
-            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(false, 200, 180), 8, 50, 0);
-            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(false, 200, 180), 8, 50, 0);
+            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(false, 200, 180), 12, 50, 0);
+            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(false, 200, 180), 12, 50, 0);
         }
         if (fighting >= 660 && attackIndex <= 11) {
             attackIndex++;
-            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(true, 200, 180), 8, 50, 0);
-            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(true, 200, 180), 8, 50, 0);
+            radialBurst(fairSpawnX(false, 200, 180), fairSpawnY(true, 200, 180), 12, 50, 0);
+            radialBurst(fairSpawnX(true, 200, 180), fairSpawnY(true, 200, 180), 12, 50, 0);
         }
         if (fighting >= 720 && attackIndex <= 12) {
             attackIndex++;
@@ -1628,7 +1860,7 @@ var Infernum;
             });
             var x_1 = player.x + player.width / 2;
             var y_1 = player.y + player.height / 2;
-            setTimeout(function () { radialBurst(x_1, y_1, 16, 50, 4); }, 750);
+            setTimeout(function () { radialBurst(x_1, y_1, 24, 50, 4); }, 750);
         }
         if (fighting >= 840 && attackIndex <= 13) {
             attackIndex++;
@@ -1662,18 +1894,109 @@ var Infernum;
             intervalCounters["id1"] = setInterval(function () {
                 intervalCounters["ic1"]++;
                 verticalDeathRay(canvasWidth * intervalCounters["ic1"] / 5 - 10, canvasWidth / 5 + 20, 100, "5");
-            }, 500);
+                if (intervalCounters["ic1"] == 4)
+                    clearInterval(intervalCounters["id1"]);
+            }, 750);
         }
-        if (fighting >= 1140 && attackIndex <= 15) {
+        if (fighting >= 1200 && attackIndex <= 15) {
             attackIndex++;
             horizontalDeathRay(-20, canvasHeight / 2 + 40, 100, "5");
         }
-        if (fighting >= 1200 && attackIndex <= 16) {
+        if (fighting >= 1260 && attackIndex <= 16) {
             attackIndex++;
             horizontalDeathRay(canvasHeight / 2 - 20, canvasHeight / 2 + 40, 100, "5");
         }
-        if (intervalCounters["ic1"] == 4)
-            clearInterval(intervalCounters["id1"]);
+        if (fighting >= 1320 && attackIndex <= 17) {
+            attackIndex++;
+            theSun(canvasWidth / 2, canvasHeight / 2, 100, nextFreeNumericId("projectile"));
+        }
+        if (fighting >= 1860 && attackIndex <= 18) {
+            attackIndex++;
+            var telegraphID_1 = nextFreeNumericId("projectile");
+            var telegraph = {
+                id: nextFreeNumericId("rect"),
+                class: "projectileTelegraph",
+                x: canvasWidth / 2,
+                y: 0,
+                width: canvasWidth / 2,
+                height: canvasHeight,
+                color: "white",
+                animation: "static",
+                xVel: 0,
+                yVel: 0,
+                meta: {
+                    projectileID: telegraphID_1,
+                    alpha: 0.5
+                }
+            };
+            animData.rects.push(telegraph);
+            setTimeout(function () {
+                var telegraphs = getProjectilePartsById(telegraphID_1);
+                if (!telegraphs)
+                    throw new Error("Telegraph not found after creation.");
+                var telegraph = telegraphs[0];
+                animData.rects = animData.rects.filter(function (a) { return a != telegraph; });
+                verticalDeathRay(canvasWidth / 2, canvasWidth / 2, 100, "5");
+                radialBurst(canvasWidth / 4, canvasHeight / 4, 6, 60, 0);
+                radialBurst(canvasWidth / 4, canvasHeight * 3 / 4, 6, 60, 0);
+            }, 500);
+        }
+        if (fighting >= 1950 && attackIndex <= 19) {
+            attackIndex++;
+            var telegraphID_2 = nextFreeNumericId("projectile");
+            var telegraph = {
+                id: nextFreeNumericId("rect"),
+                class: "projectileTelegraph",
+                x: 0,
+                y: 0,
+                width: canvasWidth / 2,
+                height: canvasHeight,
+                color: "white",
+                animation: "static",
+                xVel: 0,
+                yVel: 0,
+                meta: {
+                    projectileID: telegraphID_2,
+                    alpha: 0.5
+                }
+            };
+            animData.rects.push(telegraph);
+            setTimeout(function () {
+                var telegraphs = getProjectilePartsById(telegraphID_2);
+                if (!telegraphs)
+                    throw new Error("Telegraph not found after creation.");
+                var telegraph = telegraphs[0];
+                animData.rects = animData.rects.filter(function (a) { return a != telegraph; });
+                verticalDeathRay(0, canvasWidth / 2, 100, "5");
+                radialBurst(canvasWidth * 3 / 4, canvasHeight / 4, 6, 60, 0);
+                radialBurst(canvasWidth * 3 / 4, canvasHeight * 3 / 4, 6, 60, 0);
+            }, 500);
+        }
+        if (fighting >= 2040 && attackIndex <= 20) {
+            attackIndex++;
+            darkBomb(canvasWidth, 0, { x: -1, y: 1 }, 16, 5);
+        }
+        if (fighting >= 2160 && attackIndex <= 21) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 24, 80, 0);
+        }
+        if (fighting >= 2220 && attackIndex <= 22) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 16, 90, 0);
+        }
+        if (fighting >= 2280 && attackIndex <= 23) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 12, 100, 0);
+        }
+        if (fighting >= 2340 && attackIndex <= 24) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 30, 50, 0);
+        }
+        if (fighting >= 2420 && attackIndex <= 25) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 24, 60, 0);
+            setTimeout(function () { flashbang(); }, 250);
+        }
     }
     function progressAttacks(delta) {
         var projectiles = (getCirclesByClass("projectileHitbox") || [])
@@ -1735,6 +2058,20 @@ var Infernum;
                         // @ts-expect-error: we will always be removing from the correct array for the shape of the projectile
                         if (projectile.meta.age > 15)
                             animData[(shapeOf(projectile) + "s")] = animData[(shapeOf(projectile) + "s")].filter(function (i) { return i != projectile; });
+                        break;
+                    case "darkBomb":
+                        var ground = getRectById("ground");
+                        if (!ground)
+                            throw new Error("Ground not found. Something has gone horribly wrong.");
+                        if (!(shapeOf(projectile) == "circle"))
+                            throw new Error("This projectile type is for the dark bomb only.");
+                        // @ts-expect-error: it will always be a circle
+                        if (detectCollision(projectile, ground) || projectile.x > canvasWidth || projectile.x < 0 || projectile.y > canvasHeight || projectile.y < 0)
+                            if (projectile.meta.age > 15) {
+                                // @ts-expect-error: will always be a circle
+                                intervalCounters["exDarkBomb"] = { x: map(projectile.x, 0, canvasWidth, 20, canvasWidth - 20), y: map(projectile.y, 0, canvasHeight, 20, canvasHeight - 20) };
+                                animData.circles = animData.circles.filter(function (i) { return i != projectile; });
+                            }
                 }
             });
         }
