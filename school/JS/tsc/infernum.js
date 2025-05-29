@@ -102,10 +102,26 @@ var Infernum;
         for (var i = 0; i < polygonA.edge.length; i++) {
             perpindicularLine = { x: -polygonA.edge[i].y, y: polygonA.edge[i].x };
             perpindicularStack.push(perpindicularLine);
+            if (hitboxes) {
+                ctx.strokeStyle = "red";
+                ctx.strokeWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(polygonA.vertex[i].x, polygonA.vertex[i].y);
+                ctx.lineTo(polygonA.vertex[i].x + polygonA.edge[i].x, polygonA.vertex[i].y + polygonA.edge[i].y);
+                ctx.stroke();
+            }
         }
         for (var i = 0; i < polygonB.edge.length; i++) {
             perpindicularLine = { x: -polygonB.edge[i].y, y: polygonB.edge[i].x };
             perpindicularStack.push(perpindicularLine);
+            if (hitboxes) {
+                ctx.strokeStyle = "red";
+                ctx.strokeWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(polygonB.vertex[i].x, polygonB.vertex[i].y);
+                ctx.lineTo(polygonB.vertex[i].x + polygonB.edge[i].x, polygonB.vertex[i].y + polygonB.edge[i].y);
+                ctx.stroke();
+            }
         }
         for (var i = 0; i < perpindicularStack.length; i++) {
             amin = null;
@@ -208,7 +224,7 @@ var Infernum;
         var rectPolygon = { vertex: rectPoints, edge: rectEdges };
         var rotatedVertexes = [];
         polygon.vertexes.forEach(function (vertex) {
-            var rotatedVertex = evalPoints(polygon.center.x, polygon.center.y, vertex.x, vertex.y, polygon.meta.rotation || 0);
+            var rotatedVertex = evalPoints(polygon.center.x, polygon.center.y, vertex.x, vertex.y, (polygon.meta.rotation || 0) * Math.PI / 180);
             rotatedVertexes.push(rotatedVertex);
         });
         return sat({ vertex: rotatedVertexes, edge: vertexesToEdges(rotatedVertexes) }, rectPolygon);
@@ -216,12 +232,12 @@ var Infernum;
     function detectPolygonCollision(polygon1, polygon2) {
         var rotatedVertexes1 = [];
         polygon1.vertexes.forEach(function (vertex) {
-            var rotatedVertex = evalPoints(polygon1.center.x, polygon1.center.y, vertex.x, vertex.y, polygon1.meta.rotation || 0);
+            var rotatedVertex = evalPoints(polygon1.center.x, polygon1.center.y, vertex.x, vertex.y, (polygon1.meta.rotation || 0) * Math.PI / 180);
             rotatedVertexes1.push(rotatedVertex);
         });
         var rotatedVertexes2 = [];
         polygon2.vertexes.forEach(function (vertex) {
-            var rotatedVertex = evalPoints(polygon2.center.x, polygon2.center.y, vertex.x, vertex.y, polygon2.meta.rotation || 0);
+            var rotatedVertex = evalPoints(polygon2.center.x, polygon2.center.y, vertex.x, vertex.y, (polygon2.meta.rotation || 0) * Math.PI / 180);
             rotatedVertexes2.push(rotatedVertex);
         });
         var polygon1Edges = vertexesToEdges(rotatedVertexes1);
@@ -715,7 +731,7 @@ var Infernum;
                 throw new Error("Flashbang not found after creation.");
             }
             if (intervalCounters["icFlashbang"] < 500)
-                flashbang.meta["alpha"] = map(intervalCounters["icFlashbang"], 0, 500, 1, 0.5);
+                flashbang.meta["alpha"] = map(intervalCounters["icFlashbang"], 0, 300, 1, 0.5);
             else {
                 clearInterval(intervalCounters["idFlashbang"]);
                 animData.rects = animData.rects.filter(function (a) { return a.id != flashbangID; });
@@ -1082,6 +1098,7 @@ var Infernum;
     var gameOverTime = 0;
     var colorCounter = 0;
     var intervalCounters = {};
+    var hitboxes = false;
     // Expose variables to the global scope for debugging
     window.animData = animData;
     window.debug = debug;
@@ -1593,6 +1610,11 @@ var Infernum;
         if (multiPressed(["KeyS", "KeyT", "KeyA"]) && debug) {
             pressed = pressed.filter(function (a) { return ![-1, "KeyS", "KeyT", "KeyA"].includes(a); });
             fighting = -330;
+        }
+        if (multiPressed(["KeyH", "KeyI", "KeyT"]) && debug) {
+            pressed = pressed.filter(function (a) { return ![-1, "KeyH", "KeyI", "KeyT"].includes(a); });
+            hitboxes = !hitboxes;
+            alert("Hitboxes: " + hitboxes);
         }
         element = document.getElementById("swapBind");
         if (element)

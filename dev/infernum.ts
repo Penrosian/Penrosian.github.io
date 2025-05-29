@@ -129,10 +129,26 @@ namespace Infernum {
         for (let i = 0; i < polygonA.edge.length; i++) {
             perpindicularLine = { x: -polygonA.edge[i].y, y: polygonA.edge[i].x };
             perpindicularStack.push(perpindicularLine);
+            if (hitboxes) {
+                ctx.strokeStyle = "red";
+                ctx.strokeWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(polygonA.vertex[i].x, polygonA.vertex[i].y);
+                ctx.lineTo(polygonA.vertex[i].x + polygonA.edge[i].x, polygonA.vertex[i].y + polygonA.edge[i].y);
+                ctx.stroke();
+            }
         }
         for (let i = 0; i < polygonB.edge.length; i++) {
             perpindicularLine = { x: -polygonB.edge[i].y, y: polygonB.edge[i].x };
             perpindicularStack.push(perpindicularLine);
+            if (hitboxes) {
+                ctx.strokeStyle = "red";
+                ctx.strokeWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(polygonB.vertex[i].x, polygonB.vertex[i].y);
+                ctx.lineTo(polygonB.vertex[i].x + polygonB.edge[i].x, polygonB.vertex[i].y + polygonB.edge[i].y);
+                ctx.stroke();
+            }
         }
         for (let i = 0; i < perpindicularStack.length; i++) {
             amin = null;
@@ -230,7 +246,7 @@ namespace Infernum {
         const rectPolygon = { vertex: rectPoints, edge: rectEdges };
         let rotatedVertexes: { x: number, y: number; }[] = [];
         polygon.vertexes.forEach(vertex => {
-            const rotatedVertex = evalPoints(polygon.center.x, polygon.center.y, vertex.x, vertex.y, polygon.meta.rotation || 0);
+            const rotatedVertex = evalPoints(polygon.center.x, polygon.center.y, vertex.x, vertex.y, (polygon.meta.rotation || 0) * Math.PI / 180);
             rotatedVertexes.push(rotatedVertex);
         });
         return sat({ vertex: rotatedVertexes, edge: vertexesToEdges(rotatedVertexes) }, rectPolygon);
@@ -239,12 +255,12 @@ namespace Infernum {
     function detectPolygonCollision(polygon1: AdvancedPolygon, polygon2: AdvancedPolygon) {
         const rotatedVertexes1: { x: number, y: number; }[] = [];
         polygon1.vertexes.forEach(vertex => {
-            const rotatedVertex = evalPoints(polygon1.center.x, polygon1.center.y, vertex.x, vertex.y, polygon1.meta.rotation || 0);
+            const rotatedVertex = evalPoints(polygon1.center.x, polygon1.center.y, vertex.x, vertex.y, (polygon1.meta.rotation || 0) * Math.PI / 180);
             rotatedVertexes1.push(rotatedVertex);
         });
         const rotatedVertexes2: { x: number, y: number; }[] = [];
         polygon2.vertexes.forEach(vertex => {
-            const rotatedVertex = evalPoints(polygon2.center.x, polygon2.center.y, vertex.x, vertex.y, polygon2.meta.rotation || 0);
+            const rotatedVertex = evalPoints(polygon2.center.x, polygon2.center.y, vertex.x, vertex.y, (polygon2.meta.rotation || 0) * Math.PI / 180);
             rotatedVertexes2.push(rotatedVertex);
         });
         const polygon1Edges = vertexesToEdges(rotatedVertexes1);
@@ -717,7 +733,7 @@ namespace Infernum {
             intervalCounters["icFlashbang"]++;
             const flashbang = getRectById(flashbangID);
             if (!flashbang) { throw new Error("Flashbang not found after creation."); }
-            if (intervalCounters["icFlashbang"] < 500) flashbang.meta["alpha"] = map(intervalCounters["icFlashbang"], 0, 500, 1, 0.5);
+            if (intervalCounters["icFlashbang"] < 500) flashbang.meta["alpha"] = map(intervalCounters["icFlashbang"], 0, 300, 1, 0.5);
             else {
                 clearInterval(intervalCounters["idFlashbang"]);
                 animData.rects = animData.rects.filter(a => a.id != flashbangID);
@@ -1158,6 +1174,7 @@ namespace Infernum {
     let gameOverTime = 0;
     let colorCounter = 0;
     let intervalCounters: { [key: string]: any; } = {};
+    let hitboxes = false;
 
     // Expose variables to the global scope for debugging
     (window as any).animData = animData;
@@ -1620,6 +1637,12 @@ namespace Infernum {
         if (multiPressed(["KeyS", "KeyT", "KeyA"]) && debug) {
             pressed = pressed.filter(a => ![-1, "KeyS", "KeyT", "KeyA"].includes(a));
             fighting = -330;
+        }
+
+        if (multiPressed(["KeyH", "KeyI", "KeyT"]) && debug) {
+            pressed = pressed.filter(a => ![-1, "KeyH", "KeyI", "KeyT"].includes(a));
+            hitboxes = !hitboxes;
+            alert("Hitboxes: " + hitboxes);
         }
 
         element = document.getElementById("swapBind");
