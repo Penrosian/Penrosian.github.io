@@ -57,8 +57,10 @@ var Infernum;
     }
     function getColorCounter() {
         var colors = ["red", "green", "blue", "yellow", "purple", "orange", "pink", "cyan"];
-        var color = colors[colorCounter % colors.length];
+        var color = colors[colorCounter];
         colorCounter++;
+        if (colorCounter >= colors.length)
+            colorCounter = 0;
         return color;
     }
     function vertexesToEdges(vertexes) {
@@ -365,7 +367,9 @@ var Infernum;
             lightSword(i * (canvasWidth / 40), player.y - 60, 0, 10000, "1");
         }
     }
-    function lightBall(x, y, radius, damage, projectileID) {
+    function lightBall(x, y, radius, damage, projectileID, xVel, yVel) {
+        if (xVel === void 0) { xVel = 0; }
+        if (yVel === void 0) { yVel = 0; }
         var ball = {
             id: nextFreeNumericId("circle"),
             class: "projectileHitbox",
@@ -374,8 +378,8 @@ var Infernum;
             radius: radius,
             length: 1,
             animation: "exitKill",
-            xVel: 0,
-            yVel: 0,
+            xVel: xVel,
+            yVel: yVel,
             color: "#FFE135",
             lineColor: "lightGray",
             lineWidth: 1,
@@ -392,7 +396,7 @@ var Infernum;
         var angleStep = 360 / count;
         var telegraphID = nextFreeNumericId("projectile");
         for (var i = 0; i < count; i++) {
-            var angle = i * angleStep + rotation - 90; // Telegraph angles were offset by 90 degrees and I don't know why
+            var angle = i * angleStep + rotation - 90; // Telegraph angles were offset by 90 degrees and I don't know why, but this fixes it
             var telegraphX = x;
             var telegraphY = y;
             var telegraph = {
@@ -425,15 +429,7 @@ var Infernum;
                 var vector = { x: Math.cos(angle * Math.PI / 180) * 20, y: Math.sin(angle * Math.PI / 180) * 20 };
                 var xVel = vector.x;
                 var yVel = vector.y;
-                lightBall(x, y, 5, damage, projectileID);
-                var balls = getProjectilePartsById(projectileID);
-                if (!balls)
-                    throw new Error("Projectile not found after creation.");
-                var ball = balls[0];
-                if (ball) {
-                    ball.xVel = xVel;
-                    ball.yVel = yVel;
-                }
+                lightBall(x, y, 5, damage, projectileID, xVel, yVel);
             }
         }, 750);
     }
@@ -696,12 +692,9 @@ var Infernum;
             intervalCounters["idDarkBomb"] = setInterval(function () {
                 var darkBomb = getCircleById(blackHole.id);
                 if (!darkBomb) {
-                    console.log("boom");
-                    console.log(intervalCounters["exDarkBomb"]);
                     clearInterval(intervalCounters["idDarkBomb"]);
                     for (var i = 0; i < fcount; i++) {
                         setTimeout(function () {
-                            console.log("radial burst");
                             radialBurst(intervalCounters["exDarkBomb"].x, intervalCounters["exDarkBomb"].y, count, 100, 0);
                         }, i * 100);
                     }
@@ -775,6 +768,20 @@ var Infernum;
             }
         }, 4);
     }
+    function aroundTheWorld(duration) {
+        var _loop_1 = function (i) {
+            setTimeout(function () {
+                var angleMod = map(i, 0, 29, 0, 90);
+                lightBall(canvasWidth / 2, canvasHeight / 2, 5, 50, nextFreeNumericId("projectile"), Math.cos(angleMod * Math.PI / 180), Math.sin(angleMod * Math.PI / 180));
+                lightBall(canvasWidth / 2, canvasHeight / 2, 5, 50, nextFreeNumericId("projectile"), Math.cos((angleMod + 90) * Math.PI / 180), Math.sin((angleMod + 90) * Math.PI / 180));
+                lightBall(canvasWidth / 2, canvasHeight / 2, 5, 50, nextFreeNumericId("projectile"), Math.cos((angleMod + 180) * Math.PI / 180), Math.sin((angleMod + 180) * Math.PI / 180));
+                lightBall(canvasWidth / 2, canvasHeight / 2, 5, 50, nextFreeNumericId("projectile"), Math.cos((angleMod + 270) * Math.PI / 180), Math.sin((angleMod + 270) * Math.PI / 180));
+            }, i * 100);
+        };
+        for (var i = 0; i < Math.floor(duration / 3); i++) {
+            _loop_1(i);
+        }
+    }
     function normalizeVector(x, y, targetMagnitude) {
         var magnitude = Math.sqrt(x * x + y * y);
         if (magnitude == 0)
@@ -840,7 +847,6 @@ var Infernum;
         "circles": [],
         "advancedPolygons": []
     };
-    // Stars were cluterring the animData object, so they are here instead now
     var stars = [{
             "id": "star1",
             "class": "star",
@@ -1101,7 +1107,6 @@ var Infernum;
             "yVel": 0,
             "meta": {}
         }];
-    stars.forEach(function (star) { return animData.rects.push(star); });
     var binds = {
         left: "KeyA",
         right: "KeyD",
@@ -1182,6 +1187,7 @@ var Infernum;
     window.isAdvancedPolygon = isAdvancedPolygon;
     window.shapeOf = shapeOf;
     window.fillPolygon = fillPolygon;
+    window.getColorCounter = getColorCounter;
     function getCircleById(id) {
         var returns = false;
         animData.circles.forEach(function (circle) { if (circle.id == id)
@@ -1293,6 +1299,8 @@ var Infernum;
         framerate = 1000 / (delta * (50 / 3));
         if (fighting > 0)
             gameStatus = "Survive";
+        if (fighting > -1140)
+            stars.forEach(function (star) { animData.rects.push(star); });
         if (gameOver) {
             gameOverTime += delta;
             var player_1 = getRectById("player");
@@ -1332,7 +1340,7 @@ var Infernum;
         }
         fillPage("black");
         var postDraws = [];
-        var _loop_1 = function (i) {
+        var _loop_2 = function (i) {
             var rect = animData.rects[i];
             ctx.save();
             if (rect.meta["rotation"] != undefined) {
@@ -1395,9 +1403,9 @@ var Infernum;
             }
         };
         for (var i = 0; i < animData.rects.length; i++) {
-            _loop_1(i);
+            _loop_2(i);
         }
-        var _loop_2 = function (i) {
+        var _loop_3 = function (i) {
             var circle = animData.circles[i];
             ctx.save();
             if (circle.meta["rotation"] != undefined) {
@@ -1453,9 +1461,9 @@ var Infernum;
         };
         // Rectangles and circles are stored/drawn seperately
         for (var i = 0; i < animData.circles.length; i++) {
-            _loop_2(i);
+            _loop_3(i);
         }
-        var _loop_3 = function (i) {
+        var _loop_4 = function (i) {
             var polygon = animData.advancedPolygons[i];
             ctx.save();
             if (polygon.meta["rotation"] != undefined) {
@@ -1514,7 +1522,7 @@ var Infernum;
         };
         // They are called advanced polygons for a reason
         for (var i = 0; i < animData.advancedPolygons.length; i++) {
-            _loop_3(i);
+            _loop_4(i);
         }
         postDraws.forEach(function (shape) {
             ctx.save();
@@ -1788,9 +1796,9 @@ var Infernum;
         var player = getRectById("player");
         if (!player)
             throw new Error("Player not found. Something has gone horribly wrong.");
-        if (fighting >= 0 && attackIndex <= 0) {
+        /* if (fighting >= 0 && attackIndex <= 0) {
             attackIndex++;
-            for (var i = 0; i < 10; i++) {
+            for (let i = 0; i < 10; i++) {
                 lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(false, 140, 120), 180, 80, "0");
                 lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(false, 140, 120), 0, 80, "1");
             }
@@ -1798,7 +1806,7 @@ var Infernum;
             lightSword(player.x - 200, player.y, 270, 80, "3");
             lightSword(player.x, player.y - 200, 0, 80, "1");
             lightSword(player.x, player.y + 200, 180, 80, "0");
-        }
+        } */
         if (fighting >= 60 && attackIndex <= 1) {
             attackIndex++;
             for (var i = 0; i < 11; i++) {
@@ -1955,10 +1963,12 @@ var Infernum;
         if (fighting >= 960 && attackIndex <= 14) {
             attackIndex++;
             verticalDeathRay(-10, canvasWidth / 5 + 20, 100, "5");
+            radialBurst(canvasWidth / 10, canvasHeight / 2, 16, 60, 0);
             intervalCounters["ic1"] = 0;
             intervalCounters["id1"] = setInterval(function () {
                 intervalCounters["ic1"]++;
                 verticalDeathRay(canvasWidth * intervalCounters["ic1"] / 5 - 10, canvasWidth / 5 + 20, 100, "5");
+                radialBurst(canvasWidth * intervalCounters["ic1"] / 5 + canvasWidth / 10, canvasHeight / 2, 16, 60, 0);
                 if (intervalCounters["ic1"] == 4)
                     clearInterval(intervalCounters["id1"]);
             }, 750);
@@ -2043,24 +2053,74 @@ var Infernum;
         }
         if (fighting >= 2160 && attackIndex <= 21) {
             attackIndex++;
-            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 80, 0);
+            radialBurst(canvasWidth / 4, canvasHeight / 2, 32, 80, 0);
+            radialBurst(canvasWidth * 3 / 4, canvasHeight / 2, 32, 80, 0);
         }
         if (fighting >= 2220 && attackIndex <= 22) {
             attackIndex++;
-            radialBurst(canvasWidth / 2, canvasHeight / 2, 24, 90, 0);
+            radialBurst(canvasWidth / 4, canvasHeight / 2, 24, 90, 0);
+            radialBurst(canvasWidth * 3 / 4, canvasHeight / 2, 24, 90, 0);
         }
         if (fighting >= 2280 && attackIndex <= 23) {
             attackIndex++;
-            radialBurst(canvasWidth / 2, canvasHeight / 2, 20, 100, 0);
+            radialBurst(canvasWidth / 4, canvasHeight / 2, 20, 100, 0);
+            radialBurst(canvasWidth * 3 / 4, canvasHeight / 2, 20, 100, 0);
         }
         if (fighting >= 2340 && attackIndex <= 24) {
             attackIndex++;
-            radialBurst(canvasWidth / 2, canvasHeight / 2, 30, 50, 0);
+            radialBurst(canvasWidth / 4, canvasHeight / 2, 30, 50, 0);
+            radialBurst(canvasWidth * 3 / 4, canvasHeight / 2, 30, 50, 0);
         }
         if (fighting >= 2420 && attackIndex <= 25) {
             attackIndex++;
             radialBurst(canvasWidth / 2, canvasHeight / 2, 24, 60, 0);
-            setTimeout(function () { flashbang(); }, 250);
+            setTimeout(function () { return flashbang(); }, 250);
+        }
+        if (fighting >= 2500 && attackIndex <= 26) {
+            attackIndex++;
+            darkBomb(0, 0, { x: 1, y: 1 }, 32, 5);
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 80, 0);
+        }
+        if (fighting >= 2690 && attackIndex <= 27) {
+            attackIndex++;
+            horizontalDeathRay(0, canvasHeight / 4, 100, "4");
+            darkBomb(canvasWidth / 2, 0, { x: 0, y: 1 }, 32, 5);
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 16, 60, 0);
+        }
+        if (fighting >= 2780 && attackIndex <= 28) {
+            attackIndex++;
+            horizontalDeathRay(canvasHeight * 3 / 4, canvasHeight / 4, 100, "4");
+            darkBomb(canvasWidth / 2, 0, { x: 0, y: 1 }, 32, 5);
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 24, 60, 0);
+        }
+        if (fighting >= 2870 && attackIndex <= 29) {
+            attackIndex++;
+            theSun(canvasWidth / 2, canvasHeight / 2, 100, nextFreeNumericId("projectile"));
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 80, 0);
+        }
+        if (fighting >= 2930 && attackIndex <= 30) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 90, 5.625);
+        }
+        if (fighting >= 2990 && attackIndex <= 31) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 100, 0);
+        }
+        if (fighting >= 3050 && attackIndex <= 32) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 50, 0);
+        }
+        if (fighting >= 3110 && attackIndex <= 33) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 60, 0);
+        }
+        if (fighting >= 3170 && attackIndex <= 34) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 70, 0);
+        }
+        if (fighting >= 3230 && attackIndex <= 35) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 80, 0);
         }
     }
     function progressAttacks(delta) {
@@ -2134,12 +2194,11 @@ var Infernum;
                         if (!(shapeOf(projectile) == "circle"))
                             throw new Error("This projectile type is for the dark bomb only.");
                         // @ts-expect-error: it will always be a circle
-                        if (detectCollision(projectile, ground) || projectile.x > canvasWidth || projectile.x < 0 || projectile.y > canvasHeight || projectile.y < 0)
-                            if (projectile.meta.age > 15) {
-                                // @ts-expect-error: will always be a circle
-                                intervalCounters["exDarkBomb"] = { x: map(projectile.x, 0, canvasWidth, 20, canvasWidth - 20), y: map(projectile.y, 0, canvasHeight, 20, canvasHeight - 20) };
-                                animData.circles = animData.circles.filter(function (i) { return i != projectile; });
-                            }
+                        if (detectCollision(projectile, ground) || projectile.x > canvasWidth || projectile.x < 0 || projectile.y > canvasHeight || projectile.y < 0) {
+                            // @ts-expect-error: will always be a circle
+                            intervalCounters["exDarkBomb"] = { x: map(projectile.x, 0, canvasWidth, 20, canvasWidth - 20), y: map(projectile.y, 0, canvasHeight, 20, canvasHeight - 20) };
+                            animData.circles = animData.circles.filter(function (i) { return i != projectile; });
+                        }
                 }
             });
         }

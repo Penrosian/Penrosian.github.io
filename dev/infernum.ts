@@ -61,8 +61,9 @@ namespace Infernum {
 
     function getColorCounter() {
         const colors = ["red", "green", "blue", "yellow", "purple", "orange", "pink", "cyan"];
-        const color = colors[colorCounter % colors.length];
+        const color = colors[colorCounter];
         colorCounter++;
+        if (colorCounter >= colors.length) colorCounter = 0;
         return color;
     }
 
@@ -383,7 +384,7 @@ namespace Infernum {
         }
     }
 
-    function lightBall(x: number, y: number, radius: number, damage: number, projectileID: any) {
+    function lightBall(x: number, y: number, radius: number, damage: number, projectileID: any, xVel: number = 0, yVel: number = 0) {
         const ball: Circle = {
             id: nextFreeNumericId("circle"),
             class: "projectileHitbox",
@@ -392,8 +393,8 @@ namespace Infernum {
             radius: radius,
             length: 1,
             animation: "exitKill",
-            xVel: 0,
-            yVel: 0,
+            xVel: xVel,
+            yVel: yVel,
             color: "#FFE135",
             lineColor: "lightGray",
             lineWidth: 1,
@@ -410,7 +411,7 @@ namespace Infernum {
         const angleStep = 360 / count;
         const telegraphID = nextFreeNumericId("projectile");
         for (let i = 0; i < count; i++) {
-            const angle = i * angleStep + rotation - 90; // Telegraph angles were offset by 90 degrees and I don't know why
+            const angle = i * angleStep + rotation - 90; // Telegraph angles were offset by 90 degrees and I don't know why, but this fixes it
             const telegraphX = x;
             const telegraphY = y;
             const telegraph: Rect = {
@@ -442,14 +443,7 @@ namespace Infernum {
                 const vector = { x: Math.cos(angle * Math.PI / 180) * 20, y: Math.sin(angle * Math.PI / 180) * 20 };
                 const xVel = vector.x;
                 const yVel = vector.y;
-                lightBall(x, y, 5, damage, projectileID);
-                let balls = getProjectilePartsById(projectileID);
-                if (!balls) throw new Error("Projectile not found after creation.");
-                const ball = balls[0];
-                if (ball) {
-                    ball.xVel = xVel;
-                    ball.yVel = yVel;
-                }
+                lightBall(x, y, 5, damage, projectileID, xVel, yVel);
             }
         }, 750);
     }
@@ -702,12 +696,9 @@ namespace Infernum {
             intervalCounters["idDarkBomb"] = setInterval(() => {
                 const darkBomb = getCircleById(blackHole.id);
                 if (!darkBomb) {
-                    console.log("boom");
-                    console.log(intervalCounters["exDarkBomb"]);
                     clearInterval(intervalCounters["idDarkBomb"]);
                     for (let i = 0; i < fcount; i++) {
                         setTimeout(() => {
-                            console.log("radial burst");
                             radialBurst(intervalCounters["exDarkBomb"].x, intervalCounters["exDarkBomb"].y, count, 100, 0);
                         }, i * 100);
                     }
@@ -776,6 +767,18 @@ namespace Infernum {
                 animData.rects = animData.rects.filter(a => a.id != flashbangID);
             }
         }, 4);
+    }
+
+    function aroundTheWorld(duration: number) {
+        for (let i = 0; i < Math.floor(duration / 3); i++) {
+            setTimeout(() => {
+                const angleMod = map(i, 0, 29, 0, 90);
+                lightBall(canvasWidth / 2, canvasHeight / 2, 5, 50, nextFreeNumericId("projectile"), Math.cos(angleMod * Math.PI / 180), Math.sin(angleMod * Math.PI / 180));
+                lightBall(canvasWidth / 2, canvasHeight / 2, 5, 50, nextFreeNumericId("projectile"), Math.cos((angleMod + 90) * Math.PI / 180), Math.sin((angleMod + 90) * Math.PI / 180));
+                lightBall(canvasWidth / 2, canvasHeight / 2, 5, 50, nextFreeNumericId("projectile"), Math.cos((angleMod + 180) * Math.PI / 180), Math.sin((angleMod + 180) * Math.PI / 180));
+                lightBall(canvasWidth / 2, canvasHeight / 2, 5, 50, nextFreeNumericId("projectile"), Math.cos((angleMod + 270) * Math.PI / 180), Math.sin((angleMod + 270) * Math.PI / 180));
+            }, i * 100);
+        }
     }
 
     function normalizeVector(x: number, y: number, targetMagnitude: number) {
@@ -914,7 +917,7 @@ namespace Infernum {
         "circles": [],
         "advancedPolygons": []
     };
-    // Stars were cluterring the animData object, so they are here instead now
+
     const stars = [{
         "id": "star1",
         "class": "star",
@@ -1175,7 +1178,6 @@ namespace Infernum {
         "yVel": 0,
         "meta": {}
     }];
-    stars.forEach(star => animData.rects.push((star as Rect)));
 
     let binds: Binds = {
         left: "KeyA",
@@ -1259,6 +1261,7 @@ namespace Infernum {
     (window as any).isAdvancedPolygon = isAdvancedPolygon;
     (window as any).shapeOf = shapeOf;
     (window as any).fillPolygon = fillPolygon;
+    (window as any).getColorCounter = getColorCounter;
 
     function getCircleById(id: any): Circle | false {
         let returns: Circle | false = false;
@@ -1353,6 +1356,7 @@ namespace Infernum {
         lastFrameTime = timestamp;
         framerate = 1000 / (delta * (50 / 3));
         if (fighting > 0) gameStatus = "Survive";
+        if (fighting > -1140) stars.forEach(star => { animData.rects.push(star as Rect); });
 
         if (gameOver) {
             gameOverTime += delta;
@@ -1799,7 +1803,7 @@ namespace Infernum {
     function startAttacks() {
         const player = getRectById("player");
         if (!player) throw new Error("Player not found. Something has gone horribly wrong.");
-        if (fighting >= 0 && attackIndex <= 0) {
+        /* if (fighting >= 0 && attackIndex <= 0) {
             attackIndex++;
             for (let i = 0; i < 10; i++) {
                 lightSword((canvasWidth - 60) / 10 * i + 30, fairSpawnY(false, 140, 120), 180, 80, "0");
@@ -1809,7 +1813,7 @@ namespace Infernum {
             lightSword(player.x - 200, player.y, 270, 80, "3");
             lightSword(player.x, player.y - 200, 0, 80, "1");
             lightSword(player.x, player.y + 200, 180, 80, "0");
-        }
+        } */
         if (fighting >= 60 && attackIndex <= 1) {
             attackIndex++;
             for (let i = 0; i < 11; i++) {
@@ -1966,10 +1970,12 @@ namespace Infernum {
         if (fighting >= 960 && attackIndex <= 14) {
             attackIndex++;
             verticalDeathRay(-10, canvasWidth / 5 + 20, 100, "5");
+            radialBurst(canvasWidth / 10, canvasHeight / 2, 16, 60, 0);
             intervalCounters["ic1"] = 0;
             intervalCounters["id1"] = setInterval(() => {
                 intervalCounters["ic1"]++;
                 verticalDeathRay(canvasWidth * intervalCounters["ic1"] / 5 - 10, canvasWidth / 5 + 20, 100, "5");
+                radialBurst(canvasWidth * intervalCounters["ic1"] / 5 + canvasWidth / 10, canvasHeight / 2, 16, 60, 0);
                 if (intervalCounters["ic1"] == 4) clearInterval(intervalCounters["id1"]);
             }, 750);
         }
@@ -2051,24 +2057,74 @@ namespace Infernum {
         }
         if (fighting >= 2160 && attackIndex <= 21) {
             attackIndex++;
-            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 80, 0);
+            radialBurst(canvasWidth / 4, canvasHeight / 2, 32, 80, 0);
+            radialBurst(canvasWidth * 3 / 4, canvasHeight / 2, 32, 80, 0);
         }
         if (fighting >= 2220 && attackIndex <= 22) {
             attackIndex++;
-            radialBurst(canvasWidth / 2, canvasHeight / 2, 24, 90, 0);
+            radialBurst(canvasWidth / 4, canvasHeight / 2, 24, 90, 0);
+            radialBurst(canvasWidth * 3 / 4, canvasHeight / 2, 24, 90, 0);
         }
         if (fighting >= 2280 && attackIndex <= 23) {
             attackIndex++;
-            radialBurst(canvasWidth / 2, canvasHeight / 2, 20, 100, 0);
+            radialBurst(canvasWidth / 4, canvasHeight / 2, 20, 100, 0);
+            radialBurst(canvasWidth * 3 / 4, canvasHeight / 2, 20, 100, 0);
         }
         if (fighting >= 2340 && attackIndex <= 24) {
             attackIndex++;
-            radialBurst(canvasWidth / 2, canvasHeight / 2, 30, 50, 0);
+            radialBurst(canvasWidth / 4, canvasHeight / 2, 30, 50, 0);
+            radialBurst(canvasWidth * 3 / 4, canvasHeight / 2, 30, 50, 0);
         }
         if (fighting >= 2420 && attackIndex <= 25) {
             attackIndex++;
             radialBurst(canvasWidth / 2, canvasHeight / 2, 24, 60, 0);
-            setTimeout(() => { flashbang(); }, 250);
+            setTimeout(() => flashbang(), 250);
+        }
+        if (fighting >= 2500 && attackIndex <= 26) {
+            attackIndex++;
+            darkBomb(0, 0, { x: 1, y: 1 }, 32, 5);
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 80, 0);
+        }
+        if (fighting >= 2690 && attackIndex <= 27) {
+            attackIndex++;
+            horizontalDeathRay(0, canvasHeight / 4, 100, "4");
+            darkBomb(canvasWidth / 2, 0, { x: 0, y: 1 }, 32, 5);
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 16, 60, 0);
+        }
+        if (fighting >= 2780 && attackIndex <= 28) {
+            attackIndex++;
+            horizontalDeathRay(canvasHeight * 3 / 4, canvasHeight / 4, 100, "4");
+            darkBomb(canvasWidth / 2, 0, { x: 0, y: 1 }, 32, 5);
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 24, 60, 0);
+        }
+        if (fighting >= 2870 && attackIndex <= 29) {
+            attackIndex++;
+            theSun(canvasWidth / 2, canvasHeight / 2, 100, nextFreeNumericId("projectile"));
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 80, 0);
+        }
+        if (fighting >= 2930 && attackIndex <= 30) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 90, 5.625);
+        }
+        if (fighting >= 2990 && attackIndex <= 31) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 100, 0);
+        }
+        if (fighting >= 3050 && attackIndex <= 32) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 50, 0);
+        }
+        if (fighting >= 3110 && attackIndex <= 33) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 60, 0);
+        }
+        if (fighting >= 3170 && attackIndex <= 34) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 70, 0);
+        }
+        if (fighting >= 3230 && attackIndex <= 35) {
+            attackIndex++;
+            radialBurst(canvasWidth / 2, canvasHeight / 2, 32, 80, 0);
         }
     }
 
@@ -2129,7 +2185,7 @@ namespace Infernum {
                         if (!ground) throw new Error("Ground not found. Something has gone horribly wrong.");
                         if (!(shapeOf(projectile) == "circle")) throw new Error("This projectile type is for the dark bomb only.");
                         // @ts-expect-error: it will always be a circle
-                        if (detectCollision(projectile, ground) || projectile.x > canvasWidth || projectile.x < 0 || projectile.y > canvasHeight || projectile.y < 0) if (projectile.meta.age > 15) {
+                        if (detectCollision(projectile, ground) || projectile.x > canvasWidth || projectile.x < 0 || projectile.y > canvasHeight || projectile.y < 0) {
                             // @ts-expect-error: will always be a circle
                             intervalCounters["exDarkBomb"] = { x: map(projectile.x, 0, canvasWidth, 20, canvasWidth - 20), y: map(projectile.y, 0, canvasHeight, 20, canvasHeight - 20) };
                             animData.circles = animData.circles.filter(i => i != projectile);
