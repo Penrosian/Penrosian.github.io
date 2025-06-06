@@ -601,7 +601,7 @@ namespace Infernum {
                 setTimeout(() => { radialBurst(sun2.x, sun2.y, 24, 100, intervalCounter2 * 3.75); }, 100);
                 setTimeout(() => { radialBurst(sun2.x, sun2.y, 24, 100, intervalCounter2 * 3.75); }, 200);
                 if (intervalCounter2 >= 4) {
-                    clearInterval(intervalCounter2);
+                    clearInterval(intervalId2);
                     const deathTelegraphID = nextFreeNumericId("projectile");
                     setTimeout(() => {
                         let intervalCounter3 = 0;
@@ -1348,7 +1348,7 @@ namespace Infernum {
             element = document.getElementById("bgm");
             if (element) {
                 // @ts-expect-error: bgm is an audio element, which has play
-                element.play().then(() => { }, () => alert("Please enable autoplay for this site. This game features music-sync, so precise audio timing is required."));
+                element.play().then(() => { }, () => alert("Please enable autoplay for this site and refresh. This game features music sync, so precise audio timing is required."));
             };
         }
         frame++;

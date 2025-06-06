@@ -594,7 +594,7 @@ var Infernum;
                 setTimeout(function () { radialBurst(sun2.x, sun2.y, 24, 100, intervalCounter2 * 3.75); }, 100);
                 setTimeout(function () { radialBurst(sun2.x, sun2.y, 24, 100, intervalCounter2 * 3.75); }, 200);
                 if (intervalCounter2 >= 4) {
-                    clearInterval(intervalCounter2);
+                    clearInterval(intervalId2);
                     var deathTelegraphID_1 = nextFreeNumericId("projectile");
                     setTimeout(function () {
                         var intervalCounter3 = 0;
@@ -1289,7 +1289,7 @@ var Infernum;
             element = document.getElementById("bgm");
             if (element) {
                 // @ts-expect-error: bgm is an audio element, which has play
-                element.play().then(function () { }, function () { return alert("Please enable autoplay for this site. This game features music-sync, so precise audio timing is required."); });
+                element.play().then(function () { }, function () { return alert("Please enable autoplay for this site and refresh. This game features music sync, so precise audio timing is required."); });
             }
             ;
         }
