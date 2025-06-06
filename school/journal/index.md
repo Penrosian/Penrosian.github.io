@@ -12,5 +12,7 @@
 
 [SELF GRADE THING](grades.md)
 
+[FINAL PROJECT](final.md)
+
 
 [BACK](..)
