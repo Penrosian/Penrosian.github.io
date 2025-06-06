@@ -637,7 +637,7 @@ namespace Infernum {
                             else if (intervalCounter3 >= 250 && intervalCounter3 < 500) sun2.radius = map(intervalCounter3, 250, 499, 120, 480);
                             else if (intervalCounter3 >= 500 && intervalCounter3 < 750) sun2.radius = map(intervalCounter3, 500, 749, 480, 0);
                             else if (intervalCounter3 >= 750) {
-                                clearInterval(intervalCounter3);
+                                clearInterval(intervalId3);
                                 animData.circles = animData.circles.filter(a => a != sun2);
                             }
                         }, 1);
