@@ -1299,7 +1299,7 @@ var Infernum;
         framerate = 1000 / (delta * (50 / 3));
         if (fighting > 0)
             gameStatus = "Survive";
-        if (fighting > -1140)
+        if (fighting > -1140 && !animData.rects.includes(stars[0]))
             stars.forEach(function (star) { animData.rects.push(star); });
         if (gameOver) {
             gameOverTime += delta;
