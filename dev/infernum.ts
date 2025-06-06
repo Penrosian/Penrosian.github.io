@@ -1356,7 +1356,7 @@ namespace Infernum {
         lastFrameTime = timestamp;
         framerate = 1000 / (delta * (50 / 3));
         if (fighting > 0) gameStatus = "Survive";
-        if (fighting > -1140) stars.forEach(star => { animData.rects.push(star as Rect); });
+        if (fighting > -1140 && !animData.rects.includes(stars[0] as Rect)) stars.forEach(star => { animData.rects.push(star as Rect); });
 
         if (gameOver) {
             gameOverTime += delta;
