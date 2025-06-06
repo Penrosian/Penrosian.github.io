@@ -576,31 +576,31 @@ var Infernum;
                 throw new Error("Telegraph not found after creation.");
             var spawnTelegraph = spawnTelegraphs[0];
             animData.circles = animData.circles.filter(function (a) { return a != spawnTelegraph; });
-            intervalCounters["icSunSpawn"] = 0;
-            intervalCounters["idSunSpawn"] = setInterval(function () {
-                intervalCounters["icSunSpawn"]++;
-                sun2.radius = map(intervalCounters["icSunSpawn"], 0, 250, 0, 120);
-                if (intervalCounters["icSunSpawn"] >= 250)
-                    clearInterval(intervalCounters["idSunSpawn"]);
+            var intervalCounter1 = 0;
+            var intervalId1 = setInterval(function () {
+                intervalCounter1++;
+                sun2.radius = map(intervalCounter1, 0, 250, 0, 120);
+                if (intervalCounter1 >= 250)
+                    clearInterval(intervalId1);
             }, 1);
-            intervalCounters["icSunRay"] = 0;
-            intervalCounters["idSunRay"] = setInterval(function () {
-                intervalCounters["icSunRay"]++;
-                if (intervalCounters["icSunRay"] % 2 == 0)
+            var intervalCounter2 = 0;
+            var intervalId2 = setInterval(function () {
+                intervalCounter2++;
+                if (intervalCounter2 % 2 == 0)
                     verticalDeathRay(sun2.x - 60, 120, 100, "5", "#FFE135");
                 else
                     horizontalDeathRay(sun2.y - 60, 120, 100, "5", "#FFE135");
-                radialBurst(sun2.x, sun2.y, 24, 100, intervalCounters["icSunRay"] * 3.75);
-                setTimeout(function () { radialBurst(sun2.x, sun2.y, 24, 100, intervalCounters["icSunRay"] * 3.75); }, 100);
-                setTimeout(function () { radialBurst(sun2.x, sun2.y, 24, 100, intervalCounters["icSunRay"] * 3.75); }, 200);
-                if (intervalCounters["icSunRay"] >= 4) {
-                    clearInterval(intervalCounters["idSunRay"]);
+                radialBurst(sun2.x, sun2.y, 24, 100, intervalCounter2 * 3.75);
+                setTimeout(function () { radialBurst(sun2.x, sun2.y, 24, 100, intervalCounter2 * 3.75); }, 100);
+                setTimeout(function () { radialBurst(sun2.x, sun2.y, 24, 100, intervalCounter2 * 3.75); }, 200);
+                if (intervalCounter2 >= 4) {
+                    clearInterval(intervalCounter2);
                     var deathTelegraphID_1 = nextFreeNumericId("projectile");
                     setTimeout(function () {
-                        intervalCounters["icSunDeath"] = 0;
-                        intervalCounters["idSunDeath"] = setInterval(function () {
-                            intervalCounters["icSunDeath"]++;
-                            if (intervalCounters["icSunDeath"] == 1) {
+                        var intervalCounter3 = 0;
+                        var intervalId = setInterval(function () {
+                            intervalCounter3++;
+                            if (intervalCounter3 == 1) {
                                 var deathTelegraph = {
                                     id: nextFreeNumericId("circle"),
                                     class: "projectileTelegraph",
@@ -621,19 +621,19 @@ var Infernum;
                                 };
                                 animData.circles.push(deathTelegraph);
                             }
-                            else if (intervalCounters["icSunDeath"] == 250) {
+                            else if (intervalCounter3 == 250) {
                                 var deathTelegraphs = getProjectilePartsById(deathTelegraphID_1);
                                 if (!deathTelegraphs)
                                     throw new Error("Death telegraph not found after creation.");
                                 var deathTelegraph_1 = deathTelegraphs[0];
                                 animData.circles = animData.circles.filter(function (a) { return a != deathTelegraph_1; });
                             }
-                            else if (intervalCounters["icSunDeath"] >= 250 && intervalCounters["icSunDeath"] < 500)
-                                sun2.radius = map(intervalCounters["icSunDeath"], 250, 499, 120, 480);
-                            else if (intervalCounters["icSunDeath"] >= 500 && intervalCounters["icSunDeath"] < 750)
-                                sun2.radius = map(intervalCounters["icSunDeath"], 500, 749, 480, 0);
-                            else if (intervalCounters["icSunDeath"] >= 750) {
-                                clearInterval(intervalCounters["idSunDeath"]);
+                            else if (intervalCounter3 >= 250 && intervalCounter3 < 500)
+                                sun2.radius = map(intervalCounter3, 250, 499, 120, 480);
+                            else if (intervalCounter3 >= 500 && intervalCounter3 < 750)
+                                sun2.radius = map(intervalCounter3, 500, 749, 480, 0);
+                            else if (intervalCounter3 >= 750) {
+                                clearInterval(intervalCounter3);
                                 animData.circles = animData.circles.filter(function (a) { return a != sun2; });
                             }
                         }, 1);
@@ -689,21 +689,21 @@ var Infernum;
                 throw new Error("Telegraph not found after creation.");
             var telegraph = telegraphs[0];
             animData.rects = animData.rects.filter(function (a) { return a != telegraph; });
-            intervalCounters["idDarkBomb"] = setInterval(function () {
+            var intervalId1 = setInterval(function () {
                 var darkBomb = getCircleById(blackHole.id);
                 if (!darkBomb) {
-                    clearInterval(intervalCounters["idDarkBomb"]);
+                    clearInterval(intervalId1);
                     for (var i = 0; i < fcount; i++) {
                         setTimeout(function () {
-                            radialBurst(intervalCounters["exDarkBomb"].x, intervalCounters["exDarkBomb"].y, count, 100, 0);
+                            radialBurst(intervalCounters["exDarkBomb" + blackHole.id].x, intervalCounters["exDarkBomb" + blackHole.id].y, count, 100, 0);
                         }, i * 100);
                     }
                     var explosionID = nextFreeNumericId("projectile");
                     var explosion_1 = {
                         id: nextFreeNumericId("circle"),
                         class: "projectileHitbox",
-                        x: intervalCounters["exDarkBomb"].x,
-                        y: intervalCounters["exDarkBomb"].y,
+                        x: intervalCounters["exDarkBomb" + blackHole.id].x,
+                        y: intervalCounters["exDarkBomb" + blackHole.id].y,
                         radius: 0,
                         length: 1,
                         animation: "static",
@@ -718,15 +718,15 @@ var Infernum;
                         }
                     };
                     animData.circles.push(explosion_1);
-                    intervalCounters["icDarkExplosion"] = 0;
-                    intervalCounters["idDarkExplosion"] = setInterval(function () {
-                        intervalCounters["icDarkExplosion"]++;
-                        if (intervalCounters["icDarkExplosion"] < 125)
-                            explosion_1.radius = map(intervalCounters["icDarkExplosion"], 0, 124, 0, 120);
-                        else if (intervalCounters["icDarkExplosion"] < 250)
-                            explosion_1.radius = map(intervalCounters["icDarkExplosion"], 125, 249, 120, 0);
-                        else if (intervalCounters["icDarkExplosion"] >= 250) {
-                            clearInterval(intervalCounters["idDarkExplosion"]);
+                    var intervalCounter_1 = 0;
+                    var intervalId2_1 = setInterval(function () {
+                        intervalCounter_1++;
+                        if (intervalCounter_1 < 125)
+                            explosion_1.radius = map(intervalCounter_1, 0, 124, 0, 120);
+                        else if (intervalCounter_1 < 250)
+                            explosion_1.radius = map(intervalCounter_1, 125, 249, 120, 0);
+                        else if (intervalCounter_1 >= 250) {
+                            clearInterval(intervalId2_1);
                             animData.circles = animData.circles.filter(function (a) { return a != explosion_1; });
                         }
                     }, 2);
@@ -753,17 +753,17 @@ var Infernum;
                 alpha: 1
             }
         });
-        intervalCounters["icFlashbang"] = 0;
-        intervalCounters["idFlashbang"] = setInterval(function () {
-            intervalCounters["icFlashbang"]++;
+        var intervalCounter = 0;
+        var intervalId = setInterval(function () {
+            intervalCounter++;
             var flashbang = getRectById(flashbangID);
             if (!flashbang) {
                 throw new Error("Flashbang not found after creation.");
             }
-            if (intervalCounters["icFlashbang"] < 500)
-                flashbang.meta["alpha"] = map(intervalCounters["icFlashbang"], 0, 300, 1, 0.5);
+            if (intervalCounter < 500)
+                flashbang.meta["alpha"] = map(intervalCounter, 0, 300, 1, 0.5);
             else {
-                clearInterval(intervalCounters["idFlashbang"]);
+                clearInterval(intervalCounter);
                 animData.rects = animData.rects.filter(function (a) { return a.id != flashbangID; });
             }
         }, 4);
@@ -1706,7 +1706,6 @@ var Infernum;
         if (Math.abs(player.yVel) < 0.1)
             player.yVel = 0;
         // Why is Terraria health regeneration so complicated
-        // I also could have just used a simple timer, but this is more accurate to the game so idc
         if (health < 920) {
             var effectiveRegenTime = void 0;
             var movementModifer = void 0;
@@ -1964,13 +1963,13 @@ var Infernum;
             attackIndex++;
             verticalDeathRay(-10, canvasWidth / 5 + 20, 100, "5");
             radialBurst(canvasWidth / 10, canvasHeight / 2, 16, 60, 0);
-            intervalCounters["ic1"] = 0;
-            intervalCounters["id1"] = setInterval(function () {
-                intervalCounters["ic1"]++;
-                verticalDeathRay(canvasWidth * intervalCounters["ic1"] / 5 - 10, canvasWidth / 5 + 20, 100, "5");
-                radialBurst(canvasWidth * intervalCounters["ic1"] / 5 + canvasWidth / 10, canvasHeight / 2, 16, 60, 0);
-                if (intervalCounters["ic1"] == 4)
-                    clearInterval(intervalCounters["id1"]);
+            var intervalCounter_2 = 0;
+            var intervalId_1 = setInterval(function () {
+                intervalCounter_2++;
+                verticalDeathRay(canvasWidth * intervalCounter_2 / 5 - 10, canvasWidth / 5 + 20, 100, "5");
+                radialBurst(canvasWidth * intervalCounter_2 / 5 + canvasWidth / 10, canvasHeight / 2, 16, 60, 0);
+                if (intervalCounter_2 == 4)
+                    clearInterval(intervalId_1);
             }, 750);
         }
         if (fighting >= 1200 && attackIndex <= 15) {
@@ -2196,7 +2195,7 @@ var Infernum;
                         // @ts-expect-error: it will always be a circle
                         if (detectCollision(projectile, ground) || projectile.x > canvasWidth || projectile.x < 0 || projectile.y > canvasHeight || projectile.y < 0) {
                             // @ts-expect-error: will always be a circle
-                            intervalCounters["exDarkBomb"] = { x: map(projectile.x, 0, canvasWidth, 20, canvasWidth - 20), y: map(projectile.y, 0, canvasHeight, 20, canvasHeight - 20) };
+                            intervalCounters["exDarkBomb" + projectile.id] = { x: map(projectile.x, 0, canvasWidth, 20, canvasWidth - 20), y: map(projectile.y, 0, canvasHeight, 20, canvasHeight - 20) };
                             animData.circles = animData.circles.filter(function (i) { return i != projectile; });
                         }
                 }
