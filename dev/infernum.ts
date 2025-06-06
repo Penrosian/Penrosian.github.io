@@ -605,7 +605,7 @@ namespace Infernum {
                     const deathTelegraphID = nextFreeNumericId("projectile");
                     setTimeout(() => {
                         let intervalCounter3 = 0;
-                        const intervalId = setInterval(() => {
+                        const intervalId3 = setInterval(() => {
                             intervalCounter3++;
                             if (intervalCounter3 == 1) {
                                 const deathTelegraph: Circle = {
