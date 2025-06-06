@@ -598,7 +598,7 @@ var Infernum;
                     var deathTelegraphID_1 = nextFreeNumericId("projectile");
                     setTimeout(function () {
                         var intervalCounter3 = 0;
-                        var intervalId = setInterval(function () {
+                        var intervalId3 = setInterval(function () {
                             intervalCounter3++;
                             if (intervalCounter3 == 1) {
                                 var deathTelegraph = {
