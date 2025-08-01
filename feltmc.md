@@ -44,3 +44,6 @@ All of these are server-side mods, so you don't need to have them to be able to 
 [Get Off My Lawn ReServed](https://modrinth.com/mod/goml-reserved)
 [ViaBackwards](https://modrinth.com/plugin/viabackwards)
 [Spark](https://modrinth.com/mod/spark)
+[Dungeons and Taverns](https://modrinth.com/datapack/dungeons-and-taverns)
+[Melius Commands](https://modrinth.com/mod/melius-commands)
+[Death Back Potion](https://modrinth.com/datapack/death-back-potion)
