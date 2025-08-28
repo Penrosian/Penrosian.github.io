@@ -1347,8 +1347,7 @@ namespace Infernum {
         if (frame == 0) {
             element = document.getElementById("bgm");
             if (element) {
-                // @ts-expect-error: bgm is an audio element, which has play
-                element.play().then(() => { }, () => alert("Please enable autoplay for this site and refresh. This game features music sync, so precise audio timing is required."));
+                (element as HTMLAudioElement).play().then(() => { }, () => alert("Please enable autoplay for this site and refresh. This game features music sync, so precise audio timing is required."));
             };
         }
         frame++;
