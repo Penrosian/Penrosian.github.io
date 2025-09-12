@@ -14,7 +14,7 @@ function init() {
         // Local file case: Include the DOCTYPE manually if necessary
         const pageContent = `<!DOCTYPE html>\n` + document.documentElement.outerHTML;
 
-        fetch("https://html5.validator.nu/?out=json", {
+        fetch("https://validator.w3.org/nu/?out=json", {
             method: "POST",
             headers: {
                 "Content-Type": "text/html; charset=utf-8"
@@ -32,7 +32,7 @@ function init() {
 
     } else {
         // Hosted file case: Use URL-based validation
-        fetch("https://html5.validator.nu/?out=json&doc=" + encodeURIComponent(loc), {
+        fetch("https://validator.w3.org/nu/?out=json&doc=" + encodeURIComponent(loc), {
             method: "GET"
         })
         .then(response => response.json())
