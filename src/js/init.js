@@ -113,24 +113,27 @@ function renderValidationResults(data) {
         }
     }
     
-    if(window.location.href.startsWith("file://") && !isHTMLValid) {
-        ValidatorHTML += `<p>There might be multiple errors. Here is the first one:</p>
-        <table>
-        <thead>
-        <tr>
-        <th>Code</th>
-        <th>Error Description</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-        <td><code>${data['messages'][0]['extract'].replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;')}</code></td>
-        <td>` + data['messages'][0]['message'] + `</td> 
-        </tr>
-        </tbody>
-        </table>`
-        
+    if(window.location.href.startsWith("file://") || window.location.href.startsWith("http://localhost") && !isHTMLValid) {
+        if (data['messages'][0]['type'] != 'non-document-error') {
+            ValidatorHTML += `<p>There might be multiple errors. Here is the first one:</p>
+            <table>
+            <thead>
+            <tr>
+            <th>Code</th>
+            <th>Error Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <td><code>${data['messages'][0]['extract'].replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;')}</code></td>
+            <td>` + data['messages'][0]['message'] + `</td> 
+            </tr>
+            </tbody>
+            </table>`
+        } else if(data['messages'][0]['type'] == 'non-document-error') {
+            ValidatorHTML += `<p>Validation could not be performed due to an error: ` + data['messages'][0]['message'] + `</p>`;
         }
+    }
 
     let footer = document.querySelector('footer');
     if (!footer) {
