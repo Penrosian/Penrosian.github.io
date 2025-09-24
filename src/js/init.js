@@ -1,6 +1,11 @@
+function checkLocalFile() {
+    const loc = window.location.href;
+    return loc.startsWith("file://") || loc.startsWith("http://localhost") || loc.startsWith("http://127.0.0.1");
+}
+
 function init() {
     const loc = window.location.href;
-    const isLocalFile = loc.startsWith("file://");
+    const isLocalFile = checkLocalFile();
 
     // Check if the document has a valid doctype
     let hasValidDoctype = checkDoctype();
@@ -67,7 +72,6 @@ function addWarningFooter() {
 
 // Helper function to render validation results
 function renderValidationResults(data) {
-    console.log(data);
     let isHTMLValid = data.messages.length === 0;
 
     let ValidatorHTML = `<div id="htmlcss"><p><strong>HTML/CSS`;
@@ -113,7 +117,7 @@ function renderValidationResults(data) {
         }
     }
     
-    if(window.location.href.startsWith("file://") || window.location.href.startsWith("http://localhost") && !isHTMLValid) {
+    if(checkLocalFile() && !isHTMLValid) {
         if (data['messages'][0]['type'] != 'non-document-error') {
             ValidatorHTML += `<p>There might be multiple errors. Here is the first one:</p>
             <table>
