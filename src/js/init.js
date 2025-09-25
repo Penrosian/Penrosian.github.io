@@ -72,6 +72,7 @@ function addWarningFooter() {
 
 // Helper function to render validation results
 function renderValidationResults(data) {
+    // console.log(data);
     let isHTMLValid = data.messages.length === 0;
 
     let ValidatorHTML = `<div id="htmlcss"><p><strong>HTML/CSS`;
@@ -79,63 +80,44 @@ function renderValidationResults(data) {
         ValidatorHTML += " NOT";
     }
     ValidatorHTML += ` Valid!</strong></p>`;
-    if(window.location.href.startsWith("file://")) {
-        if(window.location.href.split("/").length <= 8) {
-            ValidatorHTML += `
-            <p>
-                <a id="vLink1" href="https://validator.w3.org/check?uri=${window.location.href}">Validate HTML</a> |
-                <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a> |
-                <a id="vLink3" href="index.html">Go Back</a>
-            </p>
-        `;
-        } else {
-            ValidatorHTML += `
-            <p>
-                <a id="vLink1" href="https://validator.w3.org/check?uri=${window.location.href}">Validate HTML</a> |
-                <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a> | 
-                <a id="vLink3" href="../">Go Back</a>
-            </p>
-        `;
-        }
-    } else {
-        if(window.location.href.split("/").length <= 4) {
-            ValidatorHTML += `
-            <p>
-                <a id="vLink1" href="https://validator.w3.org/check?uri=${window.location.href}">Validate HTML</a> |
-                <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a> |
-                <a id="vLink3" href="index.html">Go Back</a>
-            </p>
-        `;
-        } else {
-            ValidatorHTML += `
-            <p>
-                <a id="vLink1" href="https://validator.w3.org/check?uri=${window.location.href}">Validate HTML</a> |
-                <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a> | 
-                <a id="vLink3" href="../">Go Back</a>
-            </p>
-        `;
-        }
-    }
-    
-    if(checkLocalFile() && !isHTMLValid) {
-        if (data['messages'][0]['type'] != 'non-document-error') {
-            ValidatorHTML += `<p>There might be multiple errors. Here is the first one:</p>
-            <table>
-            <thead>
-            <tr>
-            <th>Code</th>
-            <th>Error Description</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-            <td><code>${data['messages'][0]['extract'].replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;')}</code></td>
-            <td>` + data['messages'][0]['message'] + `</td> 
-            </tr>
-            </tbody>
-            </table>`
-        } else if(data['messages'][0]['type'] == 'non-document-error') {
-            ValidatorHTML += `<p>Validation could not be performed due to an error: ` + data['messages'][0]['message'] + `</p>`;
+    ValidatorHTML += `
+        <p>
+            <a id="vLink1" href="https://validator.w3.org/check?uri=${window.location.href}">Validate HTML</a> |
+            <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a>
+        </p>
+    `;
+    let renderFooter = true;
+    if (!isHTMLValid) {
+        if (data['messages'][0]['type'] != 'error') {
+            if (checkLocalFile()) {
+                ValidatorHTML = `<p>Validation could not be performed due to an error: ` + data['messages'][0]['message'] + `</p>`;
+            } else {
+                console.warn(data['messages'][0]['message']);
+                renderErrorFooter();
+                renderFooter = false;
+            }
+        } else if (checkLocalFile()) {
+            try {
+                ValidatorHTML += `<p>There might be multiple errors. Here is the first one:</p>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td><strong>Error Description</strong></td>
+                        </tr>
+                        <tr>
+                            <td>` + data['messages'][0]['message'] + `</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Code</strong></td>
+                        </tr>
+                        <tr>
+                        <td><code>${data['messages'][0]['extract'].replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;')}</code></td>
+                        </tr>
+                    </tbody>
+                </table>`;
+            } catch (error) {
+                ValidatorHTML = `<p>Validation could not be performed due to an error: ` + error.message + `</p>`;
+            }
         }
     }
 
@@ -144,7 +126,7 @@ function renderValidationResults(data) {
         footer = document.createElement('footer');
         document.body.appendChild(footer);
     }
-    footer.innerHTML += ValidatorHTML;
+    if (renderFooter) footer.innerHTML += ValidatorHTML;
 }
 
 // Helper function to render an error message in the footer
