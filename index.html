@@ -19,6 +19,16 @@
 </head>
 
 <body>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            let js = document.getElementById("js");
+            js.innerHTML += (((!(("asdhhsd" > "10" ? "" : "67" && "hello") || "goodbye") ? "yes" : "no") * 5 > 10 ? "maybe" : "definitely") + 3) && (6 > "7")
+            js.innerHTML += "? Check the document to see for yourself."
+        });
+        (function quine() {
+            console.log(`(${quine.toString()})()`);
+        })();
+    </script>
     <div class="fsgrid">
         <div class="gridhead color1">
             <header>
@@ -28,6 +38,8 @@
         <div class="gridleft color4">
             <p><a href="https://github.com/Penrosian/Penrosian.github.io">GitHub Repo</a></p>
             <p><a href="school/JS/game.html">My JS Game</a></p>
+            <p id="js">Did you know that (((!(("asdhhsd" > "10" ?  "" : "67" && "hello") || "goodbye") ? "yes" : "no") * 5 > 10 ? "maybe" : "definitely") + 3) && (6 > "7") evaluates to </p>
+            <p>A quine is a program that returns itself. A quine has put itself into the console of this page.</p>
         </div>
         <div class="gridmain color3">
             <main>
